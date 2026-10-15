@@ -77,6 +77,60 @@ Risks and open points:
 - Apps Script limits one execution to 6 minutes, which is far above one email per call; "enviar pendientes" sends in a
   loop of single calls so a failure on one order does not stop the rest.
 
+## Phase 4b: Apps Script design (adapted from the prototype sheet)
+
+Compared with the owner's prototype "Monolab Print Studio — Producción & Finanzas" (tabs Panel_Control, Cola_Produccion,
+Control_Stock_Resinas, Libro_Financiero, Configuracion).
+
+What the prototype has and what we keep:
+
+| Prototype piece                                                             | Keep?                 | In the new system                                                                    |
+| --------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| Panel_Control: counts by state, due today, overdue, stock alerts, cash flow | Yes, as formulas only | `Panel` tab built with COUNTIF/SUMIF over Pedidos; no script needed                  |
+| Cola_Produccion: price, payment status, commitment date                     | Partly                | Pedidos already has Cotización and Estado; add `Pago` and `Fecha compromiso` columns |
+| Libro_Financiero: income row written automatically on payment               | Yes, simplified       | menu "Marcar pagado" writes one Ingreso row (amount, method, order)                  |
+| Control_Stock_Resinas: lots, consumption, cost per ml                       | Later (phase 4c)      | separate tab; consumption is typed by hand per order; no automatic ml maths          |
+| Configuracion: emails T1/T2/T3, bank data, address                          | Partly                | our Config + Plantillas already cover emails; bank data and address move into Config |
+| Web App URL + token per order                                               | No                    | replaced by the signed `/confirmar` link and `POST /api/send`                        |
+
+Prototype defects not to copy: `Estado_Stock` shows #ERROR! (broken formula); the email text uses informal "tú" (the site
+uses "usted"); the phone in Configuracion (+56 9 8765 4321) differs from the site's WhatsApp number (56948623705); T3
+("Datos de Transferencia") has a subject but no message.
+
+### Script scope (kept small and simple)
+
+Menu **Monolab** (appears on open):
+
+1. **Enviar correo de esta fila**: the email for the selected row's current Estado (Cotizado -> cotización, Listo -> listo).
+2. **Enviar correos pendientes**: every row whose Estado changed and was not yet mailed.
+3. **Enviar prueba a mi correo**: preview to the operator only.
+4. **Enviar datos de transferencia**: new template `Pago` with bank details from Config (needs owner approval, see questions).
+5. **Marcar pagado**: sets Pago = Pagado and appends the Libro_Financiero row.
+6. **Instalar casilla «Enviar»** (one-time): installs the edit trigger described below.
+
+Per-row button, no row selection needed: a checkbox column **Enviar** at the end of Pedidos (U). Ticking it sends that row's
+email, then the script unticks it and writes the result into the Envíos log and a short note on the cell. This needs an
+installable trigger (authorised once) because simple triggers cannot call the website.
+
+Every action calls `POST /api/send`; the script holds no template text, no SMTP, no secrets in cells (`SHEET_SECRET` in
+Script Properties). Replies are shown as a toast; an `already_sent` reply asks "¿Reenviar?" and repeats with `force`.
+Estimated size: about 150 lines in one file, `docs/apps-script/Monolab.gs`.
+
+### Delivery order
+
+- 4b-1: menu items 1 to 3, the checkbox, Script Properties, install guide in OPERADOR-es.md. Deploy with `ENVIO_AUTOMATICO=NO`.
+- 4b-2: Panel tab formulas; `Pago` and `Fecha compromiso` columns; "Marcar pagado" and the ledger.
+- 4b-3 (optional): resin stock tab.
+
+### Questions for the owner
+
+1. Is a payment step wanted (Pagado state, transfer-data email, ledger)? If yes, the data model grows by two columns and
+   one state, which also needs the dropdown and email templates updated.
+2. Use the prototype's workshop address (Río Guadiana 8672, Las Condes) as the pickup address on the site and in the "Listo"
+   email? And which phone is right for the site: +56 9 8765 4321 or +56 9 4862 3705?
+3. The bank account and RUT would be emailed to customers in the transfer email: confirm that is intended.
+4. Bring the resin stock control, or leave it in the prototype sheet for now?
+
 ## Phase 5: Technical, SEO, performance
 
 13. Metadata, Open Graph image, LocalBusiness structured data, sitemap, robots.

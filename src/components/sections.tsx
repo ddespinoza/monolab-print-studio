@@ -5,6 +5,8 @@ import { ABOUT, FAQ, HERO, MATERIALS, NAV, PUBLIC_EMAIL, SITE_NAME, STEPS } from
 const wrap = "mx-auto w-full max-w-6xl px-4";
 const btnPrimary =
   "inline-block rounded-lg bg-orange px-6 py-3 font-bold text-prussian-blue hover:bg-orange-dark focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-orange";
+const btnSecondary =
+  "inline-block rounded-lg border-2 border-prussian-blue px-6 py-[0.6rem] font-bold text-prussian-blue hover:bg-canvas focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-orange";
 const band =
   "bg-[linear-gradient(135deg,var(--prussian-blue),var(--bg-deep)_50%,var(--bg-deepest))]";
 
@@ -182,12 +184,18 @@ export function Contact({
       <div className={wrap}>
         <h2 className="mb-4 text-2xl font-bold text-main">Contacto</h2>
         <ul className="grid gap-2">
-          <li>
+          <li className="flex flex-wrap gap-3">
             <a href={whatsappHref} className={btnPrimary} target="_blank" rel="noopener noreferrer">
               Escribir por WhatsApp
             </a>
+            <a
+              href={`mailto:${PUBLIC_EMAIL}?subject=${encodeURIComponent("Consulta a Monolab Print Studio")}`}
+              className={btnSecondary}
+            >
+              Escribir por correo
+            </a>
           </li>
-          <li>{PUBLIC_EMAIL}</li>
+          <li>Correo: {PUBLIC_EMAIL}</li>
           <li>Retiro en: {retiro}</li>
           <li>Horario: {horario}</li>
         </ul>

@@ -51,6 +51,14 @@ test("auto-fits an oversize model in simple mode and blocks it in advanced mode"
   await expect(page.getByRole("button", { name: "Solicitar cotización" }).last()).toBeDisabled();
 });
 
+test("the contact section offers WhatsApp and an email button for contacto@", async ({ page }) => {
+  await page.goto("/");
+  const mail = page.getByRole("link", { name: "Escribir por correo" });
+  await expect(mail).toBeVisible();
+  await expect(mail).toHaveAttribute("href", /^mailto:contacto@monolabprintstudio\.cl\?subject=/);
+  await expect(page.getByRole("link", { name: "Escribir por WhatsApp" }).last()).toBeVisible();
+});
+
 test("shows a loading screen in the viewer while a large model is being read", async ({ page }) => {
   await page.goto("/");
   // ~25 MB binary STL (500k triangles) so reading takes long enough to observe.

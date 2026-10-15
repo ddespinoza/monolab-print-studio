@@ -4,10 +4,21 @@ import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
+const description =
+  "Impresión 3D en resina de precisión. Suba su archivo STL y reciba su cotización por correo.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.SITE_URL ?? "http://127.0.0.1:3100"),
   title: "Monolab Print Studio",
-  description:
-    "Impresión 3D bajo pedido. Suba su archivo STL y reciba su pedido listo para retiro.",
+  description,
+  icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
+  openGraph: {
+    title: "Monolab Print Studio",
+    description,
+    images: ["/og-image.png"],
+    locale: "es_CL",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

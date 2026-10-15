@@ -37,3 +37,25 @@ Decision: the site uses the light palette only; no `prefers-color-scheme: dark` 
 - **Sheets writes use `valueInputOption=RAW`** plus an apostrophe prefix for risky leading characters (= + - @), tested in order-row.
 - **Plantillas rows hold subject and message only.** The standard footer (Atentamente...) is always appended at send time, so operators cannot delete it by accident.
 - **Sheet API**: `updates.updatedRange` of values.append is parsed for the row link (developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/append).
+
+## Checkpoint 2 (pre-mockups): prototype comparison (2026-10-15)
+
+Source: the owner's first prototype, a Google Apps Script web app (resin printing, one-screen viewer and form). The owner also supplied the real logo (saved verbatim as `brand/logo-source.svg`; it contains the Gmail address on an email plate that every derivative strips; the prototype's own header leaks it).
+
+| Question      | Options offered                                                 | Owner's choice                                                                                                                                                                                     |
+| ------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Technology    | Resin only / resin + FDM / FDM only                             | **Resin only** (Anycubic Photon Mono 4 Ultra, build volume 153.4 x 77.0 x 165.0 mm; types Estándar, Tough, extensible in Config). Drops relleno, color, PLA/PETG; supersedes spec 5 print options. |
+| 3D tools      | build-volume check / + scale and auto-fit / everything          | **Everything from the prototype**: build plate, auto-fit, scale slider and presets, 90° rotation, view presets (iso/top/front/side), wireframe, simple and advanced modes, multi-model view.       |
+| Layout        | landing + split #pedido / app screen / landing stacked          | **Landing sections, split layout (viewer left, form right) in #pedido.**                                                                                                                           |
+| Quote step    | link / link with decline / email parsing                        | **Unique signed link in the email**; click updates the sheet automatically (no inbox parsing).                                                                                                     |
+| Quote price   | Cotización column / in template / none                          | **Operator types it in a "Cotización" column**; the site never computes prices.                                                                                                                    |
+| After confirm | Confirmado then En cola / straight to En cola / separate column | **Estado becomes "Confirmado"**; the operator moves it to En cola.                                                                                                                                 |
+
+Consequences (to implement after mockup approval, tests first):
+
+- States become Nuevo, Cotizado, Confirmado, En cola, Imprimiendo, Listo, Entregado, Cancelado (Enviado stays removed). Cotizado and Confirmado get templates; Cotizado carries the price text and the confirm link.
+- Pedidos gets a "Cotización" column; Material column holds the resin type; Ciudad, Color and Relleno are dropped (confirm the exact schema at checkpoint 3).
+- New public route `/confirmar/[token]`: GET renders a page with a button, POST does the confirmation. Confirmation needs a POST because mail scanners prefetch GET links. Token = HMAC-SHA256(orderId + Cotización text) with a new `CONFIRM_SECRET`, so editing the quote invalidates the old link. It is valid only while Estado is Cotizado. On success: Estado = Confirmado, "Estado notificado" = Confirmado, customer receives the Confirmado email, operator is notified. This relaxes spec 15 ("no public status pages"): the page shows no order data beyond the ID and the quote text.
+- Client metrics now include the applied scale %; submitted volume and size are the scaled values, and the sheet stores the scale per file. The server still trusts them (documented trust boundary).
+- Tone stays formal (usted), per spec 3c, replacing the prototype's informal "tú".
+- Open point for mockup review: the prototype had no Ciudad field; mockups drop it (pickup only).

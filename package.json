@@ -10,7 +10,9 @@
     "test": "vitest run",
     "format": "prettier --write .",
     "test:live": "node --env-file=.env --import tsx scripts/test-live.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "brand": "tsx scripts/brand.ts",
+    "check:rules": "bash scripts/check-rules.sh"
   },
   "dependencies": {
     "googleapis": "^186.0.0",
@@ -21,6 +23,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.2",
     "@types/nodemailer": "^8.0.2",
@@ -29,6 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
     "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",

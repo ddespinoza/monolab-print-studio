@@ -29,3 +29,10 @@ All wrappers take an injected client, so tests mock at the module boundary and `
 - `templates.ts`: approved copy as defaults, `{{var}}` rendering, HTML email with the palette hex map. `sheet-templates.ts` overrides them from the Plantillas tab with fallback. `sheet-config.ts` reads the Config tab with a 5 minute cache that serves stale data on failure.
 - `status-notifier.ts`: `findPending` (pure diff) and `runTick` (dependency-injected; at-least-once; no overlap).
 - `scripts/test-live.ts`: gated live check (real Drive, Sheets, SMTP; creates then deletes TEST resources).
+
+## Brand and mockups (Phase 4)
+
+- `brand/logo-source.svg` is the owner's artwork, verbatim, NOT under `public/` so it is never served (it carries the operator's Gmail address on an email plate). `npm run brand` (`scripts/brand.ts`) derives `public/brand/logo-{full,icon,horizontal,horizontal-dark}.svg`, favicon.ico, icon-192/512, apple-touch-icon and og-image.png, and fails if an "@" survives in a derivative.
+- `src/styles/tokens.css` is the single palette file, imported by `globals.css` (Tailwind `@theme`) and linked by every mockup. Light theme only.
+- `docs/mockups/` is the visual contract: `index.html` (all sections), `mobile.html`, `flow-1-empty`, `flow-2-files`, `flow-3-success`, `confirmar.html` (public quote-confirmation page), `palette.html`.
+- `npm run check:rules` greps for the Gmail address in customer-facing paths and for hex literals outside tokens.css and the email hex map.

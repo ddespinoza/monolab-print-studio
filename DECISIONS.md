@@ -59,3 +59,22 @@ Consequences (to implement after mockup approval, tests first):
 - Client metrics now include the applied scale %; submitted volume and size are the scaled values, and the sheet stores the scale per file. The server still trusts them (documented trust boundary).
 - Tone stays formal (usted), per spec 3c, replacing the prototype's informal "tú".
 - Open point for mockup review: the prototype had no Ciudad field; mockups drop it (pickup only).
+
+## Checkpoint 2b: dental service details (2026-10-15)
+
+Context: the service is resin printing for dentists (odontólogos). Owner's mockup feedback approved the "Solicitar cotización" CTA, formal usted tone and the header; it did not approve the removal of Ciudad/Color/Relleno, which was then asked explicitly.
+
+| Question               | Options offered                               | Owner's choice                                                                                                                                       |
+| ---------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Extra fields           | (free text)                                   | **Nombre del paciente** (new) next to the requester's name (the dentist), and **Tiempo de entrega**: Flash (2 días) 10.000 CLP, or 7 días 7.500 CLP. |
+| Delivery prices        | per file / per order flat / no prices on site | **Flat fee per order.** Shown as information; the site still never computes the quote. Sheet stores the chosen option and fee.                       |
+| File formats           | STL+OBJ+PLY / STL + attachments / both        | **STL, OBJ and PLY, all with 3D preview.** Supersedes spec 4 ("STL only") and the spec 15 "formats other than STL" exclusion.                        |
+| Ciudad, Color, Relleno | drop all / keep Color / keep Ciudad+Color     | **Drop all three.**                                                                                                                                  |
+| Drive layout           | (free text)                                   | One folder per order, **named with the patient name** (e.g. `ML-0001 - Nombre Paciente`), inside DRIVE_FOLDER_ID.                                    |
+
+Consequences:
+
+- Pedidos columns (to confirm at checkpoint 3): add Nombre del paciente and Tiempo de entrega (+ tarifa); remove Ciudad, Color, Relleno.
+- Validation: loaders and filename rules extend to .stl/.obj/.ply; metrics run on each loader's non-indexed geometry (OBJ/PLY need de-indexing before computeMetrics).
+- Drive folder name is built from the sanitised patient name (same filename sanitiser, no PII beyond what the owner asked for).
+- Privacy flag for the owner: patient names are personal (health-adjacent) data. They will live in the sheet and in Drive folder names; recommendation is to keep the patient name OUT of customer emails and the notification subject lines, and to mention data handling in the site footer. Not decided yet; raise at checkpoint 3.

@@ -1,0 +1,9 @@
+# Coolify builds with Nixpacks. Runtime settings (PORT=3000, HOST=0.0.0.0, secrets) are set in Coolify, not here.
+[variables]
+NIXPACKS_NODE_VERSION = "24"
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"

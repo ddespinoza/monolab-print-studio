@@ -119,3 +119,8 @@ Totals: MIT 48, Apache-2.0 15, BSD-3-Clause 3, ISC 2, MIT-0 1, 0BSD 1, plus the 
 | `caniuse-lite`                 | CC-BY-4.0                          | browser-support data used at build time by Next's toolchain                                                                     | **Exception, needs owner approval** (attribution licence, data not code) |
 
 If the owner declines the LGPL exception: set `images.unoptimized: true` and remove `sharp` from the install (`npm i --omit=optional`), which this app does not need because it serves only local SVG/PNG brand assets.
+
+## Owner approvals (2026-10-15)
+
+- **License exceptions approved**: `@img/sharp-libvips-linux-x64` (LGPL-3.0-or-later, optional dependency of `next`) and `caniuse-lite` (CC-BY-4.0, build-time data).
+- **Deployment: Coolify** (Nixpacks, existing Traefik proxy). `nixpacks.toml` pins Node 24. Required in Coolify: `PORT=3000`, `HOST=0.0.0.0`, `NODE_ENV=production`, `MOCK_APIS=false` plus the secrets, a persistent volume at `/app/data`, a 5-minute scheduled task for the tick, and the domains. Production refuses to start without real credentials, so deployment waits for checkpoint 4.

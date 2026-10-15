@@ -19,11 +19,11 @@ Copy `.env.example` to `.env` and fill it using docs/GOOGLE-SETUP.md. Production
 | `GOOGLE_*`, `DRIVE_FOLDER_ID`, `SHEET_TAB` | Sheets service account, Drive OAuth, ids                                           |
 | `SMTP_*`, `FROM_EMAIL`, `OPERATOR_EMAIL`   | Gmail SMTP and addresses                                                           |
 
-## Option A: Coolify (recommended on this VPS)
+## Option A: Coolify (chosen by the owner)
 
 The VPS already runs Coolify with a Traefik proxy on ports 80/443. Deploying through Coolify touches nothing outside its own app entry.
 
-1. Coolify > Projects > New resource > **Private repository (with deploy key)** > `ddespinoza/monolab-print-studio`, branch `main`. Build pack: **Nixpacks**.
+1. Coolify > Projects > New resource > **Private repository (with deploy key)** > `ddespinoza/monolab-print-studio`, branch `main`. Build pack: **Nixpacks** (`nixpacks.toml` pins Node 24). Port to expose: `3000`.
 2. Environment variables: everything in the table above, with `PORT=3000` and `HOST=0.0.0.0`.
 3. Persistent storage: mount a volume at `/app/data` (so `data/tmp` survives redeploys).
 4. Domains: `https://monolabprintstudio.cl,https://www.monolabprintstudio.cl`. Coolify's Traefik requests certificates by itself; with Cloudflare in front set SSL mode **Full (strict)** only after a certificate exists (or use a Cloudflare Origin certificate in Traefik).

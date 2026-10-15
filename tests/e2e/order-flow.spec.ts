@@ -48,3 +48,21 @@ test("auto-fits an oversize model in simple mode and blocks it in advanced mode"
   await expect(page.getByText("Este modelo excede el volumen de impresión")).toBeVisible();
   await expect(page.getByRole("button", { name: "Solicitar cotización" }).last()).toBeDisabled();
 });
+
+test.describe("phone layout", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+  test("has no horizontal scroll and stacks the viewer above the form", async ({ page }, info) => {
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/fixtures/box-20x10x5.stl");
+    await expect(page.getByText("1,0 cm³").first()).toBeVisible({ timeout: 20_000 });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(false);
+    const viewer = await page.getByRole("img", { name: /Vista previa 3D/ }).boundingBox();
+    const form = await page.getByRole("form", { name: "Datos de la solicitud" }).boundingBox();
+    expect(viewer && form && viewer.y < form.y).toBe(true);
+    await page.locator("#pedido").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: info.outputPath("phone-order.png") });
+  });
+});

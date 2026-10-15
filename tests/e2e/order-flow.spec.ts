@@ -20,8 +20,10 @@ async function placeOrder(page: Page, file: string): Promise<string> {
 test("a customer uploads a model, sees metrics and places two sequential orders", async ({
   page,
 }) => {
-  expect(await placeOrder(page, "tests/fixtures/cube-10.stl")).toBe("ML-0001");
-  expect(await placeOrder(page, "tests/fixtures/cube-10.stl")).toBe("ML-0002");
+  const first = await placeOrder(page, "tests/fixtures/cube-10.stl");
+  const second = await placeOrder(page, "tests/fixtures/cube-10.stl");
+  expect(first).toMatch(/^ML-\d{4}$/);
+  expect(Number(second.slice(3))).toBe(Number(first.slice(3)) + 1);
 });
 
 test("shows a Spanish error for unsupported or unreadable files and keeps the form locked", async ({

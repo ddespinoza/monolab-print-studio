@@ -65,7 +65,15 @@ describe("viewConfirmation", () => {
     expect(await viewConfirmation(token, deps([{ ...order, estado: "Confirmado" }]))).toEqual({
       status: "done",
       orderId: "ML-0001",
+      estado: "Confirmado",
     });
+  });
+  it("carries the current Estado so the page can show how far the order is", async () => {
+    for (const estado of ["En cola", "Imprimiendo", "Listo", "Entregado"])
+      expect(await viewConfirmation(token, deps([{ ...order, estado }]))).toMatchObject({
+        status: "done",
+        estado,
+      });
   });
   it("is invalid if the quote changed after the email was sent", async () => {
     expect(await viewConfirmation(token, deps([{ ...order, cotizacion: "$99.000" }]))).toEqual({
@@ -87,7 +95,11 @@ describe("confirmOrder", () => {
   });
   it("does nothing for an invalid or already-confirmed link", async () => {
     const d = deps([{ ...order, estado: "Confirmado" }]);
-    expect(await confirmOrder(token, d)).toEqual({ status: "done", orderId: "ML-0001" });
+    expect(await confirmOrder(token, d)).toEqual({
+      status: "done",
+      orderId: "ML-0001",
+      estado: "Confirmado",
+    });
     expect(d.setConfirmed).not.toHaveBeenCalled();
     const d2 = deps();
     expect(await confirmOrder("bad", d2)).toEqual({ status: "invalid" });

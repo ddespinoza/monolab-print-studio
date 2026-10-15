@@ -194,3 +194,10 @@ Audit at 360 and 390 px (screenshots plus a tap-target measurement). Findings an
 - **Loading screen**: while any file has `parse === "reading"` the viewer shows a centred spinner with "Leyendo <archivo>…" (`loadingLabel`, tested). It fades in after 150 ms so small files never flash it; it covers the canvas only, the toolbar and form stay usable. Upload progress stays in the file list. E2E test uses a ~25 MB synthetic STL.
 - **About**: the three bullet points (dental focus, initials only, one-click confirm) were removed from "Quiénes somos" at the owner's request ("unnecessary on the welcome screen"); the section is now one column.
 - **Photo**: a 96 px circle with an orange ring next to the representative's name, from `public/brand/antonio-alvear.jpg` (256 px, re-encoded without metadata). Source: the profile photo the owner pointed to on the polyclinic's website, copied locally rather than hotlinked so the page does not depend on that site.
+
+## Hero hexagon pattern, /confirmar restyle and larger photo (2026-10-15, owner approved the mockup)
+
+- **Hexagon art** (`HexArt`, decorative): a mesh of thin hexagon outlines plus a few faint filled cells and a soft blue glow, drawn in real pixels on a right-anchored canvas and faded to the left with a CSS mask (stronger fade on phones). Two new tokens in `tokens.css`: `--hex-line`, `--hex-glow`. Used on the hero and on the strip above the confirmation card.
+- **/confirmar**: matches the new emails (status badge, order number, quote callout, four-stage progress line, large button, WhatsApp link). New pure helper `progress.ts` (`activeStep`/`stepStates`, tested). `ConfirmView` "done" now carries `estado`, so the page shows the real stage (e.g. Listo) instead of always "Producción". Confirming is still a POST. Invalid links get a "Volver al sitio" link.
+- **Photo**: representative's photo enlarged to 112 px (phones) and 160 px (from `sm`), from a sharper 480 px copy of the polyclinic's original image.
+- Tests: e2e for the confirmation page (invalid link, quote link, confirm, revisit, phone width); the order-flow test no longer assumes the first order id is ML-0001.

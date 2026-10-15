@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { HexArt } from "@/components/HexArt";
 import { ABOUT, FAQ, HERO, MATERIALS, NAV, PUBLIC_EMAIL, SITE_NAME, STEPS } from "@/lib/content";
 
 const wrap = "mx-auto w-full max-w-6xl px-4";
@@ -38,7 +39,8 @@ export function Header() {
 
 export function Hero() {
   return (
-    <section id="inicio" className={`${band} py-24 text-app`}>
+    <section id="inicio" className={`${band} relative isolate overflow-hidden py-24 text-app`}>
+      <HexArt id="hero-hex" />
       <div className={wrap}>
         <p className="mb-3 text-sm font-bold uppercase tracking-[0.15em] text-orange">
           {HERO.eyebrow}
@@ -67,13 +69,13 @@ export function About() {
               {p}
             </p>
           ))}
-          <div className="mt-6 flex items-center gap-4">
+          <div className="mt-6 flex items-center gap-5">
             <Image
               src={rep.photo}
               alt={`${rep.name}, ${rep.role}`}
-              width={96}
-              height={96}
-              className="h-24 w-24 shrink-0 rounded-full border-[3px] border-orange object-cover"
+              width={160}
+              height={160}
+              className="h-28 w-28 shrink-0 rounded-full border-4 border-orange object-cover sm:h-40 sm:w-40"
             />
             <p className="m-0">
               <span className="block text-xs font-bold uppercase tracking-[0.12em] text-muted">

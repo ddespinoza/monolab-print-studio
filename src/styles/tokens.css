@@ -16,5 +16,7 @@
   --gold-light: #ffd166;
   --gold-dark: #e5a93c;
   --border-brand: #1f2e4d;
+  --hex-line: #2b4170;
+  --hex-glow: #2f5597;
   color-scheme: light; /* light theme only, no dark mode */
 }

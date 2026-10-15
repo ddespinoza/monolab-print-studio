@@ -18,6 +18,8 @@
   --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
   --color-border-brand: var(--border-brand);
+  --color-hex-line: var(--hex-line);
+  --color-hex-glow: var(--hex-glow);
   --font-sans: var(--font-inter), system-ui, sans-serif;
 }
 
@@ -62,4 +64,90 @@ body {
   to {
     opacity: 1;
   }
+}
+
+/* Hexagon art behind the hero and the confirmation band: decorative, fades out toward the left. */
+.hex-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, black 88%);
+  mask-image: linear-gradient(90deg, transparent 38%, black 88%);
+}
+.hex-art.hex-band {
+  -webkit-mask-image: linear-gradient(90deg, transparent 20%, black 85%);
+  mask-image: linear-gradient(90deg, transparent 20%, black 85%);
+}
+@media (max-width: 520px) {
+  .hex-art:not(.hex-band) {
+    -webkit-mask-image: linear-gradient(160deg, transparent 30%, black 100%);
+    mask-image: linear-gradient(160deg, transparent 30%, black 100%);
+  }
+  .hex-art:not(.hex-band) svg {
+    opacity: 0.75;
+  }
+}
+
+/* Order progress line on the confirmation page: connector lines and dots drawn with pseudo-elements. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 4px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  position: relative;
+  padding-top: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-muted);
+}
+.steps li::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-light);
+}
+.steps li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  border-radius: 50%;
+  background: var(--bg-app);
+  border: 3px solid var(--border-light);
+}
+.steps li:first-child::before {
+  left: 50%;
+}
+.steps li:last-child::before {
+  right: 50%;
+}
+.steps li.done {
+  color: var(--prussian-blue);
+}
+.steps li.done::before {
+  background: var(--prussian-blue);
+}
+.steps li.done::after {
+  background: var(--prussian-blue);
+  border-color: var(--prussian-blue);
+}
+.steps li.now {
+  color: var(--text-main);
+  font-weight: 700;
+}
+.steps li.now::after {
+  background: var(--orange);
+  border-color: var(--orange);
 }

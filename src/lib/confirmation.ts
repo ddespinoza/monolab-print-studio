@@ -22,7 +22,7 @@ export interface ConfirmDeps {
 
 export type ConfirmView =
   | { status: "ready"; orderId: string; cotizacion: string }
-  | { status: "done"; orderId: string }
+  | { status: "done"; orderId: string; estado: string }
   | { status: "invalid" };
 
 /** Estados in which a quote was already accepted and work is under way or finished. */
@@ -43,7 +43,7 @@ async function locate(
   if (order.estado === "Cotizado")
     return { view: { status: "ready", orderId: order.id, cotizacion: order.cotizacion }, order };
   if (PAST_CONFIRMATION.has(order.estado))
-    return { view: { status: "done", orderId: order.id }, order };
+    return { view: { status: "done", orderId: order.id, estado: order.estado }, order };
   return { view: { status: "invalid" } };
 }
 
@@ -62,7 +62,7 @@ const inFlight = new Set<string>();
 export async function confirmOrder(token: string, deps: ConfirmDeps): Promise<ConfirmResult> {
   const { view, order } = await locate(token, deps);
   if (view.status !== "ready" || !order) return view;
-  if (inFlight.has(order.id)) return { status: "done", orderId: order.id };
+  if (inFlight.has(order.id)) return { status: "done", orderId: order.id, estado: "Confirmado" };
   inFlight.add(order.id);
   try {
     await deps.setConfirmed(order.rowNumber, formatTimestamp(deps.now()));

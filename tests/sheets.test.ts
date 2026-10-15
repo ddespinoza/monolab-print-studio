@@ -88,6 +88,20 @@ describe("createSheetsApi", () => {
     await api.readOrders();
     expect(values.get).toHaveBeenCalledWith(expect.objectContaining({ range: "Pedidos!A2:W" }));
   });
+  it("skips rows without an order ID (the Enviar checkboxes extend the range) and keeps real row numbers", async () => {
+    const rows = [
+      ["ML-0001"],
+      [],
+      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "FALSE"],
+      ["ML-0002"],
+    ];
+    const { client } = fake({ get: vi.fn().mockResolvedValue({ data: { values: rows } }) });
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    expect((await api.readOrders()).map((o) => [o.id, o.rowNumber])).toEqual([
+      ["ML-0001", 2],
+      ["ML-0002", 5],
+    ]);
+  });
   it("marks an order paid in column V as plain text", async () => {
     const { client, values } = fake();
     const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });

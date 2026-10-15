@@ -48,7 +48,10 @@ export function createSheetsApi(
       return (await read(`${tab}!A2:A`)).map((r) => r[0] ?? "");
     },
     async readOrders() {
-      return (await read(`${tab}!A2:W`)).map((r, i) => parseOrderRow(r, i + 2));
+      // Column U holds the Enviar checkboxes down to row 1000, so the range includes rows with no order.
+      return (await read(`${tab}!A2:W`))
+        .map((r, i) => parseOrderRow(r, i + 2))
+        .filter((o) => o.id.trim() !== "");
     },
     readTab: (name) => read(`${name}!A2:Z`),
     async appendOrder(row) {

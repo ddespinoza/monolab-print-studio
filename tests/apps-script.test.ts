@@ -45,7 +45,7 @@ function load(
     };
   });
   const lock = { tryLock: vi.fn().mockReturnValue(true), releaseLock: vi.fn() };
-  const ctx: Record<string, any> = {
+  const ctx = {
     UrlFetchApp: { fetch },
     PropertiesService: {
       getScriptProperties: () => ({ getProperty: (k: string) => props[k] ?? null }),
@@ -54,7 +54,7 @@ function load(
     SpreadsheetApp: {},
     ScriptApp: {},
     JSON,
-  };
+  } as unknown as { onEnviarEdit: (e: unknown) => void };
   runInNewContext(source, ctx);
   return { ctx, fetch, lock };
 }

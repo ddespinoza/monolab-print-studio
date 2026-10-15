@@ -107,13 +107,17 @@ export async function createOrder(order: OrderInput, deps: OrdersDeps): Promise<
     cantidad: order.cantidad,
     entrega: order.entrega,
   });
-  const customer = buildEmail(DEFAULT_TEMPLATES.Recibido, {
-    nombre: order.nombre,
-    orderId: id,
-    resumen,
-    whatsappLink: whatsappLink(deps.whatsappNumber, id),
-    sitio: deps.siteUrl,
-  });
+  const customer = buildEmail(
+    DEFAULT_TEMPLATES.Recibido,
+    {
+      nombre: order.nombre,
+      orderId: id,
+      resumen,
+      whatsappLink: whatsappLink(deps.whatsappNumber, id),
+      sitio: deps.siteUrl,
+    },
+    { estado: "Recibido" },
+  );
   const operator = buildEmail(OPERATOR_TEMPLATE, {
     nombre: order.nombre,
     orderId: id,

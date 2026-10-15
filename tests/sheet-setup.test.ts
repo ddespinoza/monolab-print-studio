@@ -120,7 +120,8 @@ describe("setupSheet", () => {
     expect(u1?.requestBody.values).toEqual([["Enviar"]]);
     const requests = f.batchUpdate.mock.calls.flatMap((c) => c[0].requestBody.requests);
     const boxes = requests.find(
-      (r: Record<string, any>) => r.setDataValidation?.rule.condition.type === "BOOLEAN",
+      (r: { setDataValidation?: { rule: { condition: { type: string } } } }) =>
+        r.setDataValidation?.rule.condition.type === "BOOLEAN",
     );
     expect(boxes.setDataValidation.range).toMatchObject({
       startColumnIndex: 20,

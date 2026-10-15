@@ -1,4 +1,5 @@
-import { escapeHtml, stripLineBreaks } from "@/lib/sanitize";
+import { renderEmailHtml } from "@/lib/email-html";
+import { stripLineBreaks } from "@/lib/sanitize";
 import { ENTREGAS, type Estado } from "@/lib/validation";
 
 export interface EmailTemplate {
@@ -11,17 +12,6 @@ export interface BuiltEmail {
   text: string;
 }
 export type TemplateKey = Exclude<Estado, "Nuevo"> | "Recibido";
-
-/** Email clients ignore CSS variables, so the palette is mirrored here (the only hex literals outside globals.css). */
-const EMAIL_COLORS = {
-  prussianBlue: "#14213d",
-  orange: "#fca311",
-  bgSurface: "#f8fafc",
-  borderLight: "#e2e8f0",
-  textMain: "#0f172a",
-  textSecondary: "#334155",
-  textMuted: "#64748b",
-} as const;
 
 const FOOTER = "Atentamente,\nEquipo Monolab Print Studio\n{{sitio}}";
 const CONSULTAS = "¿Consultas? Escríbanos por WhatsApp: {{whatsappLink}}";
@@ -176,31 +166,14 @@ export function buildResumen(o: ResumenInput): string {
   return joinResumen(o.files.map(formatFileLine), o);
 }
 
-function toHtml(text: string): string {
-  const c = EMAIL_COLORS;
-  const paragraphs = escapeHtml(text)
-    .split(/\n{2,}/)
-    .map((p) =>
-      p
-        .replace(
-          /https?:\/\/[^\s<]+/g,
-          (url) =>
-            `<a href="${url}" style="color:${c.prussianBlue};text-decoration:underline">${url}</a>`,
-        )
-        .replace(/\n/g, "<br>"),
-    )
-    .map((p) => `<p style="margin:0 0 16px;line-height:1.5">${p}</p>`)
-    .join("");
-  return `<!doctype html><html lang="es"><body style="margin:0;background:${c.bgSurface};font-family:Arial,Helvetica,sans-serif;color:${c.textSecondary}">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid ${c.borderLight}">
-<tr><td style="background:${c.prussianBlue};padding:20px 24px;color:#ffffff;font-weight:900;letter-spacing:3px;text-transform:uppercase;border-bottom:4px solid ${c.orange}">Monolab Print Studio</td></tr>
-<tr><td style="padding:24px;font-size:15px;color:${c.textSecondary}">${paragraphs}</td></tr>
-</table></td></tr></table></body></html>`;
-}
-
-export function buildEmail(template: EmailTemplate, vars: TemplateVars): BuiltEmail {
+/** `estado` picks the badge in the HTML version (Recibido or an Estado); omit it for internal notices. */
+export function buildEmail(
+  template: EmailTemplate,
+  vars: TemplateVars,
+  options: { estado?: string } = {},
+): BuiltEmail {
   const subject = stripLineBreaks(renderTemplate(template.subject, vars));
-  const text = `${renderTemplate(template.body, vars)}\n\n${renderTemplate(FOOTER, vars)}\n`;
-  return { subject, text, html: toHtml(text) };
+  const body = renderTemplate(template.body, vars);
+  const text = `${body}\n\n${renderTemplate(FOOTER, vars)}\n`;
+  return { subject, text, html: renderEmailHtml(body, vars, options.estado) };
 }

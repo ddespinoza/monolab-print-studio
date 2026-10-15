@@ -90,7 +90,10 @@ export function prepareEmail(
   config: SheetConfig,
 ): { mail: ReturnType<typeof buildEmail>; fallback: boolean } {
   const { template, fallback } = resolveTemplate(estado, templates);
-  return { mail: buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION)), fallback };
+  return {
+    mail: buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION), { estado }),
+    fallback,
+  };
 }
 
 /**

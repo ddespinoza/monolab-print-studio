@@ -76,7 +76,9 @@ export async function confirmOrder(token: string, deps: ConfirmDeps): Promise<Co
       sitio: deps.siteUrl,
       retiro: config.RETIRO_DIRECCION,
     };
-    const customer = buildEmail(resolveTemplate("Confirmado", templates).template, vars);
+    const customer = buildEmail(resolveTemplate("Confirmado", templates).template, vars, {
+      estado: "Confirmado",
+    });
     const operator = {
       subject: `[Monolab] Cotización confirmada ${order.id}`,
       text: `El cliente confirmó la cotización del pedido ${order.id}.\nFila en planilla: ${deps.sheetLink(order.rowNumber)}\nSiguiente paso: pasar el Estado a En cola.\n`,

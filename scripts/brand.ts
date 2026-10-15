@@ -82,6 +82,19 @@ async function main(): Promise<void> {
       .png()
       .toBuffer();
 
+  // Gmail and Outlook do not render SVG: the email header uses this PNG (2x of the 200x40 display size).
+  writeFileSync(
+    `${OUT}/logo-email.png`,
+    await sharp(Buffer.from(horizontal("#ffffff", "#e5a93c")), { density: 384 })
+      .resize({
+        width: 400,
+        height: 80,
+        fit: "contain",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      .png()
+      .toBuffer(),
+  );
   writeFileSync("public/favicon.ico", ico(await onDark(32), 32));
   writeFileSync("public/icon-192.png", await onDark(192));
   writeFileSync("public/icon-512.png", await onDark(512));
@@ -91,7 +104,7 @@ async function main(): Promise<void> {
 <rect width="1200" height="630" fill="url(#blueBg)"/>
 <svg x="400" y="40" width="400" height="260" viewBox="${ICON_BOX}">${iconGroup}</svg>
 <text x="600" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="62" font-weight="900" letter-spacing="9" fill="#ffffff">MONOLAB PRINT STUDIO</text>
-<text x="600" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#ffd166">Impresión 3D en resina de precisión</text>
+<text x="600" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#ffd166">Impresión 3D en resina para odontología</text>
 </svg>`;
   writeFileSync("public/og-image.png", await sharp(Buffer.from(og)).png().toBuffer());
   console.log("brand assets written to public/");

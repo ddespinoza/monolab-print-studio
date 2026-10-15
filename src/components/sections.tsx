@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { FAQ, HERO, MATERIALS, NAV, PUBLIC_EMAIL, SITE_NAME, STEPS } from "@/lib/content";
+import { ABOUT, FAQ, HERO, MATERIALS, NAV, PUBLIC_EMAIL, SITE_NAME, STEPS } from "@/lib/content";
 
 const wrap = "mx-auto w-full max-w-6xl px-4";
 const btnPrimary =
@@ -40,6 +40,9 @@ export function Hero() {
   return (
     <section id="inicio" className={`${band} py-24 text-app`}>
       <div className={wrap}>
+        <p className="mb-3 text-sm font-bold uppercase tracking-[0.15em] text-orange">
+          {HERO.eyebrow}
+        </p>
         <h1 className="max-w-2xl text-[clamp(2rem,6vw,3.25rem)] font-black leading-tight">
           {HERO.title} <span className="text-gold-light">{HERO.accent}</span>
         </h1>
@@ -47,6 +50,40 @@ export function Hero() {
         <a href="#pedido" className={btnPrimary}>
           {HERO.cta}
         </a>
+      </div>
+    </section>
+  );
+}
+
+export function About() {
+  const rep = ABOUT.representative;
+  return (
+    <section id="nosotros" className="bg-canvas py-16">
+      <div className={`${wrap} grid gap-8 md:grid-cols-2`}>
+        <div>
+          <h2 className="mb-4 text-2xl font-bold text-main">{ABOUT.title}</h2>
+          {ABOUT.paragraphs.map((p) => (
+            <p key={p} className="mb-3">
+              {p}
+            </p>
+          ))}
+          <p className="mt-4 border-l-4 border-orange pl-4">
+            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-muted">
+              {rep.label}
+            </span>
+            <strong className="text-main">{rep.name}</strong>, {rep.role}
+          </p>
+        </div>
+        <ul className="grid content-start gap-3">
+          {ABOUT.points.map((pt) => (
+            <li
+              key={pt}
+              className="rounded-xl border border-border-light bg-surface p-4 font-semibold text-main shadow-sm"
+            >
+              {pt}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

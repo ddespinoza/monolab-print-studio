@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 const description =
-  "Impresión 3D en resina de precisión. Suba su archivo STL y reciba su cotización por correo.";
+  "Impresión 3D en resina para odontología, en Santiago, Chile. Suba sus archivos 3D y reciba su cotización por correo.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://127.0.0.1:3100"),

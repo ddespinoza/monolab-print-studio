@@ -3,14 +3,30 @@
 export const SITE_NAME = "Monolab Print Studio";
 
 export const HERO = {
-  title: "Impresión 3D en",
-  accent: "resina de precisión",
-  text: "Suba sus archivos 3D, revise su modelo y reciba su cotización por correo. Retiro en nuestro estudio.",
+  eyebrow: "Santiago, Chile",
+  title: "Impresión 3D en resina para",
+  accent: "odontología",
+  text: "Modelos de estudio, guías y piezas dentales impresos con precisión. Suba sus archivos 3D, revise su modelo y reciba su cotización por correo. Retiro en nuestro estudio.",
   cta: "Solicitar cotización",
+};
+
+export const ABOUT = {
+  title: "Quiénes somos",
+  paragraphs: [
+    "Monolab Print Studio es un servicio de impresión 3D en resina orientado principalmente al trabajo odontológico, con sede en Santiago, Chile.",
+    "Imprimimos en una Anycubic Photon Mono 4 Ultra, calibrada, con un volumen máximo de 153,4 × 77,0 × 165,0 mm.",
+  ],
+  representative: { name: "Antonio Alvear Muñoz", role: "Odontólogo", label: "Representante" },
+  points: [
+    "Pensado para odontólogos y clínicas",
+    "Iniciales del paciente, nunca el nombre completo",
+    "Cotización clara y confirmación con un clic",
+  ],
 };
 
 export const NAV = [
   { href: "#inicio", label: "Inicio" },
+  { href: "#nosotros", label: "Nosotros" },
   { href: "#como", label: "Cómo funciona" },
   { href: "#pedido", label: "Pedido" },
   { href: "#materiales", label: "Materiales" },
@@ -31,12 +47,12 @@ export const MATERIALS = [
   {
     name: "Resina Estándar",
     text: "Para modelos de estudio o impresiones simples.",
-    uses: ["Modelos de estudio", "Prototipos"],
+    uses: ["Modelos de estudio", "Modelos de trabajo", "Prototipos"],
   },
   {
     name: "Resina Tough",
     text: "Para piezas delicadas o que requieren manipulación.",
-    uses: ["Piezas funcionales"],
+    uses: ["Guías y piezas funcionales"],
   },
   {
     name: "Nuestro equipo",
@@ -67,7 +83,11 @@ export const FAQ = [
   },
   {
     q: "¿Cómo recibo mi pedido?",
-    a: "Retiro en nuestro estudio. Le avisamos por correo cuando esté listo.",
+    a: "Retiro en nuestro estudio en Santiago. Le avisamos por correo cuando esté listo.",
+  },
+  {
+    q: "¿Qué datos del paciente necesitan?",
+    a: "Solo las iniciales, para proteger sus datos. No solicitamos el nombre completo del paciente.",
   },
   {
     q: "¿Cuánto demora?",

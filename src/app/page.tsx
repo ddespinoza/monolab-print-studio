@@ -1,5 +1,14 @@
 import { OrderSection } from "@/components/OrderSection";
-import { Contact, Faq, Footer, Header, Hero, HowItWorks, Materials } from "@/components/sections";
+import {
+  About,
+  Contact,
+  Faq,
+  Footer,
+  Header,
+  Hero,
+  HowItWorks,
+  Materials,
+} from "@/components/sections";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { getRuntime } from "@/lib/runtime";
 
@@ -14,6 +23,7 @@ export default async function Home() {
       <Header />
       <main>
         <Hero />
+        <About />
         <HowItWorks />
         <section id="pedido" className="bg-canvas py-16">
           <div className="mx-auto w-full max-w-6xl px-4">

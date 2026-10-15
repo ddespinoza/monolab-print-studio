@@ -31,7 +31,7 @@ async function main(): Promise<void> {
       nombre: "TEST",
       paciente: "T. T.",
       email: cfg.operatorEmail,
-      whatsapp: "+56 9 0000 0000",
+      telefono: "+56 9 0000 0000",
       resina: "Estándar" as const,
       entrega: "Normal",
       cantidad: 1,

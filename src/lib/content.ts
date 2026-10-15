@@ -16,7 +16,13 @@ export const ABOUT = {
     "Monolab Print Studio es un servicio de impresión 3D en resina orientado principalmente al trabajo odontológico, con sede en Santiago, Chile.",
     "Imprimimos en una Anycubic Photon Mono 4 Ultra, calibrada, con un volumen máximo de 153,4 × 77,0 × 165,0 mm.",
   ],
-  representative: { name: "Antonio Alvear Muñoz", role: "Odontólogo", label: "Representante" },
+  representative: {
+    name: "Antonio Alvear Muñoz",
+    role: "Odontólogo",
+    label: "Representante",
+    registro: "727145",
+    run: "19.069.824-6",
+  },
   points: [
     "Pensado para odontólogos y clínicas",
     "Iniciales del paciente, nunca el nombre completo",

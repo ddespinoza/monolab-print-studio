@@ -9,7 +9,7 @@ async function placeOrder(page: Page, file: string): Promise<string> {
   await expect(page.getByText("1,0 cm³").first()).toBeVisible();
   await page.getByLabel("Nombre del odontólogo/a *").fill("Dra. Matías Gómez");
   await page.getByLabel("Iniciales del paciente *").fill("A. P.");
-  await page.getByLabel("WhatsApp *").fill("+56 9 4862 3705");
+  await page.getByLabel("Teléfono *").fill("+56 9 4862 3705");
   await page.getByLabel("Correo electrónico *").fill("doc@example.com");
   await page.getByRole("button", { name: "Solicitar cotización" }).last().click();
   const panel = page.getByRole("status");

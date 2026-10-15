@@ -118,7 +118,7 @@ export async function createOrder(order: OrderInput, deps: OrdersDeps): Promise<
     nombre: order.nombre,
     orderId: id,
     paciente: order.paciente,
-    whatsapp: order.whatsapp,
+    telefono: order.telefono,
     nArchivos: String(order.files.length),
     volumenTotal: totalVolumeCm3(order.files.map((f) => f.volumeCm3)).toFixed(1),
     driveLink,

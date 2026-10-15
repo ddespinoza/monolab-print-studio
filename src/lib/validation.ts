@@ -42,6 +42,12 @@ const fileSchema = z.object({
   }),
 });
 
+/** Chilean numbers: optional +56 / 56, then 9 digits starting 2-9 (mobile 9…, landline 2… or regional). */
+function isChileanPhone(value: string): boolean {
+  if (!/^\+?[0-9(][0-9 ()-]{6,18}$/.test(value)) return false;
+  return /^(56)?[2-9][0-9]{8}$/.test(value.replace(/\D/g, ""));
+}
+
 /** Single source of truth for client and server validation. Messages are user-facing Spanish. */
 export const orderSchema = z.object({
   nombre: text("El nombre", 2, 80),
@@ -50,10 +56,10 @@ export const orderSchema = z.object({
     .trim()
     .max(120)
     .email("Ingrese un correo válido."),
-  whatsapp: z
-    .string({ error: "El WhatsApp es obligatorio." })
+  telefono: z
+    .string({ error: "El teléfono es obligatorio." })
     .trim()
-    .regex(/^\+?[0-9][0-9 ()-]{6,18}$/, "Ingrese un número de WhatsApp válido."),
+    .refine(isChileanPhone, "Ingrese un teléfono chileno válido, por ejemplo +56 9 1234 5678."),
   /** Initials only: the patient's full name is never collected. */
   paciente: z
     .string({ error: "Las iniciales del paciente son obligatorias." })

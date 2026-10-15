@@ -9,7 +9,7 @@ export const HEADERS = [
   "Estado",
   "Odontólogo",
   "Email",
-  "WhatsApp",
+  "Teléfono",
   "Iniciales paciente",
   "Entrega",
   "Tarifa entrega (CLP)",
@@ -33,7 +33,7 @@ export interface OrderRow {
   estado: string;
   nombre: string;
   email: string;
-  whatsapp: string;
+  telefono: string;
   paciente: string;
   entrega: string;
   tarifa: string;
@@ -67,7 +67,7 @@ export function buildOrderRow({ id, fecha, order, driveLink }: NewOrder): string
     "Nuevo",
     e(order.nombre),
     e(order.email),
-    e(order.whatsapp),
+    e(order.telefono),
     e(order.paciente),
     order.entrega,
     String(tarifa),
@@ -94,7 +94,7 @@ export function parseOrderRow(row: readonly string[], rowNumber: number): OrderR
     estado: c(2).trim(),
     nombre: c(3),
     email: c(4),
-    whatsapp: c(5),
+    telefono: c(5),
     paciente: c(6),
     entrega: c(7),
     tarifa: c(8),

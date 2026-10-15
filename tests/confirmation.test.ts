@@ -11,7 +11,7 @@ const order: OrderRow = {
   estado: "Cotizado",
   nombre: "Dra. Gómez",
   email: "doc@example.com",
-  whatsapp: "+56 9",
+  telefono: "+56 9",
   paciente: "A. P.",
   entrega: "Flash",
   tarifa: "10000",

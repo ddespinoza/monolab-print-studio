@@ -118,7 +118,7 @@ Lamentamos cualquier inconveniente. Si desea retomarlo o tiene consultas, estamo
 export const OPERATOR_TEMPLATE: EmailTemplate = {
   subject: "[Monolab] Nuevo pedido {{orderId}} — {{nombre}}",
   body: `Nuevo pedido {{orderId}}
-Cliente: {{nombre}} — {{whatsapp}}
+Cliente: {{nombre}} — {{telefono}}
 Paciente: {{paciente}}
 Archivos: {{nArchivos}} ({{volumenTotal}} cm³) — {{driveLink}}
 Fila en planilla: {{filaLink}}

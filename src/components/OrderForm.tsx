@@ -6,7 +6,7 @@ import { ENTREGAS } from "@/lib/validation";
 export interface FormValues {
   nombre: string;
   paciente: string;
-  whatsapp: string;
+  telefono: string;
   email: string;
   resina: string;
   entrega: string;
@@ -18,7 +18,7 @@ export interface FormValues {
 export const emptyForm: FormValues = {
   nombre: "",
   paciente: "",
-  whatsapp: "",
+  telefono: "",
   email: "",
   resina: RESIN_OPTIONS[0].value,
   entrega: ENTREGAS[0].id,
@@ -154,7 +154,7 @@ export function OrderForm({
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        {input("whatsapp", "WhatsApp *", {
+        {input("telefono", "Teléfono *", {
           type: "tel",
           placeholder: "+56 9 1234 5678",
           autoComplete: "tel",

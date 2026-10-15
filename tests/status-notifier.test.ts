@@ -9,7 +9,7 @@ const base: OrderRow = {
   estado: "En cola",
   nombre: "Ana",
   email: "ana@example.com",
-  whatsapp: "+56 9",
+  telefono: "+56 9",
   paciente: "A. P.",
   entrega: "Flash",
   tarifa: "10000",

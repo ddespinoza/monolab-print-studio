@@ -72,6 +72,9 @@ export function About() {
               {rep.label}
             </span>
             <strong className="text-main">{rep.name}</strong>, {rep.role}
+            <span className="block text-sm text-muted">
+              N° de Registro {rep.registro} · RUN {rep.run}
+            </span>
           </p>
         </div>
         <ul className="grid content-start gap-3">

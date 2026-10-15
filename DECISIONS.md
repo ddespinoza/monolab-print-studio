@@ -146,3 +146,9 @@ Done through the Cloudflare API with a scoped, expiring token (DNS, Zone Setting
 - **Email Routing**: `contacto@monolabprintstudio.cl` forwards to the operator Gmail (destination already verified); MX, DKIM, a single merged SPF (`include:_spf.mx.cloudflare.net include:_spf.google.com`) and `_dmarc p=none`.
 - **Verified live**: HTTPS on `monolabprintstudio.cl` and `www`, tick 401/200 behaviour, http to https redirect.
 - **Not yet done**: Gmail "Send mail as contacto@" and the app password (until then the app's emails would not carry the public address, see below), real pickup address, rotate the shared tokens (Cloudflare expires 2026-10-22), a real end-to-end order and quote on the live site.
+
+## Phase 2: phone field and representative details (2026-10-15)
+
+- The order form asks for **Teléfono** instead of WhatsApp. The field is `telefono` in code, templates (`{{telefono}}`) and the sheet header (column F). Validation accepts Chilean numbers only: optional +56/56, then 9 digits starting 2-9. WhatsApp links (floating button, contact, emails) stay for now.
+- The "Quiénes somos" section shows the representative's N° de Registro (727145) and RUN, supplied by the owner. The RUN is public on the site; remove it from `ABOUT.representative` in `src/lib/content.ts` if that changes.
+- Existing live sheets keep the old "WhatsApp" header in F1 until renamed by hand (setup only writes headers into empty sheets); data is read by column position, so nothing breaks meanwhile.

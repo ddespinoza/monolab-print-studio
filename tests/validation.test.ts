@@ -13,7 +13,7 @@ const valid = {
   nombre: "Dra. Matías Gómez",
   paciente: "A. P.",
   email: "ana@example.com",
-  whatsapp: "+56 9 4862 3705",
+  telefono: "+56 9 4862 3705",
   resina: "Estándar",
   entrega: "Flash",
   cantidad: 1,
@@ -45,7 +45,9 @@ describe("orderSchema", () => {
     ["one-letter patient", { paciente: "A" }],
     ["five initials", { paciente: "A.B.C.D.E." }],
     ["bad email", { email: "nope" }],
-    ["bad phone", { whatsapp: "abc" }],
+    ["bad phone", { telefono: "abc" }],
+    ["too short phone", { telefono: "+56 9 1234" }],
+    ["foreign phone", { telefono: "+1 202 555 0143" }],
     ["unknown resin", { resina: "PLA" }],
     ["unknown delivery", { entrega: "Express" }],
     ["cantidad 0", { cantidad: 0 }],
@@ -94,5 +96,23 @@ describe("constants", () => {
       ["Flash", 2, 10000],
       ["Normal", 7, 7500],
     ]);
+  });
+});
+
+describe("telefono", () => {
+  it.each([
+    "+56 9 4862 3705",
+    "56948623705",
+    "9 4862 3705",
+    "(2) 2345 6789",
+    "+56 2 2345 6789",
+    "948623705",
+  ])("accepts the Chilean number %s", (telefono) => {
+    expect(orderSchema.safeParse({ ...valid, telefono }).success).toBe(true);
+  });
+
+  it("reports the error in Spanish", () => {
+    const r = orderSchema.safeParse({ ...valid, telefono: "abc" });
+    expect(JSON.stringify(r.error?.issues)).toContain("teléfono");
   });
 });

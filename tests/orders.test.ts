@@ -8,7 +8,7 @@ const order: OrderInput = {
   nombre: "Dra. Gómez",
   paciente: "A. P.",
   email: "doc@example.com",
-  whatsapp: "+56 9 4862 3705",
+  telefono: "+56 9 4862 3705",
   resina: "Estándar",
   entrega: "Flash",
   cantidad: 2,

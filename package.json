@@ -17,7 +17,8 @@
     "smoke": "npm run fixtures && playwright test",
     "setup:sheet": "node --env-file=.env --import tsx scripts/setup-sheet.ts",
     "setup:oauth": "node --env-file=.env --import tsx scripts/setup-oauth.ts",
-    "setup:check": "node --env-file=.env --import tsx scripts/setup-check.ts"
+    "setup:check": "node --env-file=.env --import tsx scripts/setup-check.ts",
+    "license": "license-checker-rseidelsohn --production --summary"
   },
   "dependencies": {
     "googleapis": "^186.0.0",
@@ -38,6 +39,7 @@
     "@types/three": "^0.186.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
+    "license-checker-rseidelsohn": "^5.0.1",
     "prettier": "^3.9.10",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",

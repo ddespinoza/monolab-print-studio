@@ -106,3 +106,16 @@ Consequence: no partial prerendering; first paint waits for the (cached) Config 
 - **Honeypot** returns `201 {id: "ML-0000"}` and writes nothing.
 - **tmp files** are stored as `data/tmp/<32-hex>.bin` (format-agnostic) and swept after 24 h by the tick.
 - **Not yet done**: Plantillas/Config/Pedidos tab seeding script, `setup:sheet`, `setup:oauth`, `setup:check`, and the operator docs (Phase 7 tail and Phase 9).
+
+## License audit (2026-10-15, `npm run license`, production dependencies)
+
+Totals: MIT 48, Apache-2.0 15, BSD-3-Clause 3, ISC 2, MIT-0 1, 0BSD 1, plus the items below. Fonts: Inter (SIL OFL) is bundled at build by `next/font`; no font CDN at runtime. Dev-only tools (sharp for `npm run brand`, Playwright, Vitest) are outside the production set.
+
+| Package                        | License                            | Why it is there                                                                                                                 | Status                                                                   |
+| ------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `url-template`                 | "BSD*" (its package.json says BSD) | dependency of googleapis                                                                                                        | Treated as BSD-3-Clause: **no exception needed**                         |
+| `monolab-print-studio`         | UNLICENSED                         | this private project                                                                                                            | Not a dependency                                                         |
+| `@img/sharp-libvips-linux-x64` | LGPL-3.0-or-later                  | optional native dependency of `next` (image optimisation); dynamically linked prebuilt library, our code is not derived from it | **Exception, needs owner approval**                                      |
+| `caniuse-lite`                 | CC-BY-4.0                          | browser-support data used at build time by Next's toolchain                                                                     | **Exception, needs owner approval** (attribution licence, data not code) |
+
+If the owner declines the LGPL exception: set `images.unoptimized: true` and remove `sharp` from the install (`npm i --omit=optional`), which this app does not need because it serves only local SVG/PNG brand assets.

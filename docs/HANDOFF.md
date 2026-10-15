@@ -1,8 +1,9 @@
-# Handoff: site is live, next step is improvements
+# Handoff: site is live, improvements in progress
 
 Date: 2026-10-15. Read `DECISIONS.md` (source of truth for behaviour) and `docs/ARCHITECTURE.md` first.
 
 ## State
+
 - **Live**: https://monolabprintstudio.cl (and www). Coolify app `monolab-print-studio`, Nixpacks, auto from GitHub `main`
   (repo ddespinoza/monolab-print-studio). Cloudflare proxied, SSL Full (strict), Email Routing `contacto@` -> operator Gmail.
 - **Email works end to end**: SMTP login OK, Gmail "Send mail as contacto@" alias verified, test mails delivered with
@@ -13,6 +14,7 @@ Date: 2026-10-15. Read `DECISIONS.md` (source of truth for behaviour) and `docs/
   placeholders and show on the site and in the "Listo" email); final DoD walkthrough.
 
 ## How to work
+
 - Node 24: `. ~/.nvm/nvm.sh`. Dev uses `MOCK_APIS=true` (files in `data/mock`). Live scripts need `MOCK_APIS=false`.
 - Deploy: push to `main`, then Coolify `POST /api/v1/deploy` (token and ids are in `.secrets/`, gitignored). Never print secrets.
 - Push uses the deploy key in `.deploy/` (gitignored, `core.sshCommand` already set).
@@ -22,9 +24,27 @@ Date: 2026-10-15. Read `DECISIONS.md` (source of truth for behaviour) and `docs/
   Do not touch other projects or the Traefik/Coolify config.
 
 ## Open cleanup (owner)
+
 Change the Gmail account password; rotate the Coolify API token; replace the Google service-account key and delete the Drive copy;
 delete the Cloudflare token (expires 2026-10-22); revoke the temporary Gmail permission of the OAuth app.
 
-## Next: website improvements
-The owner wants to improve the website. Ask what they want, then follow the normal flow: mockup for visible changes if they ask,
-tests first for logic, `npm run lint && npx tsc --noEmit && npm test && npm run check:rules`, push, deploy, check live.
+## Improvements done so far (2026-10-15)
+
+Plan and status per phase: `docs/IMPROVEMENT-PLAN.md`; every decision: `DECISIONS.md`. Operator guide: `docs/OPERADOR-es.md`.
+
+- **Live and deployed**: dental hero with hexagon pattern, "Quiénes somos" with the representative's photo, Teléfono field (Chilean format) instead of WhatsApp, mobile pass, viewer loading screen, branded HTML emails, restyled /confirmar page, FAQ entry on file storage, contact email button.
+- **Sheet control**: `POST /api/send` (actions `row`, `pending`, `test`, `purge`), Config `ENVIO_AUTOMATICO` (live value NO = manual), `Envíos` log tab, `Enviar` checkbox column U. Apps Script source: `docs/apps-script/Monolab.gs` (the owner pastes it into the ORDERS sheet; re-paste after changes). `SHEET_SECRET` is in `.secrets/sheet-secret` and Coolify.
+- **File retention**: deleting an order's Drive folder is a manual operator step (menu "Eliminar archivos del pedido"), because the site promises deletion after the order.
+- **Phase 5 (SEO and performance)**: committed and pushed; see the last section of DECISIONS.md. Check whether it was deployed before assuming it is live.
+
+## Still open (owner decisions)
+
+- Real pickup address and schedule (Config tab RETIRO_DIRECCION / RETIRO_HORARIO) and which phone the site should show. The prototype sheet has Río Guadiana 8672, Las Condes and +56 9 8765 4321; the site's WhatsApp is 56948623705.
+- Payment step (Pagado state, transfer-details email, ledger) and resin stock tab from the prototype sheet: not decided.
+- Optional: automatic deletion of order files N days after delivery; turning off Cloudflare JS Detections / Web Analytics to improve live Lighthouse scores.
+- Not yet tested live: the Apps Script itself (menu and checkbox) and a customer clicking the real confirm link.
+- Owner cleanup list above still applies (rotate tokens, replace the service-account key).
+
+## Working notes
+
+Node 24 (`. ~/.nvm/nvm.sh`). Before any push: `npm run lint && npx tsc --noEmit && npm test && npm run check:rules`, and `npx playwright test` for UI changes. Deploy = push to main, then Coolify `POST /api/v1/deploy?uuid=<app uuid>` (local API on 127.0.0.1:8000, token in `.secrets/coolify-token`).

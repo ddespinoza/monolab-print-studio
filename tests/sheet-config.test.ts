@@ -13,7 +13,18 @@ describe("parseConfig", () => {
       RETIRO_DIRECCION: "Calle 1",
       RETIRO_HORARIO: "Lun-Vie",
       ENVIO_AUTOMATICO: "NO",
+      ELIMINAR_ARCHIVOS_DIAS: 30,
     });
+  });
+  it("reads ELIMINAR_ARCHIVOS_DIAS: 30 by default, a whole number of days, 0/NO turns it off, garbage fails closed", () => {
+    const days = (v?: string): number =>
+      parseConfig(v === undefined ? [] : [["ELIMINAR_ARCHIVOS_DIAS", v]]).ELIMINAR_ARCHIVOS_DIAS;
+    expect(days()).toBe(30);
+    expect(days("  ")).toBe(30);
+    expect(days("45")).toBe(45);
+    expect(days(" 7 ")).toBe(7);
+    for (const off of ["0", "NO", "no", "No"]) expect(days(off)).toBe(0);
+    for (const bad of ["abc", "-5", "2.5", "30 días", "1e3"]) expect(days(bad)).toBe(0);
   });
   it("sends manually unless ENVIO_AUTOMATICO says SI (any case, with or without accent)", () => {
     expect(parseConfig([]).ENVIO_AUTOMATICO).toBe("NO");

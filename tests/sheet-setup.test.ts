@@ -34,7 +34,7 @@ describe("mergeConfigRows", () => {
       ["RETIRO_DIRECCION", "Av. Real 1"],
     ]);
     expect(merged).toContainEqual(["RETIRO_DIRECCION", "Av. Real 1"]);
-    expect(merged.find((r) => r[0] === "RETIRO_HORARIO")?.[1]).toMatch(/confirmar/i);
+    expect(merged.find((r) => r[0] === "RETIRO_HORARIO")?.[1]).toMatch(/previa coordinación/i);
     expect(merged.filter((r) => r[0] === "RETIRO_DIRECCION")).toHaveLength(1);
   });
 });
@@ -92,6 +92,7 @@ describe("setupSheet", () => {
         ["RETIRO_DIRECCION", "Calle 1"],
         ["RETIRO_HORARIO", "L-V"],
         ["ENVIO_AUTOMATICO", "SI"],
+        ["ELIMINAR_ARCHIVOS_DIAS", "45"],
       ],
       Envíos: [["Fecha"]],
     });
@@ -143,6 +144,10 @@ describe("setupSheet", () => {
     expect(writes.find((w) => w.range === "Config!A1")?.requestBody.values).toContainEqual([
       "ENVIO_AUTOMATICO",
       "NO",
+    ]);
+    expect(writes.find((w) => w.range === "Config!A1")?.requestBody.values).toContainEqual([
+      "ELIMINAR_ARCHIVOS_DIAS",
+      "30",
     ]);
   });
 });

@@ -37,7 +37,7 @@ export function buildPlantillasRows(): string[][] {
 export function mergeConfigRows(existing: readonly (readonly string[])[]): string[][] {
   const rows = existing.length > 0 ? existing.map((r) => [...r]) : [["Clave", "Valor"]];
   for (const [key, value] of Object.entries(CONFIG_DEFAULTS)) {
-    if (!rows.some((r) => r[0] === key)) rows.push([key, value]);
+    if (!rows.some((r) => r[0] === key)) rows.push([key, String(value)]);
   }
   return rows;
 }

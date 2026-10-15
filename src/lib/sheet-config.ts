@@ -5,16 +5,26 @@ export interface SheetConfig {
   RETIRO_HORARIO: string;
   /** "SI": the 5-minute job sends status emails by itself. "NO" (default): only the sheet buttons send. */
   ENVIO_AUTOMATICO: "SI" | "NO";
+  /** Days after the Entregado/Cancelado email before the order's Drive files are deleted. 0 = never. */
+  ELIMINAR_ARCHIVOS_DIAS: number;
 }
 
 export const CONFIG_DEFAULTS: SheetConfig = {
   RETIRO_DIRECCION: "Dirección por confirmar. Escríbanos por WhatsApp.",
   RETIRO_HORARIO: "Solo previa coordinación: escríbanos o llámenos al +56 9 4862 3705.",
   ENVIO_AUTOMATICO: "NO",
+  ELIMINAR_ARCHIVOS_DIAS: 30,
 };
 
 export function isAutomatic(config: Pick<SheetConfig, "ENVIO_AUTOMATICO">): boolean {
   return config.ENVIO_AUTOMATICO === "SI";
+}
+
+/** Whole days; blank keeps the default, "0" or "NO" turns deletion off, anything unreadable also turns it off (deleting is irreversible). */
+function parseRetentionDays(value: string): number {
+  if (value === "") return CONFIG_DEFAULTS.ELIMINAR_ARCHIVOS_DIAS;
+  if (/^no$/i.test(value)) return 0;
+  return /^\d+$/.test(value) ? Number(value) : 0;
 }
 
 /** Rows of the Config tab (key | value). Blank or missing values fall back to defaults. */
@@ -23,6 +33,7 @@ export function parseConfig(rows: readonly (readonly string[])[]): SheetConfig {
   for (const [key, value] of rows) {
     const v = (value ?? "").trim();
     if ((key === "RETIRO_DIRECCION" || key === "RETIRO_HORARIO") && v) config[key] = v;
+    if (key === "ELIMINAR_ARCHIVOS_DIAS") config.ELIMINAR_ARCHIVOS_DIAS = parseRetentionDays(v);
     if (key === "ENVIO_AUTOMATICO") {
       const plain = v
         .normalize("NFD")

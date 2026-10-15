@@ -1,17 +1,22 @@
 import { logger } from "@/lib/logger";
 import type { OrderRow } from "@/lib/order-row";
+import { findPurgeable } from "@/lib/retention";
 import { exclusive, findPending, prepareEmail, type TickDeps } from "@/lib/status-notifier";
 import type { TemplateKey } from "@/lib/templates";
 import { formatTimestamp } from "@/lib/time";
 import { ESTADOS } from "@/lib/validation";
 
 export const MAX_PER_CALL = 50;
+/** Folders deleted per automatic run, so one tick never spends long on Drive. */
+export const MAX_EXPIRE_PER_CALL = 10;
 
 export type SendRequest =
   | { action: "row"; orderId: string; force?: boolean }
   | { action: "test"; orderId: string }
   /** Permanently deletes the order's Drive folder (only for Entregado or Cancelado orders). */
   | { action: "purge"; orderId: string }
+  /** Deletes the files of every order finished at least ELIMINAR_ARCHIVOS_DIAS ago. Called by the tick, not by the sheet. */
+  | { action: "expire" }
   | { action: "pending" };
 
 export type SendStatus = "sent" | "test_sent" | "already_sent" | "purged" | "refused" | "failed";
@@ -132,7 +137,7 @@ export function manualSend(
       return result("sent", message);
     };
 
-    const purge = async (order: OrderRow): Promise<SendResult> => {
+    const purge = async (order: OrderRow, origin = "Eliminación"): Promise<SendResult> => {
       const result = (status: SendStatus, message: string): SendResult => ({
         orderId: order.id,
         estado: order.estado,
@@ -153,7 +158,7 @@ export function manualSend(
         await deps.removeFolder(folderId);
       } catch (error) {
         logger.error("purge failed", { orderId: order.id, error: String(error) });
-        await log(order, "Falló", "Eliminación");
+        await log(order, "Falló", origin);
         return result("failed", "No se pudieron eliminar los archivos. Inténtelo de nuevo.");
       }
       let message = "Archivos eliminados de forma definitiva.";
@@ -163,7 +168,7 @@ export function manualSend(
         logger.error("purge: could not mark row", { orderId: order.id, error: String(error) });
         message += " No se pudo anotar en la planilla: anótelo a mano en «Archivos (Drive)».";
       }
-      await log(order, "Archivos eliminados", "Eliminación");
+      await log(order, "Archivos eliminados", origin);
       return result("purged", message);
     };
 
@@ -171,6 +176,13 @@ export function manualSend(
       const results: SendResult[] = [];
       for (const { order } of findPending(orders).slice(0, MAX_PER_CALL))
         results.push(await sendOne(order, { preview: false, force: false }));
+      return { results };
+    }
+    if (req.action === "expire") {
+      const due = findPurgeable(orders, deps.now(), config.ELIMINAR_ARCHIVOS_DIAS);
+      const results: SendResult[] = [];
+      for (const order of due.slice(0, MAX_EXPIRE_PER_CALL))
+        results.push(await purge(order, "Eliminación automática"));
       return { results };
     }
     const order = orders.find((o) => o.id === req.orderId);

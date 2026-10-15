@@ -181,6 +181,38 @@ describe("quote confirmation and cron", () => {
     const all = await readdir(join(dir, "mock", "emails"));
     expect(all.length).toBe(emails.length + 2);
   });
+  it("tick deletes the files of orders finished more than the retention period ago, once", async () => {
+    const api = await placeOrder();
+    const file = join(dir, "mock", "pedidos.json");
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    rows[0][2] = "Entregado";
+    rows[0][18] = "Entregado";
+    rows[0][19] = "2020-01-01 10:00";
+    await writeFile(file, JSON.stringify(rows));
+
+    expect(await (await api.tick.GET(authed())).json()).toMatchObject({ processed: 0, purged: 1 });
+    const after = JSON.parse(await readFile(file, "utf8")) as string[][];
+    expect(after[0][9]).toMatch(/^Eliminado /);
+    const log = JSON.parse(await readFile(join(dir, "mock", "Envíos.json"), "utf8")) as string[][];
+    expect(log[log.length - 1].slice(1, 3)).toEqual(["ML-0001", "Entregado"]);
+    expect(log[log.length - 1][5]).toBe("Eliminación automática");
+    expect(await (await api.tick.GET(authed())).json()).toMatchObject({ purged: 0 });
+  });
+  it("tick keeps files when ELIMINAR_ARCHIVOS_DIAS is 0", async () => {
+    const api = await placeOrder();
+    const file = join(dir, "mock", "pedidos.json");
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    rows[0][2] = "Entregado";
+    rows[0][18] = "Entregado";
+    rows[0][19] = "2020-01-01 10:00";
+    await writeFile(file, JSON.stringify(rows));
+    await writeFile(
+      join(dir, "mock", "Config.json"),
+      JSON.stringify([["ELIMINAR_ARCHIVOS_DIAS", "0"]]),
+    );
+    expect(await (await api.tick.GET(authed())).json()).toMatchObject({ purged: 0 });
+    expect(JSON.parse(await readFile(file, "utf8"))[0][9]).not.toMatch(/^Eliminado/);
+  });
   it("ignores a forged or stale confirmation token", async () => {
     const api = await placeOrder();
     const form = new FormData();

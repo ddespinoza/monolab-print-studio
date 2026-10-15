@@ -14,7 +14,7 @@ Todo se maneja desde la planilla de Google. No hay otro panel. La planilla tiene
 2. Para cotizar: escriba el valor en la columna **Cotización** (por ejemplo `$45.000 CLP por 2 piezas. Plazo: 3 días hábiles.`) y cambie **Estado** a `Cotizado`. En unos 5 minutos el cliente recibe el correo con su cotización y un enlace para confirmar.
 3. Cuando el cliente confirma, la planilla cambia sola a `Confirmado` (columna _Confirmado_ con la fecha) y usted recibe un correo. El cliente recibe un correo de confirmación.
 4. Pase el pedido a `En cola`, luego `Imprimiendo`, `Listo` (el correo indica la dirección de retiro) y `Entregado`. Use `Cancelado` si corresponde.
-5. **Cuando el pedido quede `Entregado` o `Cancelado`, elimine sus archivos:** seleccione la fila y use _Monolab > Eliminar archivos del pedido_. El sitio informa a los clientes (preguntas frecuentes y correo «Entregado») que los archivos se destruyen una vez finalizado el pedido, así que este paso es parte de la rutina.
+5. **Eliminación de archivos:** los archivos de un pedido `Entregado` o `Cancelado` se eliminan solos a los **30 días** de enviado ese correo (ver `ELIMINAR_ARCHIVOS_DIAS` en **Config**). Si prefiere hacerlo antes, seleccione la fila y use _Monolab > Eliminar archivos del pedido_. El sitio informa a los clientes (preguntas frecuentes y correo «Entregado») que los archivos se destruyen una vez finalizado el pedido.
 
 Los correos se envían según el modo de `ENVIO_AUTOMATICO` en **Config** (ver «Envío con botones»). Con `SI`, cada cambio de **Estado** envía automáticamente el correo de ese estado en unos 5 minutos. Con `NO` (modo inicial), solo se envían al usar los botones. Excepción: `Cotizado` no se envía si la columna **Cotización** está vacía.
 
@@ -73,6 +73,8 @@ Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config*
 ## Config
 
 `RETIRO_DIRECCION` y `RETIRO_HORARIO`: aparecen en el sitio y en el correo «Listo». Los cambios se ven en el sitio en menos de 5 minutos.
+
+`ELIMINAR_ARCHIVOS_DIAS`: días entre el correo «Entregado» o «Cancelado» y la eliminación automática de la carpeta de Drive (por defecto `30`). `0` o `NO` la desactiva; un valor ilegible también la desactiva. El plazo parte cuando se envía ese correo: si no lo envía, los archivos no se eliminan solos. Cada eliminación queda en **Envíos** con origen «Eliminación automática» y se anota en **Archivos (Drive)**.
 
 `ENVIO_AUTOMATICO`: `NO` (por defecto) = los correos de estado solo salen con los botones; `SI` = salen solos cada 5 minutos.
 

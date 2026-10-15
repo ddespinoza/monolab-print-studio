@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { manualSend, type ManualSendDeps } from "@/lib/manual-send";
+import { MAX_EXPIRE_PER_CALL, manualSend, type ManualSendDeps } from "@/lib/manual-send";
 import type { OrderRow } from "@/lib/order-row";
 
 const base: OrderRow = {
@@ -36,6 +36,7 @@ function deps(orders: OrderRow[], over: Partial<ManualSendDeps> = {}): ManualSen
       RETIRO_DIRECCION: "Calle 1",
       RETIRO_HORARIO: "L-V",
       ENVIO_AUTOMATICO: "NO",
+      ELIMINAR_ARCHIVOS_DIAS: 30,
     }),
     send: vi.fn().mockResolvedValue(undefined),
     markNotified: vi.fn().mockResolvedValue(undefined),
@@ -254,5 +255,82 @@ describe("manualSend: purge (delete an order's files)", () => {
     const { results } = await manualSend(d, { action: "purge", orderId: "ML-0001" });
     expect(results[0].status).toBe("purged");
     expect(results[0].message).toMatch(/planilla/i);
+  });
+});
+
+describe("manualSend: expire (automatic deletion after N days)", () => {
+  // "now" is 2025-06-12 14:03 in Santiago; 2025-05-01 is 42 days earlier, 2025-06-01 is 11 days earlier
+  const old = (patch: Partial<OrderRow> = {}) =>
+    row({
+      estado: "Entregado",
+      notificado: "Entregado",
+      ultima: "2025-05-01 10:00",
+      drive: DRIVE,
+      ...patch,
+    });
+  const recent = (patch: Partial<OrderRow> = {}) => old({ ultima: "2025-06-01 10:00", ...patch });
+  const config = (days: number) =>
+    vi.fn().mockResolvedValue({
+      RETIRO_DIRECCION: "Calle 1",
+      RETIRO_HORARIO: "L-V",
+      ENVIO_AUTOMATICO: "NO",
+      ELIMINAR_ARCHIVOS_DIAS: days,
+    });
+
+  it("deletes only the orders past the retention period and logs the automatic origin", async () => {
+    const d = deps([old(), recent({ id: "ML-0002", rowNumber: 3 })]);
+    const { results } = await manualSend(d, { action: "expire" });
+    expect(results.map((r) => [r.orderId, r.status])).toEqual([["ML-0001", "purged"]]);
+    expect(d.removeFolder).toHaveBeenCalledTimes(1);
+    expect(d.markFilesDeleted).toHaveBeenCalledWith(2, "Eliminado 2025-06-12 14:03");
+    expect(d.send).not.toHaveBeenCalled();
+    expect(vi.mocked(d.logSend).mock.calls[0][0].slice(4)).toEqual([
+      "Archivos eliminados",
+      "Eliminación automática",
+    ]);
+  });
+  it("does nothing when ELIMINAR_ARCHIVOS_DIAS is 0", async () => {
+    const d = deps([old()], { readConfig: config(0) });
+    expect((await manualSend(d, { action: "expire" })).results).toEqual([]);
+    expect(d.removeFolder).not.toHaveBeenCalled();
+  });
+  it("follows the configured days", async () => {
+    const d = deps([recent()], { readConfig: config(7) });
+    expect((await manualSend(d, { action: "expire" })).results[0].status).toBe("purged");
+  });
+  it("is idempotent: a second run finds nothing once the folder is marked", async () => {
+    const d = deps([old({ drive: "Eliminado 2025-06-12 14:03" })]);
+    expect((await manualSend(d, { action: "expire" })).results).toEqual([]);
+  });
+  it("one Drive failure does not stop the others and is reported", async () => {
+    const removeFolder = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("403"))
+      .mockResolvedValue(undefined);
+    const d = deps(
+      [
+        old(),
+        old({ id: "ML-0002", rowNumber: 3, drive: "https://drive.google.com/drive/folders/Zz9" }),
+      ],
+      { removeFolder },
+    );
+    const { results } = await manualSend(d, { action: "expire" });
+    expect(results.map((r) => r.status)).toEqual(["failed", "purged"]);
+  });
+  it("handles at most MAX_EXPIRE_PER_CALL orders per run", async () => {
+    const many = Array.from({ length: MAX_EXPIRE_PER_CALL + 3 }, (_, i) =>
+      old({ id: `ML-${String(i + 1).padStart(4, "0")}`, rowNumber: i + 2 }),
+    );
+    const d = deps(many);
+    expect((await manualSend(d, { action: "expire" })).results).toHaveLength(MAX_EXPIRE_PER_CALL);
+  });
+  it("shares the one-job lock with sends", async () => {
+    let release: () => void = () => {};
+    const d = deps([old()], { removeFolder: vi.fn(() => new Promise<void>((r) => (release = r))) });
+    const first = manualSend(d, { action: "expire" });
+    await vi.waitFor(() => expect(d.removeFolder).toHaveBeenCalled());
+    await expect(manualSend(d, { action: "expire" })).rejects.toThrow(/already running/);
+    release();
+    await first;
   });
 });

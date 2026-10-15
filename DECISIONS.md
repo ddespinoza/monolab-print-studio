@@ -229,3 +229,12 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 
 - Pickup is **by appointment only**. Live Config `RETIRO_HORARIO` = "Solo previa coordinación: escríbanos o llámenos al +56 9 4862 3705." (read by the site and the Listo email, cached up to 5 minutes). The code fallback in `sheet-config.ts` uses the same text. The owner's answer was cut off after "Only", so the wording is an assumption to confirm.
 - Phase 6 plan (payment with `{{datosPago}}`, 30-day automatic purge, Panel and resin stock tabs, script refresh, SEO ownership) is in the session plan; each step gets its own section here.
+
+## Phase 6.2: automatic file deletion (owner, 2026-10-15)
+
+- **Rule**: Config `ELIMINAR_ARCHIVOS_DIAS` (default 30; blank keeps the default; `0` or `NO` turns it off; any unreadable value also turns it off, because deletion is irreversible). The 5-minute tick, after its status mails, deletes the Drive folder of every order that is Entregado or Cancelado, whose finishing email was sent (`Estado notificado` = Estado) at least that many days ago, and whose folder is not already marked `Eliminado`.
+- **Clock**: starts at `Última notificación` of the finishing email, not at the order date, so an order is never purged before the customer was told it was finished. Consequence: an order whose Entregado/Cancelado mail is never sent is never purged automatically; the manual menu item still works.
+- **Mechanism**: internal action `expire` of `manualSend` (not accepted by `POST /api/send`), reusing `purge` with its guards, sheet write-back and Envíos log (origin «Eliminación automática»). Pure selection in `src/lib/retention.ts` (`findPurgeable`, oldest first). At most 10 folders per tick; one failure does not stop the rest; a failure never fails the tick (reported as `purged` count in the tick response). Runs in manual and automatic mail mode; shares the one-job lock.
+- **Public copy unchanged**: FAQ and Entregado email still say files are destroyed once the order is finished. Real lag is up to 30 days; owner to decide whether to state "a más tardar 30 días después de la entrega".
+- **Correction to 6.1**: the 6.1 gate was run through `| tail`, which hid a failing `sheet-setup` test (it matched the old "por confirmar" placeholder); fixed here. Gate commands are now run with their real exit codes.
+- Live sheet: the Config key is added by `npm run setup:sheet` (idempotent, keeps operator rows); until then the default 30 applies.

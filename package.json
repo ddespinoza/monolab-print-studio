@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 127.0.0.1 -p ${PORT:-3100}",
+    "dev": "next dev -H ${HOST:-127.0.0.1} -p ${PORT:-3100}",
     "build": "next build",
-    "start": "next start -H 127.0.0.1 -p ${PORT:-3100}",
+    "start": "next start -H ${HOST:-127.0.0.1} -p ${PORT:-3100}",
     "lint": "eslint",
     "test": "vitest run",
     "format": "prettier --write .",
@@ -14,7 +14,10 @@
     "brand": "tsx scripts/brand.ts",
     "check:rules": "bash scripts/check-rules.sh",
     "fixtures": "tsx scripts/make-fixtures.ts",
-    "smoke": "npm run fixtures && playwright test"
+    "smoke": "npm run fixtures && playwright test",
+    "setup:sheet": "node --env-file=.env --import tsx scripts/setup-sheet.ts",
+    "setup:oauth": "node --env-file=.env --import tsx scripts/setup-oauth.ts",
+    "setup:check": "node --env-file=.env --import tsx scripts/setup-check.ts"
   },
   "dependencies": {
     "googleapis": "^186.0.0",

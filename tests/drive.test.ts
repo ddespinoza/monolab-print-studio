@@ -67,4 +67,13 @@ describe("createDriveApi", () => {
     await api.remove("FOLDER");
     expect(del).toHaveBeenCalledWith({ fileId: "FOLDER" });
   });
+
+  it("checks that the root folder accepts new children", async () => {
+    const get = vi.fn().mockResolvedValue({ data: { capabilities: { canAddChildren: true } } });
+    const api = createDriveApi({ files: { get } } as never, "ROOT", { sleep: vi.fn() });
+    expect(await api.canWriteRoot()).toBe(true);
+    expect(get).toHaveBeenCalledWith({ fileId: "ROOT", fields: "capabilities/canAddChildren" });
+    get.mockResolvedValue({ data: { capabilities: { canAddChildren: false } } });
+    expect(await api.canWriteRoot()).toBe(false);
+  });
 });

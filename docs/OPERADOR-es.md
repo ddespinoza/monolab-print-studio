@@ -1,0 +1,53 @@
+# Guía del operador
+
+Todo se maneja desde la planilla de Google. No hay otro panel. La planilla tiene tres pestañas: **Pedidos**, **Plantillas** y **Config**.
+
+## Qué pasa cuando llega una solicitud
+
+1. El cliente sube sus archivos (STL, OBJ o PLY) y completa el formulario.
+2. Se crea una carpeta en Drive con el nombre `ML-0001 - A.P.` (número de pedido e iniciales del paciente) y una fila nueva en **Pedidos** con Estado `Nuevo`.
+3. El cliente recibe un correo de recepción y usted recibe un aviso con los enlaces a la carpeta y a la fila.
+
+## Rutina diaria
+
+1. Abra **Pedidos** y revise las filas nuevas (puede abrir la carpeta de Drive desde la columna _Archivos (Drive)_).
+2. Para cotizar: escriba el valor en la columna **Cotización** (por ejemplo `$45.000 CLP por 2 piezas. Plazo: 3 días hábiles.`) y cambie **Estado** a `Cotizado`. En unos 5 minutos el cliente recibe el correo con su cotización y un enlace para confirmar.
+3. Cuando el cliente confirma, la planilla cambia sola a `Confirmado` (columna _Confirmado_ con la fecha) y usted recibe un correo. El cliente recibe un correo de confirmación.
+4. Pase el pedido a `En cola`, luego `Imprimiendo`, `Listo` (el correo indica la dirección de retiro) y `Entregado`. Use `Cancelado` si corresponde.
+
+Cada cambio de **Estado** envía automáticamente el correo de ese estado. Excepción: `Cotizado` no se envía si la columna **Cotización** está vacía.
+
+## Columnas de Pedidos
+
+A ID Pedido · B Fecha · C **Estado** · D Odontólogo · E Email · F WhatsApp · G Iniciales paciente · H Entrega (Flash 2 días / Normal 7 días) · I Tarifa entrega (CLP) · J Archivos (Drive) · K Nº archivos · L Volumen total (cm³) · M Detalle archivos · N Resina · O Copias · P Notas · Q **Cotización** · R Confirmado · S Estado notificado · T Última notificación.
+
+Puede corregir cualquier celda (por ejemplo un correo mal escrito): el siguiente aviso usará el dato corregido.
+
+## Correos
+
+| Estado                   | Correo que recibe el cliente        |
+| ------------------------ | ----------------------------------- |
+| (al enviar la solicitud) | Recibido                            |
+| Cotizado                 | Cotización y enlace para confirmar  |
+| Confirmado               | Cotización confirmada               |
+| En cola                  | En cola de impresión                |
+| Imprimiendo              | En producción                       |
+| Listo                    | Listo para retiro, con la dirección |
+| Entregado                | Entregado, gracias                  |
+| Cancelado                | Cancelado                           |
+
+**Reenviar un correo:** borre el contenido de **Estado notificado** (columna S) de esa fila. En el siguiente ciclo se envía de nuevo el correo del Estado actual.
+
+**Cambiar un correo:** edite la fila del estado en **Plantillas** (columnas _Asunto_ y _Mensaje_). Se aplica en el siguiente ciclo. Si deja un campo vacío o escribe un estado que no existe, el sistema usa el texto original, así que no se puede romper el envío.
+
+Variables que puede usar: `{{nombre}}` `{{orderId}}` `{{resumen}}` `{{whatsappLink}}` `{{sitio}}` `{{retiro}}` y, en el correo de cotización, `{{cotizacion}}` `{{confirmLink}}`. Si escribe una variable que no existe queda tal cual. La firma («Atentamente, Equipo Monolab Print Studio») se agrega siempre.
+
+## Config
+
+`RETIRO_DIRECCION` y `RETIRO_HORARIO`: aparecen en el sitio y en el correo «Listo». Los cambios se ven en el sitio en menos de 5 minutos.
+
+## Importante
+
+- No borre filas del medio de **Pedidos**: el siguiente número de pedido se calcula con el mayor `ML-` de la columna A.
+- Los pacientes se identifican solo con iniciales. No escriba nombres completos de pacientes en **Notas**.
+- Si un cliente dice que el enlace no funciona: el enlace sirve solo mientras el Estado sea `Cotizado` y la **Cotización** no haya cambiado. Si cambió el valor, el sistema envía un enlace nuevo al volver a poner `Cotizado` (borre antes _Estado notificado_).

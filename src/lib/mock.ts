@@ -84,6 +84,7 @@ export function createMockDrive(dir: string): DriveApi {
     async remove(fileId) {
       await rm(join(root, fileId), { recursive: true, force: true });
     },
+    canWriteRoot: async () => true,
   };
 }
 

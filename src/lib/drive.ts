@@ -7,6 +7,8 @@ export interface DriveApi {
   /** `open` is called again on retry because a consumed stream cannot be replayed. */
   uploadFile(folderId: string, name: string, open: () => Readable): Promise<string>;
   remove(fileId: string): Promise<void>;
+  /** Whether the authenticated user may add children to the root folder (used by setup:check). */
+  canWriteRoot(): Promise<boolean>;
 }
 
 /** Files stay private: no permissions are ever created, only the owner (the OAuth user) can open them. */
@@ -50,6 +52,13 @@ export function createDriveApi(
     },
     async remove(fileId) {
       await withRetry(() => client.files.delete({ fileId }), retry);
+    },
+    async canWriteRoot() {
+      const res = await withRetry(
+        () => client.files.get({ fileId: rootFolderId, fields: "capabilities/canAddChildren" }),
+        retry,
+      );
+      return res.data.capabilities?.canAddChildren === true;
     },
   };
 }

@@ -54,9 +54,9 @@ describe("buildOrderRow", () => {
       "caja.stl — 96.3 cm³ (120×80×40)\ntapa.obj — 12.1 cm³ (60×40×20) · escala 75 %",
     );
   });
-  it("neutralises formulas in user text", () => {
-    expect(row[3].startsWith("'")).toBe(true);
-    expect(row[15]).toBe("'+cmd");
+  it("stores user text unchanged (RAW writes are never evaluated as formulas)", () => {
+    expect(row[3]).toBe('=HYPERLINK("x")');
+    expect(row[15]).toBe("+cmd");
   });
   it("leaves Cotización and Confirmado empty and marks Nuevo as notified", () => {
     expect(row[16]).toBe("");

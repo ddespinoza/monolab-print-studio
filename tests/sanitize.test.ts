@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  escapeHtml,
-  escapeSheetCell,
-  folderName,
-  sanitizeFilename,
-  stripLineBreaks,
-} from "@/lib/sanitize";
+import { escapeHtml, folderName, sanitizeFilename, stripLineBreaks } from "@/lib/sanitize";
 
 describe("sanitizeFilename", () => {
   it("replaces unsafe characters, collapses repeats and trims", () => {
@@ -23,16 +17,6 @@ describe("sanitizeFilename", () => {
   });
   it("falls back when nothing usable remains", () => {
     expect(sanitizeFilename("???.stl")).toBe("archivo.stl");
-  });
-});
-
-describe("escapeSheetCell", () => {
-  it.each(["=SUM(A1)", "+1", "-1", "@cmd", "\t=x", "\r=x"])("neutralises %j", (v) => {
-    expect(escapeSheetCell(v).startsWith("'")).toBe(true);
-  });
-  it("leaves normal text alone", () => {
-    expect(escapeSheetCell("Ana Pérez")).toBe("Ana Pérez");
-    expect(escapeSheetCell("")).toBe("");
   });
 });
 

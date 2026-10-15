@@ -20,11 +20,6 @@ export function folderName(orderId: string, initials: string): string {
   return `${orderId} - ${initials.replace(/[^\p{L}.]/gu, "")}`;
 }
 
-/** Neutralise spreadsheet formulas: a leading = + - @ tab or CR gets a literal apostrophe prefix. */
-export function escapeSheetCell(value: string): string {
-  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-}
-
 export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

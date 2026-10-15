@@ -168,3 +168,5 @@ Done through the Cloudflare API with a scoped, expiring token (DNS, Zone Setting
 - Live test with order ML-0002 (row 3, sent to OPERATOR_EMAIL, left as Cancelado): refusal of Cotizado without a quote, preview (`[PRUEBA]`), real quote send, `already_sent` on repeat, unknown order refused, `Listo` through `pending`, empty second `pending`. Row marks (S:T) and the Envíos log matched each step.
 - Not tested live: the Apps Script itself (menu, checkbox) and the customer clicking the confirm link.
 - Known issue: values starting with + = - @ are written RAW with a leading apostrophe, which Sheets shows literally (e.g. `'+56 9 ...` in Teléfono). RAW already prevents formula evaluation, so the apostrophe is unnecessary there.
+
+**Correction (2026-10-15):** the apostrophe prefix from "Phase 3 integration decisions" was removed. Sheets writes use `valueInputOption=RAW`, which stores text as-is and never evaluates it, so the prefix was unnecessary; under RAW it is stored literally and showed as `'+56 9 ...` in Teléfono and leaked into emails built from sheet values. Order text is now stored unchanged (tested in order-row).

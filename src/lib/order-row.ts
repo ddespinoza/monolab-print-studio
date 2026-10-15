@@ -1,4 +1,3 @@
-import { escapeSheetCell } from "@/lib/sanitize";
 import { formatFileLine } from "@/lib/templates";
 import { totalVolumeCm3 } from "@/lib/stl-metrics";
 import { ENTREGAS, type OrderInput } from "@/lib/validation";
@@ -57,27 +56,26 @@ export interface NewOrder {
   driveLink: string;
 }
 
-/** Row for the Pedidos tab (columns A-T). Customer text is escaped against spreadsheet formulas. */
+/** Row for the Pedidos tab (columns A-T). Written with valueInputOption RAW, so Sheets never evaluates customer text as a formula and no escaping is needed. */
 export function buildOrderRow({ id, fecha, order, driveLink }: NewOrder): string[] {
-  const e = escapeSheetCell;
   const tarifa = ENTREGAS.find((o) => o.id === order.entrega)?.tarifa ?? 0;
   return [
     id,
     fecha,
     "Nuevo",
-    e(order.nombre),
-    e(order.email),
-    e(order.telefono),
-    e(order.paciente),
+    order.nombre,
+    order.email,
+    order.telefono,
+    order.paciente,
     order.entrega,
     String(tarifa),
     driveLink,
     String(order.files.length),
     totalVolumeCm3(order.files.map((f) => f.volumeCm3)).toFixed(1),
-    e(order.files.map(formatFileLine).join("\n")),
-    e(order.resina),
+    order.files.map(formatFileLine).join("\n"),
+    order.resina,
     String(order.cantidad),
-    e(order.notas),
+    order.notas,
     "",
     "",
     "Nuevo",

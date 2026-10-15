@@ -55,6 +55,14 @@ describe("mock sheets", () => {
     await s.markFilesDeleted(2, "Eliminado t1");
     expect((await s.readOrders())[0].drive).toBe("Eliminado t1");
   });
+  it("marks paid (padding short rows) and appends ledger rows to the Ingresos file", async () => {
+    const s = createMockSheets(dir);
+    await s.appendOrder(row("ML-0001"));
+    await s.markPaid(2);
+    expect((await s.readOrders())[0].pago).toBe("Pagado");
+    await s.appendIngreso(["t", "ML-0001", "45000", "Transferencia"]);
+    expect(await s.readTab("Ingresos")).toEqual([["t", "ML-0001", "45000", "Transferencia"]]);
+  });
   it("appends log rows to the Envíos tab file", async () => {
     const s = createMockSheets(dir);
     await s.appendLog(["t", "ML-0001"]);

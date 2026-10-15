@@ -3,6 +3,7 @@ import type { OrderRow } from "@/lib/order-row";
 import { isAutomatic, type SheetConfig } from "@/lib/sheet-config";
 import { resolveTemplate } from "@/lib/sheet-templates";
 import {
+  bankBlock,
   buildEmail,
   joinResumen,
   whatsappLink,
@@ -67,7 +68,11 @@ export async function exclusive<T>(task: () => Promise<T>): Promise<T> {
 
 type MailDeps = Pick<TickDeps, "confirmLink" | "siteUrl" | "whatsappNumber">;
 
-export function varsFor(order: OrderRow, deps: MailDeps, retiro: string): Record<string, string> {
+export function varsFor(
+  order: OrderRow,
+  deps: MailDeps,
+  config: Pick<SheetConfig, "RETIRO_DIRECCION" | "BANCO">,
+): Record<string, string> {
   const fileLines = order.detalle.split("\n").filter((l) => l.trim() !== "");
   return {
     nombre: order.nombre,
@@ -77,7 +82,8 @@ export function varsFor(order: OrderRow, deps: MailDeps, retiro: string): Record
     confirmLink: deps.confirmLink(order),
     whatsappLink: whatsappLink(deps.whatsappNumber, order.id),
     sitio: deps.siteUrl,
-    retiro,
+    retiro: config.RETIRO_DIRECCION,
+    datosPago: bankBlock(config.BANCO ?? null, order.id),
   };
 }
 
@@ -91,7 +97,7 @@ export function prepareEmail(
 ): { mail: ReturnType<typeof buildEmail>; fallback: boolean } {
   const { template, fallback } = resolveTemplate(estado, templates);
   return {
-    mail: buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION), { estado }),
+    mail: buildEmail(template, varsFor(order, deps, config), { estado }),
     fallback,
   };
 }

@@ -6,6 +6,7 @@ import {
   buildResumen,
   joinResumen,
   renderTemplate,
+  bankBlock,
   whatsappLink,
 } from "@/lib/templates";
 
@@ -21,7 +22,7 @@ describe("renderTemplate", () => {
 });
 
 describe("DEFAULT_TEMPLATES", () => {
-  it("has receipt plus the 7 notifiable states, no Enviado", () => {
+  it("has receipt, the 7 notifiable states and the payment mail, no Enviado", () => {
     expect(Object.keys(DEFAULT_TEMPLATES).sort()).toEqual(
       [
         "Cancelado",
@@ -31,6 +32,7 @@ describe("DEFAULT_TEMPLATES", () => {
         "Entregado",
         "Imprimiendo",
         "Listo",
+        "Pago",
         "Recibido",
       ].sort(),
     );
@@ -222,5 +224,79 @@ describe("buildEmail html design", () => {
     });
     expect(e.html).toContain("Hola Ana");
     expect(e.html).toContain("Segundo párrafo");
+  });
+});
+
+const BANK = {
+  titular: "Ana Pérez",
+  rut: "11.111.111-1",
+  banco: "Banco Ejemplo",
+  tipo: "Cuenta Vista",
+  cuenta: "000123",
+  correo: "pagos@example.cl",
+};
+
+describe("bankBlock", () => {
+  it("is empty without bank data", () => {
+    expect(bankBlock(null, "ML-0001")).toBe("");
+  });
+  it("lists the account and tells the customer where to send the receipt", () => {
+    const text = bankBlock(BANK, "ML-0001");
+    expect(text.split("\n")[0]).toBe("Datos para transferir");
+    for (const line of [
+      "Titular: Ana Pérez",
+      "RUT: 11.111.111-1",
+      "Banco: Banco Ejemplo",
+      "Tipo de cuenta: Cuenta Vista",
+      "N° de cuenta: 000123",
+      "Correo: pagos@example.cl",
+    ])
+      expect(text).toContain(line);
+    expect(text).toMatch(/comprobante.*ML-0001/);
+  });
+  it("omits the Correo line when there is none", () => {
+    expect(bankBlock({ ...BANK, correo: "" }, "ML-0001")).not.toContain("Correo:");
+  });
+});
+
+describe("payment details in emails", () => {
+  const vars = (datosPago: string) => ({
+    nombre: "Ana",
+    orderId: "ML-0001",
+    cotizacion: "$45.000 CLP",
+    whatsappLink: "https://wa.me/1",
+    sitio: "https://monolabprintstudio.cl",
+    datosPago,
+  });
+  it("Pago template shows the quote and the bank card in text and HTML", () => {
+    const mail = buildEmail(DEFAULT_TEMPLATES.Pago, vars(bankBlock(BANK, "ML-0001")), {
+      estado: "Pago",
+    });
+    expect(mail.subject).toBe("Pedido ML-0001 — datos para el pago");
+    expect(mail.text).toContain("N° de cuenta: 000123");
+    expect(mail.text).toContain("$45.000 CLP");
+    expect(mail.html).toContain("Datos para transferir");
+    expect(mail.html).toContain("000123");
+    expect(mail.html).toContain("Datos de pago");
+  });
+  it("Confirmado template carries the bank card when configured", () => {
+    const mail = buildEmail(DEFAULT_TEMPLATES.Confirmado, vars(bankBlock(BANK, "ML-0001")), {
+      estado: "Confirmado",
+    });
+    expect(mail.text).toContain("Titular: Ana Pérez");
+    expect(mail.html).toContain("11.111.111-1");
+  });
+  it("Confirmado is unchanged and leaves no gap when there is no bank data", () => {
+    const mail = buildEmail(DEFAULT_TEMPLATES.Confirmado, vars(""), { estado: "Confirmado" });
+    expect(mail.text).not.toMatch(/\n{3,}/);
+    expect(mail.text).not.toContain("Datos para transferir");
+    expect(mail.html).not.toContain("transferir");
+  });
+  it("escapes bank values in HTML", () => {
+    const mail = buildEmail(
+      { subject: "s", body: "{{datosPago}}" },
+      vars(bankBlock({ ...BANK, titular: "<b>x</b>" }, "ML-0001")),
+    );
+    expect(mail.html).not.toContain("<b>x</b>");
   });
 });

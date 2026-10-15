@@ -20,28 +20,29 @@ Los correos se envían según el modo de `ENVIO_AUTOMATICO` en **Config** (ver �
 
 ## Columnas de Pedidos
 
-A ID Pedido · B Fecha · C **Estado** · D Odontólogo · E Email · F Teléfono · G Iniciales paciente · H Entrega (Flash 2 días / Normal 7 días) · I Tarifa entrega (CLP) · J Archivos (Drive) · K Nº archivos · L Volumen total (cm³) · M Detalle archivos · N Resina · O Copias · P Notas · Q **Cotización** · R Confirmado · S Estado notificado · T Última notificación · U **Enviar** (casilla; ver «Envío con botones»).
+A ID Pedido · B Fecha · C **Estado** · D Odontólogo · E Email · F Teléfono · G Iniciales paciente · H Entrega (Flash 2 días / Normal 7 días) · I Tarifa entrega (CLP) · J Archivos (Drive) · K Nº archivos · L Volumen total (cm³) · M Detalle archivos · N Resina · O Copias · P Notas · Q **Cotización** · R Confirmado · S Estado notificado · T Última notificación · U **Enviar** (casilla; ver «Envío con botones») · V **Pago** (`Pagado` cuando se registra el pago; vacío = pendiente) · W **Fecha compromiso** (la escribe usted).
 
 Puede corregir cualquier celda (por ejemplo un correo mal escrito): el siguiente aviso usará el dato corregido.
 
 ## Correos
 
-| Estado                   | Correo que recibe el cliente        |
-| ------------------------ | ----------------------------------- |
-| (al enviar la solicitud) | Recibido                            |
-| Cotizado                 | Cotización y enlace para confirmar  |
-| Confirmado               | Cotización confirmada               |
-| En cola                  | En cola de impresión                |
-| Imprimiendo              | En producción                       |
-| Listo                    | Listo para retiro, con la dirección |
-| Entregado                | Entregado, gracias                  |
-| Cancelado                | Cancelado                           |
+| Estado                      | Correo que recibe el cliente                       |
+| --------------------------- | -------------------------------------------------- |
+| (al enviar la solicitud)    | Recibido                                           |
+| Cotizado                    | Cotización y enlace para confirmar                 |
+| Confirmado                  | Cotización confirmada                              |
+| En cola                     | En cola de impresión                               |
+| Imprimiendo                 | En producción                                      |
+| Listo                       | Listo para retiro, con la dirección                |
+| Entregado                   | Entregado, gracias                                 |
+| Cancelado                   | Cancelado                                          |
+| (a pedido, no es un Estado) | Datos de pago: cotización y cuenta para transferir |
 
 **Reenviar un correo:** marque de nuevo la casilla **Enviar** (o use el menú y responda que sí). En modo automático también sirve borrar **Estado notificado** (columna S) de esa fila.
 
 **Cambiar un correo:** edite la fila del estado en **Plantillas** (columnas _Asunto_ y _Mensaje_). Se aplica en el siguiente ciclo. Si deja un campo vacío o escribe un estado que no existe, el sistema usa el texto original, así que no se puede romper el envío.
 
-Variables que puede usar: `{{nombre}}` `{{orderId}}` `{{resumen}}` `{{whatsappLink}}` `{{sitio}}` `{{retiro}}` y, en el correo de cotización, `{{cotizacion}}` `{{confirmLink}}`. Si escribe una variable que no existe queda tal cual. La firma («Atentamente, Equipo Monolab Print Studio») se agrega siempre.
+Variables que puede usar: `{{datosPago}}` (el bloque «Datos para transferir» con la cuenta de **Config**; queda vacío si faltan datos) · `{{nombre}}` `{{orderId}}` `{{resumen}}` `{{whatsappLink}}` `{{sitio}}` `{{retiro}}` y, en el correo de cotización, `{{cotizacion}}` `{{confirmLink}}`. Si escribe una variable que no existe queda tal cual. La firma («Atentamente, Equipo Monolab Print Studio») se agrega siempre.
 
 ## Envío con botones
 
@@ -74,9 +75,18 @@ Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config*
 
 `RETIRO_DIRECCION` y `RETIRO_HORARIO`: aparecen en el sitio y en el correo «Listo». Los cambios se ven en el sitio en menos de 5 minutos.
 
+`BANCO_*`: cuenta para recibir transferencias (ver «Pagos»).
+
 `ELIMINAR_ARCHIVOS_DIAS`: días entre el correo «Entregado» o «Cancelado» y la eliminación automática de la carpeta de Drive (por defecto `30`). `0` o `NO` la desactiva; un valor ilegible también la desactiva. El plazo parte cuando se envía ese correo: si no lo envía, los archivos no se eliminan solos. Cada eliminación queda en **Envíos** con origen «Eliminación automática» y se anota en **Archivos (Drive)**.
 
 `ENVIO_AUTOMATICO`: `NO` (por defecto) = los correos de estado solo salen con los botones; `SI` = salen solos cada 5 minutos.
+
+## Pagos
+
+- El correo **Confirmado** incluye los datos para transferir (bloque «Datos para transferir»), de modo que el cliente sabe cómo pagar apenas confirma.
+- El correo **Pago** (pestaña **Plantillas**, fila `Pago`) reenvía esos datos junto con la cotización; no cambia el Estado ni se registra como «ya enviado», así que puede repetirlo. Solo se envía si el pedido ya está confirmado (Confirmado a Entregado), tiene Cotización y **Config** tiene todos los `BANCO_*`.
+- **Registrar un pago:** cuando llegue la transferencia, se anota el monto en pesos (número entero); eso agrega una fila en la pestaña **Ingresos** (fecha, pedido, monto, método) y deja `Pagado` en la columna **Pago**. Un pedido ya pagado no se puede registrar dos veces. El monto lo escribe usted: el sistema no lo deduce del texto de la cotización.
+- Los datos de la cuenta se escriben solo en **Config**: `BANCO_TITULAR`, `BANCO_RUT`, `BANCO_BANCO`, `BANCO_TIPO_CUENTA`, `BANCO_CUENTA` y, opcional, `BANCO_CORREO`. Si falta alguno (salvo el correo) no se envía ningún dato bancario.
 
 ## Importante
 

@@ -106,6 +106,8 @@ function build(config: Config): Runtime {
       logSend: (entry) => sheets.appendLog(entry),
       removeFolder: (id) => drive.remove(id),
       markFilesDeleted: (row, text) => sheets.markFilesDeleted(row, text),
+      markPaid: (row) => sheets.markPaid(row),
+      appendIngreso: (entry) => sheets.appendIngreso(entry),
     }),
   };
 }

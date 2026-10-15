@@ -287,6 +287,50 @@ describe("POST /api/send", () => {
     expect(log).toHaveLength(2);
     expect(log[0].slice(1, 5)).toEqual(["ML-0001", "Cotizado", "doc@example.com", "Enviado"]);
   });
+  it("validates payment actions", async () => {
+    const { send: route } = await load();
+    expect((await route.POST(send({ action: "payment" }))).status).toBe(400);
+    expect((await route.POST(send({ action: "markpaid", orderId: "ML-0001" }))).status).toBe(400);
+    for (const amount of [0, -1, 1.5, "45000", 1e12])
+      expect(
+        (await route.POST(send({ action: "markpaid", orderId: "ML-0001", amount }))).status,
+      ).toBe(400);
+  });
+  it("sends the payment email and records the payment once", async () => {
+    const { api, file } = await quoted();
+    const cfg = [
+      ["BANCO_TITULAR", "Ana Pérez"],
+      ["BANCO_RUT", "11.111.111-1"],
+      ["BANCO_BANCO", "Banco Ejemplo"],
+      ["BANCO_TIPO_CUENTA", "Cuenta Vista"],
+      ["BANCO_CUENTA", "000123"],
+    ];
+    await writeFile(join(dir, "mock", "Config.json"), JSON.stringify(cfg));
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    rows[0][2] = "Confirmado";
+    await writeFile(file, JSON.stringify(rows));
+
+    const mail = await (
+      await api.send.POST(send({ action: "payment", orderId: "ML-0001" }))
+    ).json();
+    expect(mail.results[0].status).toBe("payment_sent");
+    const emails = await readdir(join(dir, "mock", "emails"));
+    const last = JSON.parse(
+      await readFile(join(dir, "mock", "emails", emails[emails.length - 1]), "utf8"),
+    );
+    expect(last.text).toContain("N° de cuenta: 000123");
+
+    const body = { action: "markpaid", orderId: "ML-0001", amount: 45000 };
+    expect((await (await api.send.POST(send(body))).json()).results[0].status).toBe("paid");
+    expect((await (await api.send.POST(send(body))).json()).results[0].status).toBe("refused");
+    const after = JSON.parse(await readFile(file, "utf8")) as string[][];
+    expect(after[0][21]).toBe("Pagado");
+    const ledger = JSON.parse(
+      await readFile(join(dir, "mock", "Ingresos.json"), "utf8"),
+    ) as string[][];
+    expect(ledger).toHaveLength(1);
+    expect(ledger[0].slice(1, 4)).toEqual(["ML-0001", "45000", "Transferencia"]);
+  });
   it("the cron does not send in manual mode", async () => {
     const { api } = await quoted();
     expect(await (await api.tick.GET(authed())).json()).toMatchObject({

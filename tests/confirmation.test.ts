@@ -26,6 +26,8 @@ const order: OrderRow = {
   confirmado: "",
   notificado: "Cotizado",
   ultima: "",
+  pago: "",
+  compromiso: "",
 };
 const token = signConfirmToken("ML-0001", order.cotizacion, secret);
 
@@ -40,6 +42,15 @@ function deps(rows: OrderRow[] = [order]): ConfirmDeps {
       RETIRO_DIRECCION: "Calle 1",
       RETIRO_HORARIO: "L-V",
       ENVIO_AUTOMATICO: "NO",
+      ELIMINAR_ARCHIVOS_DIAS: 30,
+      BANCO: {
+        titular: "Ana Pérez",
+        rut: "11.111.111-1",
+        banco: "Banco Ejemplo",
+        tipo: "Cuenta Vista",
+        cuenta: "000123",
+        correo: "",
+      },
     }),
     siteUrl: "https://monolabprintstudio.cl",
     whatsappNumber: "56948623705",
@@ -110,5 +121,17 @@ describe("confirmOrder", () => {
     vi.mocked(d.send).mockRejectedValueOnce(new Error("smtp")).mockResolvedValue(undefined);
     expect(await confirmOrder(token, d)).toEqual({ status: "confirmed", orderId: "ML-0001" });
     expect(d.setConfirmed).toHaveBeenCalled();
+  });
+});
+
+describe("confirmOrder: payment details", () => {
+  it("puts the bank details in the customer's Confirmado email", async () => {
+    const d = deps();
+    await confirmOrder(token, d);
+    const customer = vi.mocked(d.send).mock.calls[0][0];
+    expect(customer.to).toBe("doc@example.com");
+    expect(customer.text).toContain("N° de cuenta: 000123");
+    expect(customer.text).toMatch(/comprobante.*ML-0001/);
+    expect(vi.mocked(d.send).mock.calls[1][0].text).not.toContain("000123");
   });
 });

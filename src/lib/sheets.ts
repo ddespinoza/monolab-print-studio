@@ -12,6 +12,10 @@ export interface SheetsApi {
   setConfirmed(rowNumber: number, timestamp: string): Promise<void>;
   /** Replaces the Archivos (Drive) cell, e.g. with "Eliminado <fecha>" once the folder is deleted. */
   markFilesDeleted(rowNumber: number, text: string): Promise<void>;
+  /** Sets column V (Pago) to "Pagado". */
+  markPaid(rowNumber: number): Promise<void>;
+  /** Appends one row to the Ingresos ledger tab: date, order, amount, method, note. */
+  appendIngreso(row: string[]): Promise<void>;
   /** Appends one row to the Envíos log tab (plain text, never evaluated as formulas). */
   appendLog(row: string[]): Promise<void>;
   /** Removes a whole row (used by the live test to clean up). */
@@ -19,6 +23,7 @@ export interface SheetsApi {
 }
 
 export const LOG_TAB = "Envíos";
+export const INGRESOS_TAB = "Ingresos";
 
 export function rowFromRange(range: string): number {
   const match = /!\$?[A-Z]+(\d+)/.exec(range);
@@ -43,7 +48,7 @@ export function createSheetsApi(
       return (await read(`${tab}!A2:A`)).map((r) => r[0] ?? "");
     },
     async readOrders() {
-      return (await read(`${tab}!A2:T`)).map((r, i) => parseOrderRow(r, i + 2));
+      return (await read(`${tab}!A2:W`)).map((r, i) => parseOrderRow(r, i + 2));
     },
     readTab: (name) => read(`${name}!A2:Z`),
     async appendOrder(row) {
@@ -84,6 +89,31 @@ export function createSheetsApi(
             range: `${tab}!J${rowNumber}`,
             valueInputOption: "RAW",
             requestBody: { values: [[text]] },
+          }),
+        retry,
+      );
+    },
+    async markPaid(rowNumber) {
+      await withRetry(
+        () =>
+          values.update({
+            spreadsheetId,
+            range: `${tab}!V${rowNumber}`,
+            valueInputOption: "RAW",
+            requestBody: { values: [["Pagado"]] },
+          }),
+        retry,
+      );
+    },
+    async appendIngreso(row) {
+      await withRetry(
+        () =>
+          values.append({
+            spreadsheetId,
+            range: `${INGRESOS_TAB}!A:E`,
+            valueInputOption: "RAW",
+            insertDataOption: "INSERT_ROWS",
+            requestBody: { values: [row] },
           }),
         retry,
       );

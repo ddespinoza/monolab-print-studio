@@ -24,6 +24,8 @@ const base: OrderRow = {
   confirmado: "",
   notificado: "Nuevo",
   ultima: "",
+  pago: "",
+  compromiso: "",
 };
 const row = (patch: Partial<OrderRow>): OrderRow => ({ ...base, ...patch });
 

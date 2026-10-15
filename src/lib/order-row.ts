@@ -47,6 +47,10 @@ export interface OrderRow {
   confirmado: string;
   notificado: string;
   ultima: string;
+  /** Column V: "Pagado" once payment is recorded, blank until then. (Column U is the Enviar checkbox.) */
+  pago: string;
+  /** Column W: free-text or date commitment typed by the operator. */
+  compromiso: string;
 }
 
 export interface NewOrder {
@@ -107,5 +111,7 @@ export function parseOrderRow(row: readonly string[], rowNumber: number): OrderR
     confirmado: c(17),
     notificado: c(18).trim(),
     ultima: c(19),
+    pago: c(21).trim(),
+    compromiso: c(22).trim(),
   };
 }

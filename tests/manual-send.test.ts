@@ -24,6 +24,16 @@ const base: OrderRow = {
   confirmado: "",
   notificado: "En cola",
   ultima: "",
+  pago: "",
+  compromiso: "",
+};
+const BANK = {
+  titular: "Ana Pérez",
+  rut: "11.111.111-1",
+  banco: "Banco Ejemplo",
+  tipo: "Cuenta Vista",
+  cuenta: "000123",
+  correo: "pagos@example.cl",
 };
 const DRIVE = "https://drive.google.com/drive/folders/1AbC-dEf_9";
 const row = (patch: Partial<OrderRow>): OrderRow => ({ ...base, ...patch });
@@ -37,6 +47,7 @@ function deps(orders: OrderRow[], over: Partial<ManualSendDeps> = {}): ManualSen
       RETIRO_HORARIO: "L-V",
       ENVIO_AUTOMATICO: "NO",
       ELIMINAR_ARCHIVOS_DIAS: 30,
+      BANCO: BANK,
     }),
     send: vi.fn().mockResolvedValue(undefined),
     markNotified: vi.fn().mockResolvedValue(undefined),
@@ -49,6 +60,8 @@ function deps(orders: OrderRow[], over: Partial<ManualSendDeps> = {}): ManualSen
     logSend: vi.fn().mockResolvedValue(undefined),
     removeFolder: vi.fn().mockResolvedValue(undefined),
     markFilesDeleted: vi.fn().mockResolvedValue(undefined),
+    markPaid: vi.fn().mockResolvedValue(undefined),
+    appendIngreso: vi.fn().mockResolvedValue(undefined),
     ...over,
   };
 }
@@ -332,5 +345,143 @@ describe("manualSend: expire (automatic deletion after N days)", () => {
     await expect(manualSend(d, { action: "expire" })).rejects.toThrow(/already running/);
     release();
     await first;
+  });
+});
+
+describe("manualSend: payment (transfer details email)", () => {
+  const confirmed = (patch: Partial<OrderRow> = {}) =>
+    row({ estado: "Confirmado", notificado: "Confirmado", cotizacion: "$45.000 CLP", ...patch });
+  const config = (BANCO: typeof BANK | null) =>
+    vi.fn().mockResolvedValue({
+      RETIRO_DIRECCION: "Calle 1",
+      RETIRO_HORARIO: "L-V",
+      ENVIO_AUTOMATICO: "NO",
+      ELIMINAR_ARCHIVOS_DIAS: 30,
+      BANCO,
+    });
+
+  it("emails the bank details with the quote, logs it and does not touch the notified marks", async () => {
+    const d = deps([confirmed()]);
+    const { results } = await manualSend(d, { action: "payment", orderId: "ML-0001" });
+    expect(results[0]).toMatchObject({ orderId: "ML-0001", status: "payment_sent" });
+    const mail = vi.mocked(d.send).mock.calls[0][0];
+    expect(mail.to).toBe("ana@example.com");
+    expect(mail.subject).toBe("Pedido ML-0001 — datos para el pago");
+    expect(mail.text).toContain("N° de cuenta: 000123");
+    expect(mail.text).toContain("$45.000 CLP");
+    expect(d.markNotified).not.toHaveBeenCalled();
+    expect(vi.mocked(d.logSend).mock.calls[0][0].slice(1)).toEqual([
+      "ML-0001",
+      "Confirmado",
+      "ana@example.com",
+      "Enviado",
+      "Pago",
+    ]);
+  });
+  it("can be sent again (it is a reminder, not a status)", async () => {
+    const d = deps([confirmed()]);
+    await manualSend(d, { action: "payment", orderId: "ML-0001" });
+    const again = await manualSend(d, { action: "payment", orderId: "ML-0001" });
+    expect(again.results[0].status).toBe("payment_sent");
+  });
+  it.each(["Nuevo", "Cotizado", "Cancelado"])("refuses while the order is %s", async (estado) => {
+    const d = deps([confirmed({ estado, notificado: "" })]);
+    const { results } = await manualSend(d, { action: "payment", orderId: "ML-0001" });
+    expect(results[0].status).toBe("refused");
+    expect(d.send).not.toHaveBeenCalled();
+  });
+  it.each(["Confirmado", "En cola", "Imprimiendo", "Listo", "Entregado"])(
+    "allows %s",
+    async (estado) => {
+      const d = deps([confirmed({ estado })]);
+      expect(
+        (await manualSend(d, { action: "payment", orderId: "ML-0001" })).results[0].status,
+      ).toBe("payment_sent");
+    },
+  );
+  it("refuses without bank data, without a quote, without an email and when already paid", async () => {
+    const run = async (o: OrderRow, over: Partial<ManualSendDeps> = {}) => {
+      const d = deps([o], over);
+      const r = (await manualSend(d, { action: "payment", orderId: "ML-0001" })).results[0];
+      expect(d.send).not.toHaveBeenCalled();
+      return r;
+    };
+    expect((await run(confirmed(), { readConfig: config(null) })).message).toMatch(
+      /datos bancarios|BANCO_/i,
+    );
+    expect((await run(confirmed({ cotizacion: " " }))).message).toMatch(/Cotización/);
+    expect((await run(confirmed({ email: "" }))).message).toMatch(/correo/i);
+    const paid = await run(confirmed({ pago: "Pagado" }));
+    expect(paid.status).toBe("refused");
+    expect(paid.message).toMatch(/ya está pagado/i);
+  });
+  it("reports failure when SMTP fails and logs it", async () => {
+    const d = deps([confirmed()], { send: vi.fn().mockRejectedValue(new Error("smtp")) });
+    const { results } = await manualSend(d, { action: "payment", orderId: "ML-0001" });
+    expect(results[0].status).toBe("failed");
+    expect(vi.mocked(d.logSend).mock.calls[0][0].slice(4)).toEqual(["Falló", "Pago"]);
+  });
+});
+
+describe("manualSend: markpaid (ledger)", () => {
+  const confirmed = (patch: Partial<OrderRow> = {}) =>
+    row({ estado: "Entregado", notificado: "Entregado", cotizacion: "$45.000 CLP", ...patch });
+  const req = {
+    action: "markpaid",
+    orderId: "ML-0001",
+    amount: 45000,
+    method: "Transferencia",
+  } as const;
+
+  it("writes one ledger row, then marks the order Pagado, and logs it", async () => {
+    const d = deps([confirmed()]);
+    const { results } = await manualSend(d, req);
+    expect(results[0]).toMatchObject({ orderId: "ML-0001", status: "paid" });
+    expect(d.appendIngreso).toHaveBeenCalledWith([
+      "2025-06-12 14:03",
+      "ML-0001",
+      "45000",
+      "Transferencia",
+      "",
+    ]);
+    expect(d.markPaid).toHaveBeenCalledWith(2);
+    expect(vi.mocked(d.logSend).mock.calls[0][0].slice(4)).toEqual(["Pago registrado", "Pago"]);
+  });
+  it("defaults the method to Transferencia", async () => {
+    const d = deps([confirmed()]);
+    await manualSend(d, { action: "markpaid", orderId: "ML-0001", amount: 45000 });
+    expect(vi.mocked(d.appendIngreso).mock.calls[0][0][3]).toBe("Transferencia");
+  });
+  it("is idempotent: a second call is refused and writes nothing", async () => {
+    const d = deps([confirmed({ pago: "Pagado" })]);
+    const { results } = await manualSend(d, req);
+    expect(results[0].status).toBe("refused");
+    expect(d.appendIngreso).not.toHaveBeenCalled();
+    expect(d.markPaid).not.toHaveBeenCalled();
+  });
+  it.each(["Nuevo", "Cotizado", "Cancelado"])("refuses while the order is %s", async (estado) => {
+    const d = deps([confirmed({ estado })]);
+    expect((await manualSend(d, req)).results[0].status).toBe("refused");
+    expect(d.appendIngreso).not.toHaveBeenCalled();
+  });
+  it("refuses an order without a quote and a non-positive or fractional amount", async () => {
+    const d = deps([confirmed({ cotizacion: "" })]);
+    expect((await manualSend(d, req)).results[0].status).toBe("refused");
+    const e = deps([confirmed()]);
+    for (const amount of [0, -5, 10.5, Number.NaN])
+      expect((await manualSend(e, { ...req, amount })).results[0].status).toBe("refused");
+    expect(e.appendIngreso).not.toHaveBeenCalled();
+  });
+  it("does not mark the order when the ledger write fails", async () => {
+    const d = deps([confirmed()], { appendIngreso: vi.fn().mockRejectedValue(new Error("quota")) });
+    const { results } = await manualSend(d, req);
+    expect(results[0].status).toBe("failed");
+    expect(d.markPaid).not.toHaveBeenCalled();
+  });
+  it("still reports paid, with a do-not-repeat warning, when only the Pago cell write fails", async () => {
+    const d = deps([confirmed()], { markPaid: vi.fn().mockRejectedValue(new Error("quota")) });
+    const { results } = await manualSend(d, req);
+    expect(results[0].status).toBe("paid");
+    expect(results[0].message).toMatch(/no lo (registre|repita)/i);
   });
 });

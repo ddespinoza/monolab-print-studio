@@ -1,7 +1,8 @@
 import { ESTADOS } from "@/lib/validation";
 import { DEFAULT_TEMPLATES, type EmailTemplate, type TemplateKey } from "@/lib/templates";
 
-const NOTIFIABLE = new Set<string>(ESTADOS.filter((e) => e !== "Nuevo"));
+/** Estados with a template, plus «Pago» (transfer-details email, not an Estado). */
+const NOTIFIABLE = new Set<string>([...ESTADOS.filter((e) => e !== "Nuevo"), "Pago"]);
 
 /** Rows of the Plantillas tab (Estado | Asunto | Mensaje). Invalid rows are skipped, never fatal. */
 export function parsePlantillas(rows: readonly (readonly string[])[]): Map<string, EmailTemplate> {

@@ -1,6 +1,7 @@
 import { renderEmailHtml } from "@/lib/email-html";
 import { stripLineBreaks } from "@/lib/sanitize";
 import { ENTREGAS, type Estado } from "@/lib/order-options";
+import type { BankData } from "@/lib/sheet-config";
 export { whatsappLink } from "@/lib/whatsapp";
 
 export interface EmailTemplate {
@@ -12,7 +13,8 @@ export interface BuiltEmail {
   html: string;
   text: string;
 }
-export type TemplateKey = Exclude<Estado, "Nuevo"> | "Recibido";
+/** "Pago" is not an Estado: it is the transfer-details email the operator sends on request. */
+export type TemplateKey = Exclude<Estado, "Nuevo"> | "Recibido" | "Pago";
 
 const FOOTER = "Atentamente,\nEquipo Monolab Print Studio\n{{sitio}}";
 const CONSULTAS = "¿Consultas? Escríbanos por WhatsApp: {{whatsappLink}}";
@@ -52,6 +54,22 @@ Si desea cambiar algo, escríbanos por WhatsApp: {{whatsappLink}}`,
 Recibimos su confirmación del pedido {{orderId}}.
 
 Lo pasaremos a la cola de impresión y le avisaremos cuando comience la producción.
+
+{{datosPago}}
+
+${CONSULTAS}`,
+  },
+  Pago: {
+    subject: "Pedido {{orderId}} — datos para el pago",
+    body: `Estimado/a {{nombre}}:
+
+Para completar su pedido {{orderId}}, estos son los datos para pagar por transferencia.
+
+Su cotización:
+
+{{cotizacion}}
+
+{{datosPago}}
 
 ${CONSULTAS}`,
   },
@@ -118,6 +136,24 @@ Estado inicial: Nuevo.
 {{resumen}}`,
 };
 
+/**
+ * The «Datos para transferir» block for `{{datosPago}}`: one self-contained paragraph (heading, account lines, how to
+ * send the receipt), or "" when the bank data is incomplete so templates simply show nothing.
+ */
+export function bankBlock(bank: BankData | null, orderId: string): string {
+  if (!bank) return "";
+  return [
+    "Datos para transferir",
+    `Titular: ${bank.titular}`,
+    `RUT: ${bank.rut}`,
+    `Banco: ${bank.banco}`,
+    `Tipo de cuenta: ${bank.tipo}`,
+    `N° de cuenta: ${bank.cuenta}`,
+    ...(bank.correo ? [`Correo: ${bank.correo}`] : []),
+    `Envíe el comprobante de transferencia respondiendo este correo, indicando el pedido ${orderId}.`,
+  ].join("\n");
+}
+
 export type TemplateVars = Record<string, string>;
 
 /** {{name}} substitution; unknown variables stay literal so a typo in the sheet never breaks mail. */
@@ -170,7 +206,7 @@ export function buildEmail(
   options: { estado?: string } = {},
 ): BuiltEmail {
   const subject = stripLineBreaks(renderTemplate(template.subject, vars));
-  const body = renderTemplate(template.body, vars);
+  const body = renderTemplate(template.body, vars).replace(/\n{3,}/g, "\n\n");
   const text = `${body}\n\n${renderTemplate(FOOTER, vars)}\n`;
   return { subject, text, html: renderEmailHtml(body, vars, options.estado) };
 }

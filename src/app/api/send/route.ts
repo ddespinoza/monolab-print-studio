@@ -12,6 +12,13 @@ const body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("row"), orderId, force: z.boolean().optional() }),
   z.object({ action: z.literal("test"), orderId }),
   z.object({ action: z.literal("purge"), orderId }),
+  z.object({ action: z.literal("payment"), orderId }),
+  z.object({
+    action: z.literal("markpaid"),
+    orderId,
+    amount: z.number().int().positive().max(100_000_000),
+    method: z.string().max(40).optional(),
+  }),
   z.object({ action: z.literal("pending") }),
 ]);
 

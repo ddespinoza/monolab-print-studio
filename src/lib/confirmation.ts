@@ -3,7 +3,13 @@ import { logger } from "@/lib/logger";
 import type { OrderRow } from "@/lib/order-row";
 import type { SheetConfig } from "@/lib/sheet-config";
 import { resolveTemplate } from "@/lib/sheet-templates";
-import { buildEmail, joinResumen, whatsappLink, type EmailTemplate } from "@/lib/templates";
+import {
+  bankBlock,
+  buildEmail,
+  joinResumen,
+  whatsappLink,
+  type EmailTemplate,
+} from "@/lib/templates";
 import { formatTimestamp } from "@/lib/time";
 
 export interface ConfirmDeps {
@@ -75,6 +81,7 @@ export async function confirmOrder(token: string, deps: ConfirmDeps): Promise<Co
       whatsappLink: whatsappLink(deps.whatsappNumber, order.id),
       sitio: deps.siteUrl,
       retiro: config.RETIRO_DIRECCION,
+      datosPago: bankBlock(config.BANCO ?? null, order.id),
     };
     const customer = buildEmail(resolveTemplate("Confirmado", templates).template, vars, {
       estado: "Confirmado",

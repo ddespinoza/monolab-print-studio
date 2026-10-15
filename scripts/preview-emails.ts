@@ -4,7 +4,13 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildResumen, buildEmail, DEFAULT_TEMPLATES, type TemplateKey } from "@/lib/templates";
+import {
+  bankBlock,
+  buildResumen,
+  buildEmail,
+  DEFAULT_TEMPLATES,
+  type TemplateKey,
+} from "@/lib/templates";
 
 const [outDir, siteUrl = "https://monolabprintstudio.cl"] = process.argv.slice(2);
 if (!outDir) throw new Error("Usage: tsx scripts/preview-emails.ts <outDir> [siteUrl]");
@@ -18,6 +24,17 @@ const vars = {
   retiro: "Río Guadiana 8672, Las Condes, Santiago",
   cotizacion: "$32.000 CLP por 3 piezas (Resina Tough). Plazo: 7 días hábiles.",
   confirmLink: `${siteUrl}/confirmar/ML-0042.firma`,
+  datosPago: bankBlock(
+    {
+      titular: "Nombre Apellido",
+      rut: "11.111.111-1",
+      banco: "Banco Ejemplo",
+      tipo: "Cuenta Vista",
+      cuenta: "00000000",
+      correo: "contacto@monolabprintstudio.cl",
+    },
+    "ML-0042",
+  ),
   resumen: buildResumen({
     files: [
       { name: "arcada_superior.stl", volumeCm3: 12.99, size: { x: 62.9, y: 32.2, z: 54.5 } },

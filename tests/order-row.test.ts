@@ -95,3 +95,16 @@ describe("parseOrderRow", () => {
     });
   });
 });
+
+describe("payment columns", () => {
+  it("reads Pago (V) and Fecha compromiso (W), skipping the Enviar checkbox in U", () => {
+    const row = Array.from({ length: 23 }, () => "");
+    row[20] = "TRUE";
+    row[21] = "Pagado";
+    row[22] = "2025-06-20";
+    expect(parseOrderRow(row, 5)).toMatchObject({ pago: "Pagado", compromiso: "2025-06-20" });
+  });
+  it("defaults both to empty for old 20-column rows", () => {
+    expect(parseOrderRow(["ML-0001"], 2)).toMatchObject({ pago: "", compromiso: "" });
+  });
+});

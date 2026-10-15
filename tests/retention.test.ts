@@ -25,6 +25,8 @@ const base: OrderRow = {
   confirmado: "",
   notificado: "Entregado",
   ultima: "2025-05-13 14:00",
+  pago: "",
+  compromiso: "",
 };
 const row = (patch: Partial<OrderRow>): OrderRow => ({ ...base, ...patch });
 // 2025-06-12 14:00 in Santiago (UTC-4)

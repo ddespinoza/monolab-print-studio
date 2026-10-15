@@ -1,7 +1,7 @@
 import type { sheets_v4 } from "googleapis";
 import { HEADERS } from "@/lib/order-row";
 import { withRetry, type RetryOptions } from "@/lib/retry";
-import { CONFIG_DEFAULTS } from "@/lib/sheet-config";
+import { BANK_KEYS, CONFIG_DEFAULTS } from "@/lib/sheet-config";
 import { DEFAULT_TEMPLATES, type TemplateKey } from "@/lib/templates";
 import { ESTADOS } from "@/lib/validation";
 
@@ -15,6 +15,13 @@ export const ENVIOS_HEADERS = [
   "Origen",
 ] as const;
 
+/** Ingresos tab: one row per payment received (written by «Marcar pagado»). */
+export const INGRESOS_HEADERS = ["Fecha", "ID Pedido", "Monto (CLP)", "Método", "Nota"] as const;
+
+/** Columns V and W of Pedidos, after the Enviar checkbox in U. */
+const PAGO_HEADERS = ["Pago", "Fecha compromiso"] as const;
+const PAGO_COLUMN_INDEX = 21;
+
 /** Column U of Pedidos: tick it and the sheet script sends that row's email. Not part of an order row (A-T). */
 export const ENVIAR_HEADER = "Enviar";
 const ENVIAR_COLUMN_INDEX = 20;
@@ -25,7 +32,7 @@ const NOTIFIABLE = ESTADOS.filter((e) => e !== "Nuevo");
 export function buildPlantillasRows(): string[][] {
   return [
     ["Estado", "Asunto", "Mensaje"],
-    ...NOTIFIABLE.map((e) => [
+    ...[...NOTIFIABLE, "Pago" as const].map((e) => [
       e,
       DEFAULT_TEMPLATES[e as TemplateKey].subject,
       DEFAULT_TEMPLATES[e as TemplateKey].body,
@@ -39,6 +46,8 @@ export function mergeConfigRows(existing: readonly (readonly string[])[]): strin
   for (const [key, value] of Object.entries(CONFIG_DEFAULTS)) {
     if (!rows.some((r) => r[0] === key)) rows.push([key, String(value)]);
   }
+  for (const key of Object.keys(BANK_KEYS))
+    if (!rows.some((r) => r[0] === key)) rows.push([key, ""]);
   return rows;
 }
 
@@ -69,7 +78,7 @@ export async function setupSheet(
     if (s.properties?.title && typeof s.properties.sheetId === "number")
       ids.set(s.properties.title, s.properties.sheetId);
   }
-  for (const title of [pedidos, "Plantillas", "Config", "Envíos"]) {
+  for (const title of [pedidos, "Plantillas", "Config", "Envíos", "Ingresos"]) {
     if (ids.has(title)) continue;
     const res = await withRetry(
       () =>
@@ -99,7 +108,7 @@ export async function setupSheet(
       retry,
     );
 
-  const header = await read(`${pedidos}!A1:T1`);
+  const header = await read(`${pedidos}!A1:W1`);
   if (header.length === 0) {
     await write(`${pedidos}!A1`, [[...HEADERS]]);
     report.seeded.push(pedidos);
@@ -111,9 +120,26 @@ export async function setupSheet(
     await write(`${pedidos}!U1`, [[ENVIAR_HEADER]]);
     report.seeded.push(`${pedidos} U1`);
   }
-  if ((await read("Plantillas!A1:C")).length === 0) {
+  for (const [i, name] of PAGO_HEADERS.entries()) {
+    if ((header[0]?.[PAGO_COLUMN_INDEX + i] ?? "") === "") {
+      await write(`${pedidos}!${String.fromCharCode(86 + i)}1`, [[name]]);
+      report.seeded.push(`${pedidos} ${String.fromCharCode(86 + i)}1`);
+    }
+  }
+  const plantillas = await read("Plantillas!A1:C");
+  if (plantillas.length === 0) {
     await write("Plantillas!A1", buildPlantillasRows());
     report.seeded.push("Plantillas");
+  } else if (!plantillas.some((r) => (r[0] ?? "").trim() === "Pago")) {
+    // New template keys are appended below the operator's rows; their own rows are never touched.
+    await write(`Plantillas!A${plantillas.length + 1}`, [
+      ["Pago", DEFAULT_TEMPLATES.Pago.subject, DEFAULT_TEMPLATES.Pago.body],
+    ]);
+    report.seeded.push("Plantillas Pago");
+  }
+  if ((await read("Ingresos!A1:E1")).length === 0) {
+    await write("Ingresos!A1", [[...INGRESOS_HEADERS]]);
+    report.seeded.push("Ingresos");
   }
   if ((await read("Envíos!A1:F1")).length === 0) {
     await write("Envíos!A1", [[...ENVIOS_HEADERS]]);

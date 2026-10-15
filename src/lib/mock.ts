@@ -70,6 +70,21 @@ export function createMockSheets(dir: string): SheetsApi {
         const r = rows[rowNumber - 2];
         if (r) r[9] = text;
       }),
+    markPaid: (rowNumber) =>
+      edit((rows) => {
+        const r = rows[rowNumber - 2];
+        if (!r) return;
+        while (r.length < 22) r.push("");
+        r[21] = "Pagado";
+      }),
+    appendIngreso: (row) =>
+      locked(async () => {
+        const ledger = join(dir, "Ingresos.json");
+        const rows = await readJson<string[][]>(ledger, []);
+        rows.push(row);
+        await mkdir(dir, { recursive: true });
+        await writeFile(ledger, JSON.stringify(rows, null, 2));
+      }),
     appendLog: (row) =>
       locked(async () => {
         const logFile = join(dir, "Envíos.json");

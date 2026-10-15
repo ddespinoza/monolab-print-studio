@@ -14,6 +14,47 @@ describe("parseConfig", () => {
       RETIRO_HORARIO: "Lun-Vie",
       ENVIO_AUTOMATICO: "NO",
       ELIMINAR_ARCHIVOS_DIAS: 30,
+      BANCO: null,
+    });
+  });
+  describe("bank data (BANCO_*)", () => {
+    const full: string[][] = [
+      ["BANCO_TITULAR", "Ana Pérez"],
+      ["BANCO_RUT", "11.111.111-1"],
+      ["BANCO_BANCO", "Banco Ejemplo"],
+      ["BANCO_TIPO_CUENTA", "Cuenta Vista"],
+      ["BANCO_CUENTA", "000123"],
+      ["BANCO_CORREO", "pagos@example.cl"],
+    ];
+    it("reads the six keys into one object", () => {
+      expect(parseConfig(full).BANCO).toEqual({
+        titular: "Ana Pérez",
+        rut: "11.111.111-1",
+        banco: "Banco Ejemplo",
+        tipo: "Cuenta Vista",
+        cuenta: "000123",
+        correo: "pagos@example.cl",
+      });
+    });
+    it("is null when any required key is missing or blank (never a half-filled account)", () => {
+      for (const key of [
+        "BANCO_TITULAR",
+        "BANCO_RUT",
+        "BANCO_BANCO",
+        "BANCO_TIPO_CUENTA",
+        "BANCO_CUENTA",
+      ]) {
+        expect(parseConfig(full.filter((r) => r[0] !== key)).BANCO).toBeNull();
+        expect(parseConfig(full.map((r) => (r[0] === key ? [key, "  "] : r))).BANCO).toBeNull();
+      }
+    });
+    it("treats the notice email as optional", () => {
+      const noMail = parseConfig(full.filter((r) => r[0] !== "BANCO_CORREO")).BANCO;
+      expect(noMail?.correo).toBe("");
+    });
+    it("keeps each value on one line", () => {
+      const evil = full.map((r) => (r[0] === "BANCO_TITULAR" ? [r[0], "Ana\nBcc: x@y.z"] : r));
+      expect(parseConfig(evil).BANCO?.titular).toBe("Ana Bcc: x@y.z");
     });
   });
   it("reads ELIMINAR_ARCHIVOS_DIAS: 30 by default, a whole number of days, 0/NO turns it off, garbage fails closed", () => {

@@ -23,6 +23,7 @@ const BADGES: Record<string, { label: string; tone: "action" | "quiet" | "off" }
   Recibido: { label: "Pedido recibido", tone: "quiet" },
   Cotizado: { label: "Cotización lista", tone: "action" },
   Confirmado: { label: "Cotización confirmada", tone: "quiet" },
+  Pago: { label: "Datos de pago", tone: "action" },
   "En cola": { label: "En cola de impresión", tone: "quiet" },
   Imprimiendo: { label: "En producción", tone: "quiet" },
   Listo: { label: "Listo para retiro", tone: "action" },
@@ -76,6 +77,34 @@ function summaryTable(lines: readonly string[]): string {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:${c.bgSurface};border:1px solid ${c.borderLight};border-radius:8px">${rows.join("")}</table>`;
 }
 
+const BANK_LABELS = [
+  "Titular",
+  "RUT",
+  "Banco",
+  "Tipo de cuenta",
+  "N° de cuenta",
+  "Correo",
+] as const;
+
+/** The «Datos para transferir» card: heading, label/value rows and the receipt note. */
+function bankCard(block: string): string {
+  const [heading, ...lines] = block.split("\n");
+  const rows: string[] = [];
+  const notes: string[] = [];
+  for (const line of lines) {
+    const label = BANK_LABELS.find((l) => line.startsWith(`${l}: `));
+    if (label)
+      rows.push(
+        `<tr><td style="padding:6px 0;${FONT};font-size:13px;font-weight:700;color:${c.textMuted};width:120px;vertical-align:top">${escapeHtml(label)}</td><td style="padding:6px 0;${FONT};font-size:15px;font-weight:700;color:${c.textMain}">${escapeHtml(line.slice(label.length + 2))}</td></tr>`,
+      );
+    else notes.push(line);
+  }
+  const note = notes.length
+    ? `<p style="margin:12px 0 0;${FONT};font-size:13px;line-height:1.5;color:${c.textSecondary}">${escapeHtml(notes.join(" "))}</p>`
+    : "";
+  return `<div style="margin:0 0 20px;padding:16px 18px;border:1px solid ${c.borderLight};border-top:4px solid ${c.orange};border-radius:8px;background:${c.bgSurface}"><div style="${FONT};font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${c.prussianBlue};margin-bottom:6px">${escapeHtml(heading)}</div><table role="presentation" cellpadding="0" cellspacing="0" width="100%">${rows.join("")}</table>${note}</div>`;
+}
+
 function callout(text: string): string {
   return `<div style="margin:0 0 20px;padding:16px 18px;border-left:4px solid ${c.orange};background:${c.bgSurface};${FONT};font-size:17px;font-weight:700;line-height:1.5;color:${c.textMain}">${escapeHtml(text).replace(/\n/g, "<br>")}</div>`;
 }
@@ -106,6 +135,7 @@ function blocks(body: string, vars: Vars): string {
     .map((block) => {
       const lines = block.split("\n");
       if (quote !== "" && block === quote) return callout(block);
+      if (vars.datosPago && block === vars.datosPago.trim()) return bankCard(block);
       if (lines.some((l) => l.startsWith("• "))) return runs(lines, vars);
       // A confirm-link line becomes a button; the lines before it stay a paragraph.
       const at = vars.confirmLink ? lines.indexOf(vars.confirmLink) : -1;

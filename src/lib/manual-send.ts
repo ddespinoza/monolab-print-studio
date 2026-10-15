@@ -17,9 +17,14 @@ export type SendRequest =
   | { action: "purge"; orderId: string }
   /** Deletes the files of every order finished at least ELIMINAR_ARCHIVOS_DIAS ago. Called by the tick, not by the sheet. */
   | { action: "expire" }
+  /** Emails the bank details («Pago» template). Not an Estado: no notified marks, can be repeated. */
+  | { action: "payment"; orderId: string }
+  /** Records a received payment: one Ingresos ledger row, then column V = Pagado. `amount` is whole CLP typed by the operator. */
+  | { action: "markpaid"; orderId: string; amount: number; method?: string }
   | { action: "pending" };
 
-export type SendStatus = "sent" | "test_sent" | "already_sent" | "purged" | "refused" | "failed";
+export type SendStatus =
+  "sent" | "test_sent" | "already_sent" | "purged" | "payment_sent" | "paid" | "refused" | "failed";
 
 export interface SendResult {
   orderId: string;
@@ -37,9 +42,15 @@ export interface ManualSendDeps extends TickDeps {
   removeFolder: (folderId: string) => Promise<void>;
   /** Writes "Eliminado <fecha>" into the order's Archivos (Drive) cell. */
   markFilesDeleted: (rowNumber: number, text: string) => Promise<void>;
+  /** Sets column V (Pago) to "Pagado". */
+  markPaid: (rowNumber: number) => Promise<void>;
+  /** Appends a row to the Ingresos ledger: date, order, amount, method, note. */
+  appendIngreso: (entry: string[]) => Promise<void>;
 }
 
 const FINISHED = new Set(["Entregado", "Cancelado"]);
+/** Payment makes sense once the customer confirmed the quote and until the order is cancelled. */
+const PAYABLE = new Set(["Confirmado", "En cola", "Imprimiendo", "Listo", "Entregado"]);
 
 /** Folder id from the Archivos (Drive) cell: a Drive folder link or a mock:// link. */
 export function driveFolderId(cell: string): string | undefined {
@@ -172,6 +183,67 @@ export function manualSend(
       return result("purged", message);
     };
 
+    const payment = async (
+      order: OrderRow,
+      kind: "mail" | { amount: number; method: string },
+    ): Promise<SendResult> => {
+      const result = (status: SendStatus, message: string): SendResult => ({
+        orderId: order.id,
+        estado: order.estado,
+        status,
+        message,
+      });
+      if (!PAYABLE.has(order.estado))
+        return result(
+          "refused",
+          "El pago se gestiona desde que el cliente confirma la cotización.",
+        );
+      if (order.pago === "Pagado") return result("refused", "Este pedido ya está pagado.");
+      if (order.cotizacion.trim() === "")
+        return result("refused", "Escriba la Cotización antes de gestionar el pago.");
+      if (kind === "mail") {
+        if (order.email.trim() === "")
+          return result("refused", "El pedido no tiene correo del cliente.");
+        if (!config.BANCO)
+          return result("refused", "Complete los datos bancarios (BANCO_*) en Config primero.");
+        try {
+          const { mail } = prepareEmail(order, "Pago", deps, templates, config);
+          await deps.send({ to: order.email.trim(), ...mail });
+        } catch (error) {
+          logger.error("payment email failed", { orderId: order.id, error: String(error) });
+          await log(order, "Falló", "Pago");
+          return result("failed", "No se pudo enviar el correo. Inténtelo de nuevo.");
+        }
+        await log(order, "Enviado", "Pago");
+        return result("payment_sent", `Datos de pago enviados a ${order.email.trim()}.`);
+      }
+      if (!Number.isInteger(kind.amount) || kind.amount <= 0)
+        return result("refused", "El monto debe ser un número entero de pesos mayor que cero.");
+      try {
+        await deps.appendIngreso([
+          formatTimestamp(deps.now()),
+          order.id,
+          String(kind.amount),
+          kind.method,
+          "",
+        ]);
+      } catch (error) {
+        logger.error("ledger write failed", { orderId: order.id, error: String(error) });
+        await log(order, "Falló", "Pago");
+        return result("failed", "No se pudo registrar el ingreso. Inténtelo de nuevo.");
+      }
+      let message = `Pago de $${kind.amount.toLocaleString("es-CL")} registrado.`;
+      try {
+        await deps.markPaid(order.rowNumber);
+      } catch (error) {
+        logger.error("payment: could not mark row", { orderId: order.id, error: String(error) });
+        message +=
+          " El ingreso quedó anotado, pero no se pudo marcar «Pagado» en la planilla: márquelo a mano y no lo registre otra vez.";
+      }
+      await log(order, "Pago registrado", "Pago");
+      return result("paid", message);
+    };
+
     if (req.action === "pending") {
       const results: SendResult[] = [];
       for (const { order } of findPending(orders).slice(0, MAX_PER_CALL))
@@ -198,6 +270,11 @@ export function manualSend(
         ],
       };
     if (req.action === "purge") return { results: [await purge(order)] };
+    if (req.action === "payment") return { results: [await payment(order, "mail")] };
+    if (req.action === "markpaid") {
+      const method = (req.method ?? "").replace(/\s+/g, " ").trim() || "Transferencia";
+      return { results: [await payment(order, { amount: req.amount, method })] };
+    }
     return {
       results: [
         await sendOne(order, {

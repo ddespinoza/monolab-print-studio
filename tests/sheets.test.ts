@@ -82,6 +82,36 @@ describe("createSheetsApi", () => {
       }),
     );
   });
+  it("reads Pedidos through column W so Pago and Fecha compromiso are included", async () => {
+    const { client, values } = fake({ get: vi.fn().mockResolvedValue({ data: { values: [] } }) });
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    await api.readOrders();
+    expect(values.get).toHaveBeenCalledWith(expect.objectContaining({ range: "Pedidos!A2:W" }));
+  });
+  it("marks an order paid in column V as plain text", async () => {
+    const { client, values } = fake();
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    await api.markPaid(7);
+    expect(values.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        range: "Pedidos!V7",
+        valueInputOption: "RAW",
+        requestBody: { values: [["Pagado"]] },
+      }),
+    );
+  });
+  it("appends a ledger row to the Ingresos tab as plain text", async () => {
+    const { client, values } = fake();
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    await api.appendIngreso(["2025-06-12 14:03", "ML-0001", "45000", "Transferencia"]);
+    expect(values.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        range: "Ingresos!A:E",
+        valueInputOption: "RAW",
+        requestBody: { values: [["2025-06-12 14:03", "ML-0001", "45000", "Transferencia"]] },
+      }),
+    );
+  });
   it("appends a send-log row to the Envíos tab as plain text", async () => {
     const { client, values } = fake();
     const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });

@@ -3,6 +3,7 @@ import { HEADERS } from "@/lib/order-row";
 import { parsePlantillas } from "@/lib/sheet-templates";
 import {
   ENVIOS_HEADERS,
+  INGRESOS_HEADERS,
   buildPlantillasRows,
   mergeConfigRows,
   setupSheet,
@@ -12,9 +13,12 @@ import { ESTADOS } from "@/lib/validation";
 
 describe("buildPlantillasRows", () => {
   const rows = buildPlantillasRows();
-  it("has a header and one row per notifiable state, without the footer or Recibido", () => {
+  it("has a header, one row per notifiable state and the Pago mail last, without the footer or Recibido", () => {
     expect(rows[0]).toEqual(["Estado", "Asunto", "Mensaje"]);
-    expect(rows.slice(1).map((r) => r[0])).toEqual(ESTADOS.filter((e) => e !== "Nuevo"));
+    expect(rows.slice(1).map((r) => r[0])).toEqual([
+      ...ESTADOS.filter((e) => e !== "Nuevo"),
+      "Pago",
+    ]);
     for (const r of rows.slice(1)) expect(r[2]).not.toContain("Atentamente");
   });
   it("round-trips through the Plantillas parser", () => {
@@ -23,7 +27,8 @@ describe("buildPlantillasRows", () => {
       subject: DEFAULT_TEMPLATES.Listo.subject,
       body: DEFAULT_TEMPLATES.Listo.body,
     });
-    expect(parsed.size).toBe(7);
+    expect(parsed.size).toBe(8);
+    expect(parsed.get("Pago")?.body).toContain("{{datosPago}}");
   });
 });
 
@@ -68,7 +73,7 @@ describe("setupSheet", () => {
     expect(writes.find((w) => w.range === "Pedidos!A1")?.requestBody.values[0]).toEqual([
       ...HEADERS,
     ]);
-    expect(writes.find((w) => w.range === "Plantillas!A1")?.requestBody.values).toHaveLength(8);
+    expect(writes.find((w) => w.range === "Plantillas!A1")?.requestBody.values).toHaveLength(9);
     expect(writes.find((w) => w.range === "Config!A1")).toBeTruthy();
     const requests = f.batchUpdate.mock.calls.flatMap((c) => c[0].requestBody.requests);
     expect(requests.some((r: Record<string, unknown>) => "addSheet" in r)).toBe(true);
@@ -93,7 +98,14 @@ describe("setupSheet", () => {
         ["RETIRO_HORARIO", "L-V"],
         ["ENVIO_AUTOMATICO", "SI"],
         ["ELIMINAR_ARCHIVOS_DIAS", "45"],
+        ["BANCO_TITULAR", ""],
+        ["BANCO_RUT", ""],
+        ["BANCO_BANCO", ""],
+        ["BANCO_TIPO_CUENTA", ""],
+        ["BANCO_CUENTA", ""],
+        ["BANCO_CORREO", ""],
       ],
+      Ingresos: [["Fecha"]],
       Envíos: [["Fecha"]],
     });
     await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
@@ -149,5 +161,72 @@ describe("setupSheet", () => {
       "ELIMINAR_ARCHIVOS_DIAS",
       "30",
     ]);
+  });
+});
+
+describe("setupSheet: payment additions", () => {
+  const cfg = { sheetId: "SID", sheetTab: "Pedidos" };
+  const run = async (existing: Record<string, string[][]>) => {
+    const f = fakeClient(existing);
+    const report = await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    return { f, report, writes: f.update.mock.calls.map((c) => c[0]) };
+  };
+  it("adds the Pago and Fecha compromiso headers in V1 and W1 without touching existing ones", async () => {
+    const { writes } = await run({ Pedidos: [[...HEADERS, "Enviar"]] });
+    expect(writes.find((w) => w.range === "Pedidos!V1")?.requestBody.values).toEqual([["Pago"]]);
+    expect(writes.find((w) => w.range === "Pedidos!W1")?.requestBody.values).toEqual([
+      ["Fecha compromiso"],
+    ]);
+    const done = await run({ Pedidos: [[...HEADERS, "Enviar", "Pago", "Fecha compromiso"]] });
+    const ranges = done.writes.map((w) => w.range);
+    expect(ranges).not.toContain("Pedidos!V1");
+    expect(ranges).not.toContain("Pedidos!W1");
+  });
+  it("creates the Ingresos ledger tab with headers", async () => {
+    const { writes, report } = await run({ Pedidos: [] });
+    expect(report.created).toContain("Ingresos");
+    expect(writes.find((w) => w.range === "Ingresos!A1")?.requestBody.values[0]).toEqual([
+      ...INGRESOS_HEADERS,
+    ]);
+  });
+  it("seeds the six empty BANCO_* keys in Config and keeps filled ones", () => {
+    const merged = mergeConfigRows([
+      ["Clave", "Valor"],
+      ["BANCO_RUT", "11.111.111-1"],
+    ]);
+    for (const key of [
+      "BANCO_TITULAR",
+      "BANCO_BANCO",
+      "BANCO_TIPO_CUENTA",
+      "BANCO_CUENTA",
+      "BANCO_CORREO",
+    ])
+      expect(merged).toContainEqual([key, ""]);
+    expect(merged).toContainEqual(["BANCO_RUT", "11.111.111-1"]);
+    expect(merged.filter((r) => r[0] === "BANCO_RUT")).toHaveLength(1);
+  });
+  it("appends the missing Pago template below the operator's rows and never edits theirs", async () => {
+    const { writes } = await run({
+      Pedidos: [],
+      Plantillas: [
+        ["Estado", "Asunto", "Mensaje"],
+        ["Listo", "mi asunto", "mi mensaje"],
+      ],
+    });
+    const w = writes.find((x) => x.range === "Plantillas!A3");
+    expect(w?.requestBody.values).toEqual([
+      ["Pago", DEFAULT_TEMPLATES.Pago.subject, DEFAULT_TEMPLATES.Pago.body],
+    ]);
+    expect(writes.map((x) => x.range)).not.toContain("Plantillas!A1");
+  });
+  it("does not add Pago again when the operator already has it", async () => {
+    const { writes } = await run({
+      Pedidos: [],
+      Plantillas: [
+        ["Estado", "Asunto", "Mensaje"],
+        ["Pago", "x", "y"],
+      ],
+    });
+    expect(writes.some((x) => x.range.startsWith("Plantillas!"))).toBe(false);
   });
 });

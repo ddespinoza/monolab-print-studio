@@ -134,3 +134,15 @@ Created through the Coolify v4.4.6 REST API (no Coolify MCP was connected): proj
 - **Volume** `/app/data`; **scheduled task** `status-tick` every 5 minutes runs a Node `fetch` against `127.0.0.1:3000/api/cron/tick` with `CRON_SECRET` (first run logged `tick 200`).
 - **Verified live over HTTP on the temporary sslip.io address**: home page renders with the live Config tab, tick answers 401 without the secret and `{"processed":0,...}` with it, security headers present, Node v24.10.0.
 - **Pending**: attach the real domain (needs Cloudflare/DNS), set the real `SMTP_PASS` (currently a placeholder, so no email is sent), real pickup address in the Config tab, rotate the Coolify API token and the Google service-account key that were shared in chat.
+
+## Cloudflare and domain go-live (2026-10-15)
+
+Done through the Cloudflare API with a scoped, expiring token (DNS, Zone Settings, Cache Rules, Email Routing; limited to this zone). Zone `monolabprintstudio.cl` on the Free plan, nameservers delegated at NIC Chile.
+
+- **DNS**: proxied `A @` and `A www` to the VPS; the onboarding placeholder `AAAA 100::` removed.
+- **Old redirect**: the zone still had rules sending the bare domain to the Apps Script prototype (redirect plus a second rule). The owner removed them; they also blocked Let's Encrypt validation until removed. The prototype no longer serves the bare domain.
+- **TLS**: origin certificate issued by Let's Encrypt through Coolify's Traefik (after the redirect was gone); Cloudflare SSL mode **Full (strict)**; Always Use HTTPS on.
+- **Cache rule** `Bypass cache for API and confirm pages` (`/api/`, `/confirmar/`); verified `cache-control: no-store` and `cf-cache-status: DYNAMIC` on the tick.
+- **Email Routing**: `contacto@monolabprintstudio.cl` forwards to the operator Gmail (destination already verified); MX, DKIM, a single merged SPF (`include:_spf.mx.cloudflare.net include:_spf.google.com`) and `_dmarc p=none`.
+- **Verified live**: HTTPS on `monolabprintstudio.cl` and `www`, tick 401/200 behaviour, http to https redirect.
+- **Not yet done**: Gmail "Send mail as contacto@" and the app password (until then the app's emails would not carry the public address, see below), real pickup address, rotate the shared tokens (Cloudflare expires 2026-10-22), a real end-to-end order and quote on the live site.

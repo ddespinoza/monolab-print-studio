@@ -210,3 +210,122 @@ describe("Monolab.gs: Eliminar archivos del pedido", () => {
     expect(b.ui.alert).toHaveBeenLastCalledWith(expect.stringMatching(/Clave incorrecta/));
   });
 });
+
+describe("Monolab.gs: pagos", () => {
+  type Ctx = {
+    enviarDatosPago: () => void;
+    marcarPagado: () => void;
+    mostrarVersion: () => void;
+    montoDesdeTexto_: (t: string) => number;
+  };
+  function withUi(
+    answer: "YES" | "NO",
+    amountText: string | null,
+    response: { code: number; body?: unknown },
+  ) {
+    const base = load(response);
+    const ui = {
+      alert: vi
+        .fn()
+        .mockImplementation((_t: string, _m?: string, set?: string) => (set ? answer : undefined)),
+      prompt: vi.fn().mockReturnValue({
+        getSelectedButton: () => (amountText === null ? "CANCEL" : "OK"),
+        getResponseText: () => amountText ?? "",
+      }),
+      Button: { YES: "YES", NO: "NO", OK: "OK" },
+      ButtonSet: { YES_NO: "YES_NO", OK_CANCEL: "OK_CANCEL" },
+    };
+    const sheet = {
+      getName: () => "Pedidos",
+      getActiveCell: () => ({ getRow: () => 5 }),
+      getRange: () => ({ getValue: () => "ML-0007" }),
+    };
+    Object.assign(base.ctx, { SpreadsheetApp: { getUi: () => ui, getActiveSheet: () => sheet } });
+    return { ...base, ui, ctx: base.ctx as unknown as Ctx };
+  }
+  const payload = (fetch: ReturnType<typeof vi.fn>) => JSON.parse(fetch.mock.calls[0][1].payload);
+
+  it("enviarDatosPago asks first, then calls the payment action and shows the site's message", () => {
+    const body = {
+      results: [
+        { orderId: "ML-0007", status: "payment_sent", message: "Datos de pago enviados a a@b.cl." },
+      ],
+    };
+    const { ctx, fetch, ui } = withUi("YES", null, { code: 200, body });
+    ctx.enviarDatosPago();
+    expect(ui.alert.mock.calls[0][1]).toContain("ML-0007");
+    expect(payload(fetch)).toEqual({ action: "payment", orderId: "ML-0007" });
+    expect(ui.alert).toHaveBeenLastCalledWith("Datos de pago enviados a a@b.cl.");
+  });
+  it("enviarDatosPago does nothing when the operator says no", () => {
+    const { ctx, fetch } = withUi("NO", null, { code: 200, body: {} });
+    ctx.enviarDatosPago();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it.each([
+    ["45000", 45000],
+    ["45.000", 45000],
+    ["$45.000", 45000],
+    [" $ 1.250.000 ", 1250000],
+    ["  7 ", 7],
+  ])("reads the amount %j as %i", (text, value) => {
+    const { ctx } = withUi("YES", text, { code: 200, body: {} });
+    expect(ctx.montoDesdeTexto_(text)).toBe(value);
+  });
+  it.each(["", "abc", "0", "-5", "45,5", "45.5", "1.2.3", "45000 pesos", "1e5"])(
+    "rejects the amount %j",
+    (text) => {
+      const { ctx } = withUi("YES", text, { code: 200, body: {} });
+      expect(ctx.montoDesdeTexto_(text)).toBe(0);
+    },
+  );
+  it("marcarPagado prompts for the amount, confirms it, then calls markpaid", () => {
+    const body = {
+      results: [{ orderId: "ML-0007", status: "paid", message: "Pago de $45.000 registrado." }],
+    };
+    const { ctx, fetch, ui } = withUi("YES", "$45.000", { code: 200, body });
+    ctx.marcarPagado();
+    expect(ui.prompt).toHaveBeenCalledTimes(1);
+    expect(ui.alert.mock.calls[0][1]).toMatch(/45\.000/);
+    expect(payload(fetch)).toEqual({ action: "markpaid", orderId: "ML-0007", amount: 45000 });
+    expect(ui.alert).toHaveBeenLastCalledWith("Pago de $45.000 registrado.");
+  });
+  it("marcarPagado stops on cancel, on an unreadable amount and on a 'no' to the confirmation", () => {
+    for (const [answer, text] of [
+      ["YES", null],
+      ["YES", "mucho"],
+      ["NO", "45000"],
+    ] as const) {
+      const { ctx, fetch, ui } = withUi(answer, text, { code: 200, body: {} });
+      ctx.marcarPagado();
+      expect(fetch).not.toHaveBeenCalled();
+      if (text === "mucho") expect(ui.alert.mock.calls[0][0]).toMatch(/monto/i);
+    }
+  });
+  it("mostrarVersion tells the operator which copy of the script is installed", () => {
+    const { ctx, ui } = withUi("YES", null, { code: 200, body: {} });
+    ctx.mostrarVersion();
+    expect(ui.alert.mock.calls[0][0]).toMatch(/Versión/);
+    expect(ui.alert.mock.calls[0][0]).toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+  it("the menu lists the new payment items", () => {
+    const items: string[] = [];
+    const menu = {
+      addItem: (label: string) => (items.push(label), menu),
+      addSeparator: () => menu,
+      addToUi: () => menu,
+    };
+    const { ctx } = withUi("YES", null, { code: 200, body: {} });
+    Object.assign(ctx, {
+      SpreadsheetApp: { getUi: () => ({ createMenu: () => menu }) },
+    });
+    (ctx as unknown as { onOpen: () => void }).onOpen();
+    expect(items).toEqual(
+      expect.arrayContaining([
+        "Enviar datos de transferencia",
+        "Marcar pagado",
+        "Versión del script",
+      ]),
+    );
+  });
+});

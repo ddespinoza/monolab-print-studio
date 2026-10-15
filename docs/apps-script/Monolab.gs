@@ -6,6 +6,7 @@
 var HOJA_PEDIDOS = "Pedidos";
 var COL_ENVIAR = 21; // U
 var SITIO_POR_DEFECTO = "https://monolabprintstudio.cl";
+var VERSION_SCRIPT = "2026-10-15 (pagos)";
 var AVISO_REENVIO = "Ya se envió este correo. Marque la casilla otra vez para reenviarlo.";
 
 function onOpen() {
@@ -15,10 +16,14 @@ function onOpen() {
     .addItem("Enviar correos pendientes", "enviarPendientes")
     .addItem("Enviar prueba a mi correo", "enviarPrueba")
     .addSeparator()
+    .addItem("Enviar datos de transferencia", "enviarDatosPago")
+    .addItem("Marcar pagado", "marcarPagado")
+    .addSeparator()
     .addItem("Eliminar archivos del pedido", "eliminarArchivosPedido")
     .addSeparator()
     .addItem("Activar casilla «Enviar»", "instalarCasilla")
     .addItem("Configurar conexión", "configurarConexion")
+    .addItem("Versión del script", "mostrarVersion")
     .addToUi();
 }
 
@@ -99,6 +104,64 @@ function enviarPrueba() {
   if (!id) return;
   var r = llamarSitio_({ action: "test", orderId: id });
   ui.alert(r.ok ? r.data.results[0].message : r.error);
+}
+
+/** Envía al cliente del pedido seleccionado los datos para transferir (correo «Pago»). Se puede repetir. */
+function enviarDatosPago() {
+  var ui = SpreadsheetApp.getUi();
+  var id = pedidoSeleccionado_();
+  if (!id) return;
+  var ok = ui.alert(
+    "Enviar datos de transferencia",
+    "Se enviará al cliente del pedido " +
+      id +
+      " su cotización y los datos para transferir. ¿Continuar?",
+    ui.ButtonSet.YES_NO,
+  );
+  if (ok !== ui.Button.YES) return;
+  var r = llamarSitio_({ action: "payment", orderId: id });
+  ui.alert(r.ok ? r.data.results[0].message : r.error);
+}
+
+/** Pesos enteros desde lo que escribe el operador (45000, 45.000, $45.000), o 0 si no se entiende. */
+function montoDesdeTexto_(texto) {
+  var t = String(texto).replace(/[\s$]/g, "");
+  var n = 0;
+  if (/^\d+$/.test(t)) n = Number(t);
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) n = Number(t.replace(/\./g, ""));
+  return n > 0 && n <= 100000000 ? n : 0;
+}
+
+function formatoMonto_(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+/** Registra un pago recibido: una fila en Ingresos y «Pagado» en la columna Pago. Pide el monto. */
+function marcarPagado() {
+  var ui = SpreadsheetApp.getUi();
+  var id = pedidoSeleccionado_();
+  if (!id) return;
+  var entrada = ui.prompt(
+    "Marcar pagado: " + id,
+    "Monto recibido, en pesos (solo números, por ejemplo 45000):",
+    ui.ButtonSet.OK_CANCEL,
+  );
+  if (entrada.getSelectedButton() !== ui.Button.OK) return;
+  var monto = montoDesdeTexto_(entrada.getResponseText());
+  if (!monto)
+    return void ui.alert("Monto no válido", "Escriba un número entero de pesos mayor que cero.");
+  var ok = ui.alert(
+    "Confirmar pago",
+    "Se registrará un pago de $" + formatoMonto_(monto) + " para el pedido " + id + ". ¿Continuar?",
+    ui.ButtonSet.YES_NO,
+  );
+  if (ok !== ui.Button.YES) return;
+  var r = llamarSitio_({ action: "markpaid", orderId: id, amount: monto });
+  ui.alert(r.ok ? r.data.results[0].message : r.error);
+}
+
+function mostrarVersion() {
+  SpreadsheetApp.getUi().alert("Versión del script: " + VERSION_SCRIPT);
 }
 
 /** Borra de forma definitiva la carpeta de Drive del pedido seleccionado (solo Entregado o Cancelado). */

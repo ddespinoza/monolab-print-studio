@@ -55,6 +55,9 @@ Con `ENVIO_AUTOMATICO` = `NO` en **Config**, el sitio no envía nada por sí sol
 - _Enviar correo de esta fila_: igual que la casilla, para la fila seleccionada; si ya se envió, pregunta si desea reenviarlo.
 - _Enviar correos pendientes_: envía a todos los pedidos cuyo Estado cambió y aún no tienen su correo (hasta 50 por vez).
 - _Enviar prueba a mi correo_: envía el correo de esa fila solo a usted, con «[PRUEBA]» en el asunto. No marca el pedido como enviado.
+- _Enviar datos de transferencia_: envía al cliente del pedido seleccionado su cotización y la cuenta para pagar (ver «Pagos»).
+- _Marcar pagado_: pide el monto recibido en pesos, lo confirma y lo registra (ver «Pagos»).
+- _Versión del script_: muestra qué copia del script está instalada.
 - _Eliminar archivos del pedido_: borra de forma definitiva la carpeta de Drive con los archivos 3D de la fila seleccionada. Solo funciona con pedidos `Entregado` o `Cancelado`, pide confirmación y no se puede deshacer. Anota «Eliminado» y la fecha en la columna **Archivos (Drive)** y deja el registro en **Envíos**.
 
 Cada intento queda registrado en la hoja **Envíos** (fecha, pedido, estado, destinatario, resultado). No se envía si el Estado es `Nuevo`, si la fila no tiene correo, o si es `Cotizado` sin valor en **Cotización**.
@@ -62,12 +65,14 @@ Cada intento queda registrado en la hoja **Envíos** (fecha, pedido, estado, des
 **Instalación (una sola vez, unos 5 minutos):**
 
 1. Abra la planilla de **pedidos** (no la planilla prototipo) y vaya a _Extensiones > Apps Script_.
-2. Borre el contenido de `Código.gs` y pegue el archivo `docs/apps-script/Monolab.gs`. Guarde.
+2. Borre el contenido de `Código.gs` y pegue el archivo `docs/apps-script/Monolab.gs`. Guarde. (Las instrucciones paso a paso están también en `docs/apps-script/LEEME-es.md`.)
 3. Opcional: en _Configuración del proyecto_ active «Mostrar el archivo de manifiesto» y pegue `docs/apps-script/appsscript.json`.
 4. Vuelva a la planilla y recargue la página. Aparece el menú **Monolab**.
 5. _Monolab > Configurar conexión_: deje la dirección en blanco y pegue la clave de envío (`SHEET_SECRET`). Google pedirá autorizar el script la primera vez.
 6. _Monolab > Activar casilla «Enviar»_ (autoriza de nuevo una vez).
 7. Pruebe con _Enviar prueba a mi correo_ en una fila con Estado distinto de `Nuevo`.
+
+**Después de una actualización del archivo**, pegue de nuevo `Monolab.gs` completo en el mismo lugar y recargue la planilla; no hace falta repetir la conexión ni la casilla.
 
 Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config** (se aplica en menos de 5 minutos).
 
@@ -87,7 +92,7 @@ Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config*
 
 - El correo **Confirmado** incluye los datos para transferir (bloque «Datos para transferir»), de modo que el cliente sabe cómo pagar apenas confirma.
 - El correo **Pago** (pestaña **Plantillas**, fila `Pago`) reenvía esos datos junto con la cotización; no cambia el Estado ni se registra como «ya enviado», así que puede repetirlo. Solo se envía si el pedido ya está confirmado (Confirmado a Entregado), tiene Cotización y **Config** tiene todos los `BANCO_*`.
-- **Registrar un pago:** cuando llegue la transferencia, se anota el monto en pesos (número entero); eso agrega una fila en la pestaña **Ingresos** (fecha, pedido, monto, método) y deja `Pagado` en la columna **Pago**. Un pedido ya pagado no se puede registrar dos veces. El monto lo escribe usted: el sistema no lo deduce del texto de la cotización.
+- **Registrar un pago:** cuando llegue la transferencia, use _Monolab > Marcar pagado_ en la fila del pedido: se anota el monto en pesos (número entero); eso agrega una fila en la pestaña **Ingresos** (fecha, pedido, monto, método) y deja `Pagado` en la columna **Pago**. Un pedido ya pagado no se puede registrar dos veces. El monto lo escribe usted: el sistema no lo deduce del texto de la cotización.
 - Los datos de la cuenta se escriben solo en **Config**: `BANCO_TITULAR`, `BANCO_RUT`, `BANCO_BANCO`, `BANCO_TIPO_CUENTA`, `BANCO_CUENTA` y, opcional, `BANCO_CORREO`. Si falta alguno (salvo el correo) no se envía ningún dato bancario.
 
 ## Panel y stock de resina

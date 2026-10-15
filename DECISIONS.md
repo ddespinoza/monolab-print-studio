@@ -257,3 +257,9 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 - **Verified live** by reading computed values back: counts by Estado, correos pendientes, unpaid orders, overdue and due-today deliveries (real dates only; finished orders excluded), lots Bajo/OK/Agotado, income for the month and in total (the ledger stores amounts as text, so the formulas wrap them in `VALUE`). Temporary test rows were removed afterwards.
 - **Unpaid** counts Confirmado to Entregado orders without `Pagado`; it is a count, not an amount, because quotes are free text. The income lines sum the Ingresos tab.
 - No deploy needed: the new module is only used by the setup script.
+
+## Phase 6.5: Apps Script refresh (owner, 2026-10-15)
+
+- The owner has **no Apps Script pasted yet**, so the folder `docs/apps-script/` is the full install package: `Monolab.gs` (all code, replaces `Código.gs`), `appsscript.json` (minimum scopes, optional) and `LEEME-es.md` (install steps, what each menu item does, the "unverified app" warning). The owner pastes it later; the 6.3 payment actions have no button until then.
+- New menu items: **Enviar datos de transferencia** (`payment`, asks first, repeatable) and **Marcar pagado** (prompts for whole pesos, accepts `45000`, `45.000` or `$45.000`, rejects decimals and text, asks to confirm, then `markpaid`), plus **Versión del script** (`VERSION_SCRIPT`, currently "2026-10-15 (pagos)") so the owner can tell which copy is installed. The script still holds no template text, bank data or secrets in cells (`SHEET_SECRET` in Script Properties).
+- Tested by running the file in a vm sandbox against fakes (`tests/apps-script.test.ts`): amount parsing, confirmations, cancel paths, menu entries and the unchanged checkbox flow. Not yet run inside a real sheet: that needs the owner's paste, authorisation and the key; verification live follows.

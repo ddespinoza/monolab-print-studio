@@ -1,6 +1,16 @@
 import type { sheets_v4 } from "googleapis";
 import { HEADERS } from "@/lib/order-row";
 import { withRetry, type RetryOptions } from "@/lib/retry";
+import {
+  PANEL_TAB,
+  argumentSeparator,
+  localizeFormula,
+  STOCK_MIN_DEFAULT,
+  STOCK_MIN_KEY,
+  STOCK_TAB,
+  buildPanelRows,
+  buildStockRows,
+} from "@/lib/sheet-panel";
 import { BANK_KEYS, CONFIG_DEFAULTS } from "@/lib/sheet-config";
 import { DEFAULT_TEMPLATES, type TemplateKey } from "@/lib/templates";
 import { ESTADOS } from "@/lib/validation";
@@ -46,6 +56,7 @@ export function mergeConfigRows(existing: readonly (readonly string[])[]): strin
   for (const [key, value] of Object.entries(CONFIG_DEFAULTS)) {
     if (!rows.some((r) => r[0] === key)) rows.push([key, String(value)]);
   }
+  if (!rows.some((r) => r[0] === STOCK_MIN_KEY)) rows.push([STOCK_MIN_KEY, STOCK_MIN_DEFAULT]);
   for (const key of Object.keys(BANK_KEYS))
     if (!rows.some((r) => r[0] === key)) rows.push([key, ""]);
   return rows;
@@ -70,15 +81,24 @@ export async function setupSheet(
   const report: SetupReport = { created: [], seeded: [] };
 
   const meta = await withRetry(
-    () => api.get({ spreadsheetId, fields: "sheets.properties(sheetId,title)" }),
+    () => api.get({ spreadsheetId, fields: "properties.locale,sheets.properties(sheetId,title)" }),
     retry,
   );
+  const separator = argumentSeparator(meta.data.properties?.locale ?? undefined);
   const ids = new Map<string, number>();
   for (const s of meta.data.sheets ?? []) {
     if (s.properties?.title && typeof s.properties.sheetId === "number")
       ids.set(s.properties.title, s.properties.sheetId);
   }
-  for (const title of [pedidos, "Plantillas", "Config", "Envíos", "Ingresos"]) {
+  for (const title of [
+    pedidos,
+    "Plantillas",
+    "Config",
+    "Envíos",
+    "Ingresos",
+    PANEL_TAB,
+    STOCK_TAB,
+  ]) {
     if (ids.has(title)) continue;
     const res = await withRetry(
       () =>
@@ -96,16 +116,18 @@ export async function setupSheet(
     (
       (await withRetry(() => api.values.get({ spreadsheetId, range }), retry)).data.values ?? []
     ).map((r) => r.map(String));
-  const write = (range: string, values: string[][]): Promise<unknown> =>
+  const put = (range: string, values: string[][], valueInputOption: "RAW" | "USER_ENTERED") =>
     withRetry(
-      () =>
-        api.values.update({
-          spreadsheetId,
-          range,
-          valueInputOption: "RAW",
-          requestBody: { values },
-        }),
+      () => api.values.update({ spreadsheetId, range, valueInputOption, requestBody: { values } }),
       retry,
+    );
+  const write = (range: string, values: string[][]): Promise<unknown> => put(range, values, "RAW");
+  /** Only for the formula tabs built by this module, never for operator or customer text. */
+  const writeFormulas = (range: string, values: string[][]): Promise<unknown> =>
+    put(
+      range,
+      values.map((row) => row.map((cell) => localizeFormula(cell, separator))),
+      "USER_ENTERED",
     );
 
   const header = await read(`${pedidos}!A1:W1`);
@@ -144,6 +166,14 @@ export async function setupSheet(
   if ((await read("Envíos!A1:F1")).length === 0) {
     await write("Envíos!A1", [[...ENVIOS_HEADERS]]);
     report.seeded.push("Envíos");
+  }
+  if ((await read(`${PANEL_TAB}!A1:B1`)).length === 0) {
+    await writeFormulas(`${PANEL_TAB}!A1`, buildPanelRows(pedidos));
+    report.seeded.push(PANEL_TAB);
+  }
+  if ((await read(`'${STOCK_TAB}'!A1:F1`)).length === 0) {
+    await writeFormulas(`'${STOCK_TAB}'!A1`, buildStockRows());
+    report.seeded.push(STOCK_TAB);
   }
   const config = await read("Config!A1:B");
   const merged = mergeConfigRows(config);

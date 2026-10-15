@@ -50,7 +50,7 @@ function fakeClient(existing: Record<string, string[][]>) {
     data: { sheets: tabs.map((t, i) => ({ properties: { title: t, sheetId: i + 1 } })) },
   });
   const valuesGet = vi.fn().mockImplementation(async ({ range }: { range: string }) => ({
-    data: { values: existing[range.split("!")[0]] ?? [] },
+    data: { values: existing[range.split("!")[0].replace(/^'|'$/g, "")] ?? [] },
   }));
   const update = vi.fn().mockResolvedValue({ data: {} });
   const batchUpdate = vi
@@ -104,8 +104,11 @@ describe("setupSheet", () => {
         ["BANCO_TIPO_CUENTA", ""],
         ["BANCO_CUENTA", ""],
         ["BANCO_CORREO", ""],
+        ["STOCK_MINIMO_ML", "200"],
       ],
       Ingresos: [["Fecha"]],
+      Panel: [["Panel Monolab"]],
+      "Stock resinas": [["Lote"]],
       Envíos: [["Fecha"]],
     });
     await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
@@ -228,5 +231,64 @@ describe("setupSheet: payment additions", () => {
       ],
     });
     expect(writes.some((x) => x.range.startsWith("Plantillas!"))).toBe(false);
+  });
+});
+
+describe("setupSheet: Panel and Stock resinas", () => {
+  const cfg = { sheetId: "SID", sheetTab: "Pedidos" };
+  const run = async (existing: Record<string, string[][]>) => {
+    const f = fakeClient(existing);
+    const report = await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    return { report, calls: f.update.mock.calls.map((c) => c[0]) };
+  };
+  it("creates both tabs and writes their formulas as USER_ENTERED", async () => {
+    const { report, calls } = await run({ Pedidos: [] });
+    expect(report.created).toEqual(expect.arrayContaining(["Panel", "Stock resinas"]));
+    const panel = calls.find((c) => c.range === "Panel!A1");
+    const stock = calls.find((c) => c.range === "'Stock resinas'!A1");
+    expect(panel?.valueInputOption).toBe("USER_ENTERED");
+    expect(stock?.valueInputOption).toBe("USER_ENTERED");
+    expect(
+      panel?.requestBody.values.flat().some((c: string) => c.startsWith("=COUNTIF('Pedidos'!")),
+    ).toBe(true);
+    expect(stock?.requestBody.values[1][4]).toBe('=IF(A2="","",C2-D2)');
+  });
+  it("never rewrites a Panel or Stock resinas tab that already has content", async () => {
+    const { calls } = await run({
+      Pedidos: [],
+      Panel: [["mi panel"]],
+      "Stock resinas": [["Lote"]],
+    });
+    const ranges = calls.map((c) => c.range);
+    expect(ranges).not.toContain("Panel!A1");
+    expect(ranges).not.toContain("'Stock resinas'!A1");
+  });
+  it("seeds STOCK_MINIMO_ML=200 in Config without touching an existing value", () => {
+    expect(mergeConfigRows([["Clave", "Valor"]])).toContainEqual(["STOCK_MINIMO_ML", "200"]);
+    expect(mergeConfigRows([["STOCK_MINIMO_ML", "500"]])).toContainEqual([
+      "STOCK_MINIMO_ML",
+      "500",
+    ]);
+  });
+  it("writes formulas with the sheet locale's argument separator", async () => {
+    const f = fakeClient({ Pedidos: [] });
+    f.get.mockResolvedValue({
+      data: {
+        properties: { locale: "es_ES" },
+        sheets: [{ properties: { title: "Pedidos", sheetId: 1 } }],
+      },
+    });
+    await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    const panel = f.update.mock.calls.map((c) => c[0]).find((c) => c.range === "Panel!A1");
+    const formulas: string[] = panel.requestBody.values
+      .flat()
+      .filter((c: string) => c.startsWith("="));
+    expect(formulas.some((x) => x.startsWith("=COUNTIF('Pedidos'!C2:C2000;A"))).toBe(true);
+    for (const x of formulas) expect(x.replace(/"[^"]*"/g, "")).not.toContain(",");
+  });
+  it("keeps formulas out of every RAW write", async () => {
+    const { calls } = await run({ Pedidos: [] });
+    for (const c of calls.filter((x) => x.valueInputOption === "RAW"))
+      expect(JSON.stringify(c.requestBody.values)).not.toMatch(/"=(COUNTIF|SUMPRODUCT|IF)/);
   });
 });

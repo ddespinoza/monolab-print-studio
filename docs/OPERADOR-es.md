@@ -1,6 +1,6 @@
 # Guía del operador
 
-Todo se maneja desde la planilla de Google. No hay otro panel. La planilla tiene tres pestañas: **Pedidos**, **Plantillas** y **Config**.
+Todo se maneja desde la planilla de Google. No hay otro panel. Pestañas: **Pedidos**, **Plantillas**, **Config**, **Envíos** (registro de correos), **Ingresos** (pagos recibidos), **Panel** (resumen) y **Stock resinas**.
 
 ## Qué pasa cuando llega una solicitud
 
@@ -75,6 +75,8 @@ Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config*
 
 `RETIRO_DIRECCION` y `RETIRO_HORARIO`: aparecen en el sitio y en el correo «Listo». Los cambios se ven en el sitio en menos de 5 minutos.
 
+`STOCK_MINIMO_ML`: ml bajo los cuales un lote de resina figura como `Bajo` (por defecto `200`).
+
 `BANCO_*`: cuenta para recibir transferencias (ver «Pagos»).
 
 `ELIMINAR_ARCHIVOS_DIAS`: días entre el correo «Entregado» o «Cancelado» y la eliminación automática de la carpeta de Drive (por defecto `30`). `0` o `NO` la desactiva; un valor ilegible también la desactiva. El plazo parte cuando se envía ese correo: si no lo envía, los archivos no se eliminan solos. Cada eliminación queda en **Envíos** con origen «Eliminación automática» y se anota en **Archivos (Drive)**.
@@ -87,6 +89,13 @@ Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config*
 - El correo **Pago** (pestaña **Plantillas**, fila `Pago`) reenvía esos datos junto con la cotización; no cambia el Estado ni se registra como «ya enviado», así que puede repetirlo. Solo se envía si el pedido ya está confirmado (Confirmado a Entregado), tiene Cotización y **Config** tiene todos los `BANCO_*`.
 - **Registrar un pago:** cuando llegue la transferencia, se anota el monto en pesos (número entero); eso agrega una fila en la pestaña **Ingresos** (fecha, pedido, monto, método) y deja `Pagado` en la columna **Pago**. Un pedido ya pagado no se puede registrar dos veces. El monto lo escribe usted: el sistema no lo deduce del texto de la cotización.
 - Los datos de la cuenta se escriben solo en **Config**: `BANCO_TITULAR`, `BANCO_RUT`, `BANCO_BANCO`, `BANCO_TIPO_CUENTA`, `BANCO_CUENTA` y, opcional, `BANCO_CORREO`. Si falta alguno (salvo el correo) no se envía ningún dato bancario.
+
+## Panel y stock de resina
+
+- **Panel** es de solo lectura: se calcula solo con fórmulas. Muestra los pedidos por estado, el total, y lo que requiere atención: correos pendientes de enviar, cotizaciones esperando confirmación, pedidos por pagar (confirmados sin `Pagado`), entregas vencidas y para hoy, lotes de resina bajos o agotados, e ingresos del mes y totales. No escriba en esa pestaña.
+- **Fecha compromiso** (columna W de Pedidos) debe ser una **fecha de verdad** (por ejemplo `20/10/2026`) para que el Panel cuente las entregas vencidas y las de hoy; el texto libre no se cuenta. Los pedidos `Entregado` o `Cancelado` nunca figuran como vencidos.
+- **Stock resinas:** una fila por lote. Escriba **Lote**, **Resina**, **ml iniciales** y **ml usados** (usted suma a mano lo que consume cada pedido; no hay cálculo automático). Las columnas **ml restantes** y **Estado** se calculan: `OK`, `Bajo` (menos que `STOCK_MINIMO_ML` de **Config**, 200 ml por defecto) o `Agotado`.
+- Si el Panel o Stock resinas muestran un error o se borraron por accidente, avise para regenerarlos.
 
 ## Importante
 

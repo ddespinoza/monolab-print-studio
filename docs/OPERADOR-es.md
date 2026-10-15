@@ -15,11 +15,11 @@ Todo se maneja desde la planilla de Google. No hay otro panel. La planilla tiene
 3. Cuando el cliente confirma, la planilla cambia sola a `Confirmado` (columna _Confirmado_ con la fecha) y usted recibe un correo. El cliente recibe un correo de confirmación.
 4. Pase el pedido a `En cola`, luego `Imprimiendo`, `Listo` (el correo indica la dirección de retiro) y `Entregado`. Use `Cancelado` si corresponde.
 
-Cada cambio de **Estado** envía automáticamente el correo de ese estado. Excepción: `Cotizado` no se envía si la columna **Cotización** está vacía.
+Los correos se envían según el modo de `ENVIO_AUTOMATICO` en **Config** (ver «Envío con botones»). Con `SI`, cada cambio de **Estado** envía automáticamente el correo de ese estado en unos 5 minutos. Con `NO` (modo inicial), solo se envían al usar los botones. Excepción: `Cotizado` no se envía si la columna **Cotización** está vacía.
 
 ## Columnas de Pedidos
 
-A ID Pedido · B Fecha · C **Estado** · D Odontólogo · E Email · F WhatsApp · G Iniciales paciente · H Entrega (Flash 2 días / Normal 7 días) · I Tarifa entrega (CLP) · J Archivos (Drive) · K Nº archivos · L Volumen total (cm³) · M Detalle archivos · N Resina · O Copias · P Notas · Q **Cotización** · R Confirmado · S Estado notificado · T Última notificación.
+A ID Pedido · B Fecha · C **Estado** · D Odontólogo · E Email · F Teléfono · G Iniciales paciente · H Entrega (Flash 2 días / Normal 7 días) · I Tarifa entrega (CLP) · J Archivos (Drive) · K Nº archivos · L Volumen total (cm³) · M Detalle archivos · N Resina · O Copias · P Notas · Q **Cotización** · R Confirmado · S Estado notificado · T Última notificación · U **Enviar** (casilla; ver «Envío con botones»).
 
 Puede corregir cualquier celda (por ejemplo un correo mal escrito): el siguiente aviso usará el dato corregido.
 
@@ -36,15 +36,43 @@ Puede corregir cualquier celda (por ejemplo un correo mal escrito): el siguiente
 | Entregado                | Entregado, gracias                  |
 | Cancelado                | Cancelado                           |
 
-**Reenviar un correo:** borre el contenido de **Estado notificado** (columna S) de esa fila. En el siguiente ciclo se envía de nuevo el correo del Estado actual.
+**Reenviar un correo:** marque de nuevo la casilla **Enviar** (o use el menú y responda que sí). En modo automático también sirve borrar **Estado notificado** (columna S) de esa fila.
 
 **Cambiar un correo:** edite la fila del estado en **Plantillas** (columnas _Asunto_ y _Mensaje_). Se aplica en el siguiente ciclo. Si deja un campo vacío o escribe un estado que no existe, el sistema usa el texto original, así que no se puede romper el envío.
 
 Variables que puede usar: `{{nombre}}` `{{orderId}}` `{{resumen}}` `{{whatsappLink}}` `{{sitio}}` `{{retiro}}` y, en el correo de cotización, `{{cotizacion}}` `{{confirmLink}}`. Si escribe una variable que no existe queda tal cual. La firma («Atentamente, Equipo Monolab Print Studio») se agrega siempre.
 
+## Envío con botones
+
+Con `ENVIO_AUTOMATICO` = `NO` en **Config**, el sitio no envía nada por sí solo: usted decide cuándo sale cada correo. Se envía siempre el correo que corresponde al **Estado** actual del pedido (Cotizado = cotización, Listo = listo para retiro, etc.).
+
+**Casilla Enviar (columna U):** marque la casilla de la fila. En unos segundos el correo sale, la casilla se desmarca sola y una nota en la celda indica el resultado. Si ese correo ya se envió, la nota lo avisa y no lo repite; marque la casilla otra vez para reenviarlo.
+
+**Menú Monolab** (arriba, junto a «Ayuda»):
+
+- _Enviar correo de esta fila_: igual que la casilla, para la fila seleccionada; si ya se envió, pregunta si desea reenviarlo.
+- _Enviar correos pendientes_: envía a todos los pedidos cuyo Estado cambió y aún no tienen su correo (hasta 50 por vez).
+- _Enviar prueba a mi correo_: envía el correo de esa fila solo a usted, con «[PRUEBA]» en el asunto. No marca el pedido como enviado.
+
+Cada intento queda registrado en la hoja **Envíos** (fecha, pedido, estado, destinatario, resultado). No se envía si el Estado es `Nuevo`, si la fila no tiene correo, o si es `Cotizado` sin valor en **Cotización**.
+
+**Instalación (una sola vez, unos 5 minutos):**
+
+1. Abra la planilla de **pedidos** (no la planilla prototipo) y vaya a _Extensiones > Apps Script_.
+2. Borre el contenido de `Código.gs` y pegue el archivo `docs/apps-script/Monolab.gs`. Guarde.
+3. Opcional: en _Configuración del proyecto_ active «Mostrar el archivo de manifiesto» y pegue `docs/apps-script/appsscript.json`.
+4. Vuelva a la planilla y recargue la página. Aparece el menú **Monolab**.
+5. _Monolab > Configurar conexión_: deje la dirección en blanco y pegue la clave de envío (`SHEET_SECRET`). Google pedirá autorizar el script la primera vez.
+6. _Monolab > Activar casilla «Enviar»_ (autoriza de nuevo una vez).
+7. Pruebe con _Enviar prueba a mi correo_ en una fila con Estado distinto de `Nuevo`.
+
+Para volver al envío automático, cambie `ENVIO_AUTOMATICO` a `SI` en **Config** (se aplica en menos de 5 minutos).
+
 ## Config
 
 `RETIRO_DIRECCION` y `RETIRO_HORARIO`: aparecen en el sitio y en el correo «Listo». Los cambios se ven en el sitio en menos de 5 minutos.
+
+`ENVIO_AUTOMATICO`: `NO` (por defecto) = los correos de estado solo salen con los botones; `SI` = salen solos cada 5 minutos.
 
 ## Importante
 

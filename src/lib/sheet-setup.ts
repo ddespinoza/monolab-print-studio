@@ -15,6 +15,10 @@ export const ENVIOS_HEADERS = [
   "Origen",
 ] as const;
 
+/** Column U of Pedidos: tick it and the sheet script sends that row's email. Not part of an order row (A-T). */
+export const ENVIAR_HEADER = "Enviar";
+const ENVIAR_COLUMN_INDEX = 20;
+
 const NOTIFIABLE = ESTADOS.filter((e) => e !== "Nuevo");
 
 /** Plantillas tab content: Estado | Asunto | Mensaje. The footer is appended at send time, so it is not seeded. */
@@ -103,6 +107,10 @@ export async function setupSheet(
     await write(`${pedidos}!F1`, [["Teléfono"]]);
     report.seeded.push(`${pedidos} F1`);
   }
+  if ((header[0]?.[ENVIAR_COLUMN_INDEX] ?? "") === "") {
+    await write(`${pedidos}!U1`, [[ENVIAR_HEADER]]);
+    report.seeded.push(`${pedidos} U1`);
+  }
   if ((await read("Plantillas!A1:C")).length === 0) {
     await write("Plantillas!A1", buildPlantillasRows());
     report.seeded.push("Plantillas");
@@ -142,6 +150,18 @@ export async function setupSheet(
                   showCustomUi: true,
                   strict: true,
                 },
+              },
+            },
+            {
+              setDataValidation: {
+                range: {
+                  sheetId: pedidosId,
+                  startRowIndex: 1,
+                  endRowIndex: 2000,
+                  startColumnIndex: ENVIAR_COLUMN_INDEX,
+                  endColumnIndex: ENVIAR_COLUMN_INDEX + 1,
+                },
+                rule: { condition: { type: "BOOLEAN" }, strict: true },
               },
             },
             {

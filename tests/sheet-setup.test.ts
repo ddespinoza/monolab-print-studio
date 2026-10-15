@@ -113,6 +113,24 @@ describe("setupSheet", () => {
     await setupSheet(g.client as never, cfg, { sleep: vi.fn() });
     expect(g.update.mock.calls.map((c) => c[0].range)).not.toContain("Pedidos!F1");
   });
+  it("adds the Enviar header in U1 and a checkbox column, without touching an existing U1", async () => {
+    const f = fakeClient({ Pedidos: [] });
+    await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    const u1 = f.update.mock.calls.map((c) => c[0]).find((c) => c.range === "Pedidos!U1");
+    expect(u1?.requestBody.values).toEqual([["Enviar"]]);
+    const requests = f.batchUpdate.mock.calls.flatMap((c) => c[0].requestBody.requests);
+    const boxes = requests.find(
+      (r: Record<string, any>) => r.setDataValidation?.rule.condition.type === "BOOLEAN",
+    );
+    expect(boxes.setDataValidation.range).toMatchObject({
+      startColumnIndex: 20,
+      endColumnIndex: 21,
+      startRowIndex: 1,
+    });
+    const g = fakeClient({ Pedidos: [[...HEADERS, "Enviar"]] });
+    await setupSheet(g.client as never, cfg, { sleep: vi.fn() });
+    expect(g.update.mock.calls.map((c) => c[0].range)).not.toContain("Pedidos!U1");
+  });
   it("creates the Envíos log tab with headers and defaults ENVIO_AUTOMATICO to NO", async () => {
     const f = fakeClient({ Pedidos: [] });
     const report = await setupSheet(f.client as never, cfg, { sleep: vi.fn() });

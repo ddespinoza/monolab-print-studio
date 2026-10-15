@@ -23,3 +23,6 @@ Docs: Drive service accounts have no storage quota (developers.google.com/drive/
 ## Known issues
 
 - `npm audit` reports high-severity `braces` via eslint-config-next (dev-only lint tooling). `audit fix --force` would downgrade to Next 14 config; not applied. Revisit when upstream updates.
+
+## Light theme only (owner, 2026-10-15)
+Decision: the site uses the light palette only; no `prefers-color-scheme: dark` styles, `color-scheme: light` is set in globals.css. Consequence: the dark prussian-blue sections (hero, footer) are still part of the light design as brand contrast bands.

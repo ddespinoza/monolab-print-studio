@@ -18,6 +18,7 @@
   --gold-light: #ffd166;
   --gold-dark: #e5a93c;
   --border-brand: #1f2e4d;
+  color-scheme: light; /* light theme only, no dark mode */
 }
 
 @theme inline {

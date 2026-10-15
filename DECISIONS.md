@@ -223,4 +223,9 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 
 - **Phone**: +56 9 4862 3705 (the same number as the site's WhatsApp, `WHATSAPP_NUMBER=56948623705`). The prototype sheet's +56 9 8765 4321 is not used. Shown in the Contact section as a `tel:` link, in the email footer, and as `telephone` in the structured data (`PUBLIC_PHONE` in content.ts).
 - **Address**: Río Guadiana 8672, Las Condes, Santiago (from the prototype sheet's Configuracion tab). The live Config row `RETIRO_DIRECCION` was set to "Río Guadiana 8672, Las Condes, Santiago", which the site's pickup line and the Listo email read (cached up to 5 minutes). The structured data carries the street and commune from `PUBLIC_ADDRESS` in content.ts, so change both places if the address ever changes.
-- Still a placeholder: `RETIRO_HORARIO`.
+- `RETIRO_HORARIO` was a placeholder; see the next section.
+
+## Phase 6.1: pickup schedule (owner, 2026-10-15)
+
+- Pickup is **by appointment only**. Live Config `RETIRO_HORARIO` = "Solo previa coordinación: escríbanos o llámenos al +56 9 4862 3705." (read by the site and the Listo email, cached up to 5 minutes). The code fallback in `sheet-config.ts` uses the same text. The owner's answer was cut off after "Only", so the wording is an assumption to confirm.
+- Phase 6 plan (payment with `{{datosPago}}`, 30-day automatic purge, Panel and resin stock tabs, script refresh, SEO ownership) is in the session plan; each step gets its own section here.

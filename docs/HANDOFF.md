@@ -10,8 +10,7 @@ Date: 2026-10-15. Read `DECISIONS.md` (source of truth for behaviour) and `docs/
   sender `contacto@monolabprintstudio.cl`. `SMTP_PASS` (Gmail app password) is set in Coolify and local `.env` only.
 - **Verified**: 224 unit tests, 4 Playwright smoke tests, lint, tsc, build, `npm run check:rules`, `setup:check`, `test:live` all pass.
 - **Not yet done**: real order on the live site (receipt, Cotizado email with link, confirm page, Estado -> Confirmado);
-  ~90 MB upload through Cloudflare; real pickup address/schedule in the sheet Config tab (RETIRO_DIRECCION / RETIRO_HORARIO are
-  placeholders and show on the site and in the "Listo" email); final DoD walkthrough.
+  ~90 MB upload through Cloudflare; final DoD walkthrough.
 
 ## How to work
 
@@ -39,7 +38,7 @@ Plan and status per phase: `docs/IMPROVEMENT-PLAN.md`; every decision: `DECISION
 
 ## Still open (owner decisions)
 
-- Pickup schedule (Config tab RETIRO_HORARIO) is still a placeholder. Address (Río Guadiana 8672, Las Condes) and phone (+56 9 4862 3705) are decided and live.
+- Pickup schedule is decided: by appointment only (live in Config). Address (Río Guadiana 8672, Las Condes) and phone (+56 9 4862 3705) are decided and live.
 - Payment step (Pagado state, transfer-details email, ledger) and resin stock tab from the prototype sheet: not decided.
 - Optional: automatic deletion of order files N days after delivery; turning off Cloudflare JS Detections / Web Analytics to improve live Lighthouse scores.
 - Not yet tested live: the Apps Script itself (menu and checkbox) and a customer clicking the real confirm link.

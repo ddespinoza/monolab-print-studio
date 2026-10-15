@@ -9,7 +9,7 @@ export interface SheetConfig {
 
 export const CONFIG_DEFAULTS: SheetConfig = {
   RETIRO_DIRECCION: "Dirección por confirmar. Escríbanos por WhatsApp.",
-  RETIRO_HORARIO: "Horario por confirmar. Escríbanos por WhatsApp.",
+  RETIRO_HORARIO: "Solo previa coordinación: escríbanos o llámenos al +56 9 4862 3705.",
   ENVIO_AUTOMATICO: "NO",
 };
 

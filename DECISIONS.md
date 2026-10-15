@@ -25,4 +25,15 @@ Docs: Drive service accounts have no storage quota (developers.google.com/drive/
 - `npm audit` reports high-severity `braces` via eslint-config-next (dev-only lint tooling). `audit fix --force` would downgrade to Next 14 config; not applied. Revisit when upstream updates.
 
 ## Light theme only (owner, 2026-10-15)
+
 Decision: the site uses the light palette only; no `prefers-color-scheme: dark` styles, `color-scheme: light` is set in globals.css. Consequence: the dark prussian-blue sections (hero, footer) are still part of the light design as brand contrast bands.
+
+## Phase 3 integration decisions (2026-10-15)
+
+- **Drive upload is streaming multipart, not resumable.** Docs: developers.google.com/workspace/drive/api/guides/manage-uploads (googleapis 186.0.0). The Node client sends `multipart/related` for a stream `media` body; a failed upload is retried from the start (fresh stream per attempt). Resumable would need hand-written session handling for little gain at 95 MB. Revisit if uploads fail on slow links.
+- **Retry:** "exactly one retry" in the spec conflicted with its two delays (500 ms, 2 s). Implemented as up to 2 retries with those delays, transient errors only (429, 5xx, network codes).
+- **Cron writes per row**, not batched: the mail is sent, then that row is marked. This keeps the duplicate window to a single email if a write fails. Overlapping ticks throw "already running".
+- **Cron reads the whole Pedidos range** (`A2:S`), not "last 500 rows", so no order can fall outside the window.
+- **Sheets writes use `valueInputOption=RAW`** plus an apostrophe prefix for risky leading characters (= + - @), tested in order-row.
+- **Plantillas rows hold subject and message only.** The standard footer (Atentamente...) is always appended at send time, so operators cannot delete it by accident.
+- **Sheet API**: `updates.updatedRange` of values.append is parsed for the row link (developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/append).

@@ -8,10 +8,14 @@
     "start": "next start -H 127.0.0.1 -p ${PORT:-3100}",
     "lint": "eslint",
     "test": "vitest run",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:live": "node --env-file=.env --import tsx scripts/test-live.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "googleapis": "^186.0.0",
     "next": "16.4.1",
+    "nodemailer": "^10.1.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.7"
@@ -19,12 +23,14 @@
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
     "prettier": "^3.9.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.4"
   },

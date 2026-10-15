@@ -16,3 +16,16 @@ Pure functions, no I/O.
 - `stl-metrics.ts`: bbox in mm and volume in cm3 (signed tetrahedra, absolute value, 1 decimal). Runs in the browser; the server trusts these values and never re-parses files.
 - `validation.ts`: the zod schema shared by client and server; Spanish messages; 1-10 files with unique 32-hex tokens; `ESTADOS` has 6 states.
 - `sanitize.ts`: filename sanitising, spreadsheet formula escaping (`'` prefix), HTML escaping, line-break stripping.
+
+## Integrations (Phase 3)
+
+All wrappers take an injected client, so tests mock at the module boundary and `src/lib/google.ts` is the only place real credentials are built.
+
+- `config.ts`: env validated once with zod; mock mode needs no credentials; refuses MOCK_APIS in production.
+- `retry.ts`: transient-only retry (500 ms, 2 s). Used by sheets, drive, mailer.
+- `sheets.ts` (service account): read IDs and orders, append (RAW), mark notified, delete row, read tabs. `order-row.ts` maps the 19 columns.
+- `drive.ts` (OAuth user): order subfolder and streaming upload; files are never shared.
+- `mailer.ts`: Nodemailer over Gmail SMTP; From and Reply-To are always FROM_EMAIL.
+- `templates.ts`: approved copy as defaults, `{{var}}` rendering, HTML email with the palette hex map. `sheet-templates.ts` overrides them from the Plantillas tab with fallback. `sheet-config.ts` reads the Config tab with a 5 minute cache that serves stale data on failure.
+- `status-notifier.ts`: `findPending` (pure diff) and `runTick` (dependency-injected; at-least-once; no overlap).
+- `scripts/test-live.ts`: gated live check (real Drive, Sheets, SMTP; creates then deletes TEST resources).

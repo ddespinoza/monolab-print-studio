@@ -38,12 +38,44 @@ Antonio Alvear Muñoz, Odontólogo.
 8. Mockups in `docs/mockups/` for approval before coding.
 9. Restyle `/confirmar` to match.
 
-## Phase 4: Spreadsheet control
+## Phase 4: Spreadsheet buttons for emails
 
-10. Operator-controlled sending: Apps Script menu "Monolab" (send pending / send selected row), an "Enviar" checkbox column,
-    and a Config switch for automatic or manual mode. Assumption: switch, default manual.
-11. Dashboard tab: orders by state, pending emails, sent-email log.
-12. Verify order upload to Sheets and Drive end to end, including the ~90 MB upload through Cloudflare.
+Goal: the operator presses a button in the sheet and the correct email for that order goes out (Cotizado, Listo, ...),
+looking exactly like the site's emails and sent from contacto@. Nothing is sent unless the operator asks.
+
+Design (recommended):
+
+- **The site sends, the sheet only asks.** New endpoint `POST /api/send` on the app, authorised with a new secret
+  `SHEET_SECRET` (separate from `CRON_SECRET`). It reuses the existing templates, SMTP, confirm link and `markNotified`, so
+  the sheet cannot drift from the website. A bound Apps Script in the sheet calls it with `UrlFetchApp`; the secret lives
+  in Script Properties, never in a cell.
+- **Menu "Monolab"** in the sheet: "Enviar correo de la fila seleccionada", "Enviar todos los correos pendientes",
+  "Enviar prueba a mi correo" (preview to OPERATOR_EMAIL only). Optional drawn buttons assigned to the same functions
+  (drawings must be inserted by hand; the script cannot create them).
+- **Which email:** the template for the row's current Estado. Guards: Cotizado without a Cotización text is refused;
+  an Estado already notified asks "Ya se envió, ¿reenviar?" (explicit `force`); rows without an email are refused.
+- **Automatic vs manual:** Config key `ENVIO_AUTOMATICO` (SI/NO), default NO. With NO the 5-minute cron stops sending
+  status emails (it still sweeps tmp files); with SI the current behaviour stays. The first deploy switches the live site to
+  manual, so decide before deploying.
+- **Feedback in the sheet:** a toast per action ("Enviado a ..." / "Falló: ...") and a new tab `Envíos` (date, order,
+  Estado, recipient, result), plus the existing Estado notificado and Última notificación columns.
+- **Pedidos upload check:** the end-to-end order test on the live site (receipt, row, Drive folder, Cotizado email, confirm page)
+  and the ~90 MB upload through Cloudflare.
+- **Dashboard tab:** orders by Estado and emails pending, with plain sheet formulas.
+
+Work order: (a) tests then `POST /api/send` plus the `ENVIO_AUTOMATICO` switch in `status-notifier`; (b) `Envíos` log
+and `setup:sheet` additions; (c) the Apps Script source in `docs/apps-script/Monolab.gs` with install steps in
+OPERADOR-es.md (about 5 minutes: Extensions > Apps Script > paste > authorise once); (d) set `SHEET_SECRET` in Coolify and
+Script Properties; (e) live test with a real order.
+
+Risks and open points:
+
+- Apps Script must be installed by the owner: the service account and OAuth app have no script scopes, and granting them
+  is not worth it for a one-time paste.
+- Cloudflare could challenge requests from Google's servers; the existing cache rule bypasses /api/, and a WAF skip rule for
+  the path is the fallback.
+- Apps Script limits one execution to 6 minutes, which is far above one email per call; "enviar pendientes" sends in a
+  loop of single calls so a failure on one order does not stop the rest.
 
 ## Phase 5: Technical, SEO, performance
 
@@ -53,5 +85,5 @@ Antonio Alvear Muñoz, Odontólogo.
 
 ## Open questions (unanswered at time of writing)
 
-1. Manual-only sending or a switch? 2. WhatsApp removed entirely or only the form field? 3. What exactly failed with
+1. Manual-only sending or a switch (plan now recommends the switch, default manual)? 2. WhatsApp removed entirely or only the form field? 3. What exactly failed with
    "orders must get uploaded"? 4. Photo or credentials for Antonio Alvear Muñoz?

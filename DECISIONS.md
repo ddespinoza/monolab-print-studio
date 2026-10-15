@@ -1,0 +1,25 @@
+# Decisions
+
+ADR-lite: context, decision, consequence. Owner Q&A from each checkpoint is recorded verbatim.
+
+## Checkpoint 1: Phase 0 stack review (2026-10-15)
+
+| Question                     | Options offered                                                | Owner's choice                                                                           |
+| ---------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Drive auth                   | OAuth refresh token / Shared Drive + SA / OAuth for everything | OAuth refresh token (Sheets stays on the service account)                                |
+| Inbound mail for contacto@   | Cloudflare Email Routing / Postfix / both                      | Cloudflare Email Routing (reverses spec 2a and 9b)                                       |
+| Estado "Enviado"             | Reword / remove / keep                                         | Removed: 6 states                                                                        |
+| Location and Node            | ~/monolab with Node 22 / Node 20 / other                       | /root/monolab; owner installed Node 24 (googleapis and license-checker need >=22 / >=24) |
+| Phase 0 stack and deviations | Approve / keep TS 5 / change                                   | Approve all                                                                              |
+| GitHub repo                  | Private / public / local only                                  | Private `ddespinoza/monolab-print-studio`                                                |
+
+Isolation: the VPS is shared with Docker-proxied projects holding ports 80/443/8080/8000/6001/6002. The app binds 127.0.0.1:3100 only and everything lives in this folder.
+
+## Versions verified (npm registry, 2026-10-15)
+
+next 16.4.1, react 19.x, tailwindcss 4 (CSS-first `@theme`), three 0.186.1 (`three/addons/...`), googleapis 186, nodemailer 10.1.1, zod 4.6, vitest 5, playwright 1.64, sharp 0.35. create-next-app selected TypeScript 5, so TS 7 is not used.
+Docs: Drive service accounts have no storage quota (developers.google.com/drive/api/guides/about-shareddrives); Cloudflare Email Routing adds MX + SPF + DKIM (developers.cloudflare.com/email-routing). SPF must be ONE merged record.
+
+## Known issues
+
+- `npm audit` reports high-severity `braces` via eslint-config-next (dev-only lint tooling). `audit fix --force` would downgrade to Next 14 config; not applied. Revisit when upstream updates.

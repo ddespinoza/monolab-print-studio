@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* Design tokens (spec 3a + 3b). The only place hex literals may live. */
+:root {
+  --prussian-blue: #14213d;
+  --orange: #fca311;
+  --orange-dark: #d97706;
+  --bg-app: #ffffff;
+  --bg-surface: #f8fafc;
+  --bg-canvas: #eef2f6;
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --text-main: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --bg-deep: #0d172a;
+  --bg-deepest: #080e1a;
+  --gold-light: #ffd166;
+  --gold-dark: #e5a93c;
+  --border-brand: #1f2e4d;
+}
+
+@theme inline {
+  --color-prussian-blue: var(--prussian-blue);
+  --color-orange: var(--orange);
+  --color-orange-dark: var(--orange-dark);
+  --color-app: var(--bg-app);
+  --color-surface: var(--bg-surface);
+  --color-canvas: var(--bg-canvas);
+  --color-border-light: var(--border-light);
+  --color-border-medium: var(--border-medium);
+  --color-main: var(--text-main);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-deep: var(--bg-deep);
+  --color-deepest: var(--bg-deepest);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-border-brand: var(--border-brand);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}

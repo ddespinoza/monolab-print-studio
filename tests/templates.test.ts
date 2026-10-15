@@ -43,6 +43,12 @@ describe("DEFAULT_TEMPLATES", () => {
     expect(DEFAULT_TEMPLATES.Cotizado.body).toContain("{{cotizacion}}");
     expect(DEFAULT_TEMPLATES.Cotizado.body).toContain("{{confirmLink}}");
   });
+  it("Entregado tells the customer the files are deleted, never that they are kept", () => {
+    const body = DEFAULT_TEMPLATES.Entregado.body;
+    expect(body).not.toMatch(/guardamos sus archivos/i);
+    expect(body).toMatch(/elimin/i);
+    expect(body).toMatch(/nuevamente/i);
+  });
   it("Listo mentions the retiro address variable", () => {
     expect(DEFAULT_TEMPLATES.Listo.body).toContain("{{retiro}}");
   });

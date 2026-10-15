@@ -14,6 +14,7 @@ Todo se maneja desde la planilla de Google. No hay otro panel. La planilla tiene
 2. Para cotizar: escriba el valor en la columna **Cotización** (por ejemplo `$45.000 CLP por 2 piezas. Plazo: 3 días hábiles.`) y cambie **Estado** a `Cotizado`. En unos 5 minutos el cliente recibe el correo con su cotización y un enlace para confirmar.
 3. Cuando el cliente confirma, la planilla cambia sola a `Confirmado` (columna _Confirmado_ con la fecha) y usted recibe un correo. El cliente recibe un correo de confirmación.
 4. Pase el pedido a `En cola`, luego `Imprimiendo`, `Listo` (el correo indica la dirección de retiro) y `Entregado`. Use `Cancelado` si corresponde.
+5. **Cuando el pedido quede `Entregado` o `Cancelado`, elimine sus archivos:** seleccione la fila y use _Monolab > Eliminar archivos del pedido_. El sitio informa a los clientes (preguntas frecuentes y correo «Entregado») que los archivos se destruyen una vez finalizado el pedido, así que este paso es parte de la rutina.
 
 Los correos se envían según el modo de `ENVIO_AUTOMATICO` en **Config** (ver «Envío con botones»). Con `SI`, cada cambio de **Estado** envía automáticamente el correo de ese estado en unos 5 minutos. Con `NO` (modo inicial), solo se envían al usar los botones. Excepción: `Cotizado` no se envía si la columna **Cotización** está vacía.
 
@@ -53,6 +54,7 @@ Con `ENVIO_AUTOMATICO` = `NO` en **Config**, el sitio no envía nada por sí sol
 - _Enviar correo de esta fila_: igual que la casilla, para la fila seleccionada; si ya se envió, pregunta si desea reenviarlo.
 - _Enviar correos pendientes_: envía a todos los pedidos cuyo Estado cambió y aún no tienen su correo (hasta 50 por vez).
 - _Enviar prueba a mi correo_: envía el correo de esa fila solo a usted, con «[PRUEBA]» en el asunto. No marca el pedido como enviado.
+- _Eliminar archivos del pedido_: borra de forma definitiva la carpeta de Drive con los archivos 3D de la fila seleccionada. Solo funciona con pedidos `Entregado` o `Cancelado`, pide confirmación y no se puede deshacer. Anota «Eliminado» y la fecha en la columna **Archivos (Drive)** y deja el registro en **Envíos**.
 
 Cada intento queda registrado en la hoja **Envíos** (fecha, pedido, estado, destinatario, resultado). No se envía si el Estado es `Nuevo`, si la fila no tiene correo, o si es `Cotizado` sin valor en **Cotización**.
 

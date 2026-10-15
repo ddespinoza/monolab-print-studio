@@ -262,4 +262,32 @@ describe("POST /api/send", () => {
       automatic: false,
     });
   });
+  it("purges a delivered order's Drive folder, marks the sheet and refuses to repeat", async () => {
+    const { api, file } = await quoted();
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    rows[0][2] = "Entregado";
+    await writeFile(file, JSON.stringify(rows));
+    expect(await readdir(join(dir, "mock", "drive"))).toHaveLength(1);
+    const res = await (await api.send.POST(send({ action: "purge", orderId: "ML-0001" }))).json();
+    expect(res.results[0]).toMatchObject({ orderId: "ML-0001", status: "purged" });
+    expect(await readdir(join(dir, "mock", "drive"))).toEqual([]);
+    const after = JSON.parse(await readFile(file, "utf8")) as string[][];
+    expect(after[0][9]).toMatch(/^Eliminado \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+    const again = await (await api.send.POST(send({ action: "purge", orderId: "ML-0001" }))).json();
+    expect(again.results[0].status).toBe("refused");
+    const log = JSON.parse(await readFile(join(dir, "mock", "Envíos.json"), "utf8")) as string[][];
+    expect(log[0].slice(1, 6)).toEqual([
+      "ML-0001",
+      "Entregado",
+      "doc@example.com",
+      "Archivos eliminados",
+      "Eliminación",
+    ]);
+  });
+  it("refuses to purge an order that is still in progress", async () => {
+    const { api } = await quoted();
+    const res = await (await api.send.POST(send({ action: "purge", orderId: "ML-0001" }))).json();
+    expect(res.results[0].status).toBe("refused");
+    expect(await readdir(join(dir, "mock", "drive"))).toHaveLength(1);
+  });
 });

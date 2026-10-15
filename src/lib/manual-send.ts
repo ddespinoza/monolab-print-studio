@@ -10,9 +10,11 @@ export const MAX_PER_CALL = 50;
 export type SendRequest =
   | { action: "row"; orderId: string; force?: boolean }
   | { action: "test"; orderId: string }
+  /** Permanently deletes the order's Drive folder (only for Entregado or Cancelado orders). */
+  | { action: "purge"; orderId: string }
   | { action: "pending" };
 
-export type SendStatus = "sent" | "test_sent" | "already_sent" | "refused" | "failed";
+export type SendStatus = "sent" | "test_sent" | "already_sent" | "purged" | "refused" | "failed";
 
 export interface SendResult {
   orderId: string;
@@ -26,6 +28,17 @@ export interface ManualSendDeps extends TickDeps {
   operatorEmail: string;
   /** Appends a row to the Envíos tab: date, order, Estado, recipient, result, origin. */
   logSend: (entry: string[]) => Promise<void>;
+  /** Permanently deletes a Drive folder (and everything in it) by id. */
+  removeFolder: (folderId: string) => Promise<void>;
+  /** Writes "Eliminado <fecha>" into the order's Archivos (Drive) cell. */
+  markFilesDeleted: (rowNumber: number, text: string) => Promise<void>;
+}
+
+const FINISHED = new Set(["Entregado", "Cancelado"]);
+
+/** Folder id from the Archivos (Drive) cell: a Drive folder link or a mock:// link. */
+export function driveFolderId(cell: string): string | undefined {
+  return /\/folders\/([\w-]+)/.exec(cell)?.[1] ?? /^mock:\/\/drive\/(.+)$/.exec(cell.trim())?.[1];
 }
 
 const NOTIFIABLE = new Set<string>(ESTADOS.filter((e) => e !== "Nuevo"));
@@ -119,6 +132,41 @@ export function manualSend(
       return result("sent", message);
     };
 
+    const purge = async (order: OrderRow): Promise<SendResult> => {
+      const result = (status: SendStatus, message: string): SendResult => ({
+        orderId: order.id,
+        estado: order.estado,
+        status,
+        message,
+      });
+      if (!FINISHED.has(order.estado))
+        return result(
+          "refused",
+          "Los archivos solo se pueden eliminar cuando el pedido está Entregado o Cancelado.",
+        );
+      if (/^Eliminado\b/.test(order.drive.trim()))
+        return result("refused", "Los archivos de este pedido ya fueron eliminados.");
+      const folderId = driveFolderId(order.drive);
+      if (!folderId)
+        return result("refused", "El pedido no tiene una carpeta de archivos en Drive.");
+      try {
+        await deps.removeFolder(folderId);
+      } catch (error) {
+        logger.error("purge failed", { orderId: order.id, error: String(error) });
+        await log(order, "Falló", "Eliminación");
+        return result("failed", "No se pudieron eliminar los archivos. Inténtelo de nuevo.");
+      }
+      let message = "Archivos eliminados de forma definitiva.";
+      try {
+        await deps.markFilesDeleted(order.rowNumber, `Eliminado ${formatTimestamp(deps.now())}`);
+      } catch (error) {
+        logger.error("purge: could not mark row", { orderId: order.id, error: String(error) });
+        message += " No se pudo anotar en la planilla: anótelo a mano en «Archivos (Drive)».";
+      }
+      await log(order, "Archivos eliminados", "Eliminación");
+      return result("purged", message);
+    };
+
     if (req.action === "pending") {
       const results: SendResult[] = [];
       for (const { order } of findPending(orders).slice(0, MAX_PER_CALL))
@@ -137,6 +185,7 @@ export function manualSend(
           },
         ],
       };
+    if (req.action === "purge") return { results: [await purge(order)] };
     return {
       results: [
         await sendOne(order, {

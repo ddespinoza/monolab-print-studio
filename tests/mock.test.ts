@@ -49,6 +49,12 @@ describe("mock sheets", () => {
     expect(await s.readIds()).toEqual([]);
     expect(await s.readTab("Plantillas")).toEqual([]);
   });
+  it("marks the Drive cell as deleted", async () => {
+    const s = createMockSheets(dir);
+    await s.appendOrder(row("ML-0001"));
+    await s.markFilesDeleted(2, "Eliminado t1");
+    expect((await s.readOrders())[0].drive).toBe("Eliminado t1");
+  });
   it("appends log rows to the Envíos tab file", async () => {
     const s = createMockSheets(dir);
     await s.appendLog(["t", "ML-0001"]);

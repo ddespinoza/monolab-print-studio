@@ -449,7 +449,7 @@ Confirmamos la entrega de su pedido {{orderId}}.
 
 Gracias por confiar en Monolab Print Studio.
 
-Guardamos sus archivos: si desea repetir su pedido, solo escríbanos. {{whatsappLink}}
+Por seguridad, sus archivos 3D se eliminan de forma definitiva una vez finalizado el pedido. Si desea repetirlo, deberá enviarlos nuevamente. {{whatsappLink}}
 ```
 
 ### 7. Cancelado

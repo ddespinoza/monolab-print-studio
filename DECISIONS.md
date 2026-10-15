@@ -201,3 +201,11 @@ Audit at 360 and 390 px (screenshots plus a tap-target measurement). Findings an
 - **/confirmar**: matches the new emails (status badge, order number, quote callout, four-stage progress line, large button, WhatsApp link). New pure helper `progress.ts` (`activeStep`/`stepStates`, tested). `ConfirmView` "done" now carries `estado`, so the page shows the real stage (e.g. Listo) instead of always "Producción". Confirming is still a POST. Invalid links get a "Volver al sitio" link.
 - **Photo**: representative's photo enlarged to 112 px (phones) and 160 px (from `sm`), from a sharper 480 px copy of the polyclinic's original image.
 - Tests: e2e for the confirmation page (invalid link, quote link, confirm, revisit, phone width); the order-flow test no longer assumes the first order id is ML-0001.
+
+## File retention: delete files after the order (owner, 2026-10-15)
+
+- **Public promise** (FAQ "¿Dónde y por cuánto tiempo se almacenan mis modelos?" and the Entregado email): models are stored securely in a private Google Drive folder, kept only as long as needed to print, then destroyed and deleted for security.
+- **How it is kept**: `POST /api/send` action `purge` (sheet menu "Monolab > Eliminar archivos del pedido") permanently deletes the order's Drive folder (`files.delete`, no trash) and writes "Eliminado <fecha>" into the Archivos (Drive) cell. Allowed only for Entregado or Cancelado orders; refuses when already deleted or when the row has no folder; Drive failure leaves the row untouched; a failed sheet write-back still reports success with a warning. Every purge, failed or not, is logged in Envíos (origin "Eliminación").
+- **It is a manual step** by the operator (added to the daily routine in OPERADOR-es.md). An automatic deletion N days after delivery is possible later; not done.
+- **Wording change**: the Entregado template no longer says "Guardamos sus archivos"; it says files are deleted once the order is finished and must be sent again to repeat an order. The live Plantillas row (C7) was updated the same way.
+- Only the Drive folder is deleted: the order row (initials, quote, dates) stays in the sheet, and the temporary upload copies on the server are swept after 24 h.

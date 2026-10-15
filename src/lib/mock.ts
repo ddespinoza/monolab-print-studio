@@ -65,6 +65,11 @@ export function createMockSheets(dir: string): SheetsApi {
         r[18] = "Confirmado";
         r[19] = timestamp;
       }),
+    markFilesDeleted: (rowNumber, text) =>
+      edit((rows) => {
+        const r = rows[rowNumber - 2];
+        if (r) r[9] = text;
+      }),
     appendLog: (row) =>
       locked(async () => {
         const logFile = join(dir, "Envíos.json");

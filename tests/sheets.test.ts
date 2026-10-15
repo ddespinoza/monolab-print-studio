@@ -70,6 +70,18 @@ describe("createSheetsApi", () => {
       }),
     );
   });
+  it("writes the files-deleted mark into the Archivos (Drive) cell as plain text", async () => {
+    const { client, values } = fake();
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    await api.markFilesDeleted(7, "Eliminado 2025-06-12 14:03");
+    expect(values.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        range: "Pedidos!J7",
+        valueInputOption: "RAW",
+        requestBody: { values: [["Eliminado 2025-06-12 14:03"]] },
+      }),
+    );
+  });
   it("appends a send-log row to the Envíos tab as plain text", async () => {
     const { client, values } = fake();
     const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });

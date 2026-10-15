@@ -25,6 +25,7 @@ const base: OrderRow = {
   notificado: "En cola",
   ultima: "",
 };
+const DRIVE = "https://drive.google.com/drive/folders/1AbC-dEf_9";
 const row = (patch: Partial<OrderRow>): OrderRow => ({ ...base, ...patch });
 
 function deps(orders: OrderRow[], over: Partial<ManualSendDeps> = {}): ManualSendDeps {
@@ -45,6 +46,8 @@ function deps(orders: OrderRow[], over: Partial<ManualSendDeps> = {}): ManualSen
     now: () => new Date("2025-06-12T18:03:00Z"),
     operatorEmail: "op@example.com",
     logSend: vi.fn().mockResolvedValue(undefined),
+    removeFolder: vi.fn().mockResolvedValue(undefined),
+    markFilesDeleted: vi.fn().mockResolvedValue(undefined),
     ...over,
   };
 }
@@ -180,5 +183,76 @@ describe("manualSend: concurrency", () => {
     await expect(manualSend(d, { action: "pending" })).rejects.toThrow(/already running/);
     release();
     await first;
+  });
+});
+
+describe("manualSend: purge (delete an order's files)", () => {
+  const finished = (patch: Partial<OrderRow> = {}) =>
+    row({ estado: "Entregado", drive: DRIVE, ...patch });
+
+  it("deletes the Drive folder of a delivered order, marks the row and logs it", async () => {
+    const d = deps([finished()]);
+    const { results } = await manualSend(d, { action: "purge", orderId: "ML-0001" });
+    expect(results[0]).toMatchObject({ orderId: "ML-0001", status: "purged" });
+    expect(results[0].message).toMatch(/eliminados/i);
+    expect(d.removeFolder).toHaveBeenCalledWith("1AbC-dEf_9");
+    expect(d.markFilesDeleted).toHaveBeenCalledWith(2, "Eliminado 2025-06-12 14:03");
+    expect(d.send).not.toHaveBeenCalled();
+    expect(d.logSend).toHaveBeenCalledWith([
+      "2025-06-12 14:03",
+      "ML-0001",
+      "Entregado",
+      "ana@example.com",
+      "Archivos eliminados",
+      "Eliminación",
+    ]);
+  });
+  it("also works for cancelled orders and for the mock drive link", async () => {
+    const d = deps([finished({ estado: "Cancelado", drive: "mock://drive/ML-0001_-_A.P." })]);
+    expect((await manualSend(d, { action: "purge", orderId: "ML-0001" })).results[0].status).toBe(
+      "purged",
+    );
+    expect(d.removeFolder).toHaveBeenCalledWith("ML-0001_-_A.P.");
+  });
+  it.each(["Nuevo", "Cotizado", "Confirmado", "En cola", "Imprimiendo", "Listo"])(
+    "refuses while the order is %s",
+    async (estado) => {
+      const d = deps([finished({ estado, cotizacion: "x" })]);
+      const { results } = await manualSend(d, { action: "purge", orderId: "ML-0001" });
+      expect(results[0].status).toBe("refused");
+      expect(results[0].message).toMatch(/Entregado o Cancelado/);
+      expect(d.removeFolder).not.toHaveBeenCalled();
+    },
+  );
+  it("refuses an unknown order, an already-deleted order and a row without a folder", async () => {
+    const d = deps([
+      finished({ drive: "Eliminado 2025-06-10 09:00" }),
+      finished({ id: "ML-0002", rowNumber: 3, drive: "" }),
+    ]);
+    expect((await manualSend(d, { action: "purge", orderId: "ML-9999" })).results[0].status).toBe(
+      "refused",
+    );
+    const done = (await manualSend(d, { action: "purge", orderId: "ML-0001" })).results[0];
+    expect(done).toMatchObject({ status: "refused" });
+    expect(done.message).toMatch(/ya fueron eliminados/i);
+    const none = (await manualSend(d, { action: "purge", orderId: "ML-0002" })).results[0];
+    expect(none.status).toBe("refused");
+    expect(none.message).toMatch(/carpeta/i);
+    expect(d.removeFolder).not.toHaveBeenCalled();
+  });
+  it("does not mark the row when Drive refuses, and reports failure", async () => {
+    const d = deps([finished()], { removeFolder: vi.fn().mockRejectedValue(new Error("403")) });
+    const { results } = await manualSend(d, { action: "purge", orderId: "ML-0001" });
+    expect(results[0].status).toBe("failed");
+    expect(d.markFilesDeleted).not.toHaveBeenCalled();
+    expect(vi.mocked(d.logSend).mock.calls[0][0][4]).toBe("Falló");
+  });
+  it("still reports purged, with a warning, when only the sheet write-back fails", async () => {
+    const d = deps([finished()], {
+      markFilesDeleted: vi.fn().mockRejectedValue(new Error("quota")),
+    });
+    const { results } = await manualSend(d, { action: "purge", orderId: "ML-0001" });
+    expect(results[0].status).toBe("purged");
+    expect(results[0].message).toMatch(/planilla/i);
   });
 });

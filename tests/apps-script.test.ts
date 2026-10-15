@@ -142,3 +142,71 @@ describe("Monolab.gs: casilla Enviar", () => {
     expect(fetch.mock.calls[0][0]).toBe("https://x.cl/api/send");
   });
 });
+
+describe("Monolab.gs: Eliminar archivos del pedido", () => {
+  type Ui = {
+    alert: ReturnType<typeof vi.fn>;
+    Button: { YES: string; NO: string };
+    ButtonSet: { YES_NO: string };
+  };
+  function withUi(answer: "YES" | "NO", response: { code: number; body?: unknown }) {
+    const base = load(response);
+    const ui: Ui = {
+      alert: vi
+        .fn()
+        .mockImplementation((_t: string, _m?: string, set?: string) => (set ? answer : undefined)),
+      Button: { YES: "YES", NO: "NO" },
+      ButtonSet: { YES_NO: "YES_NO" },
+    };
+    const sheet = {
+      getName: () => "Pedidos",
+      getActiveCell: () => ({ getRow: () => 5 }),
+      getRange: () => ({ getValue: () => "ML-0007" }),
+    };
+    Object.assign(base.ctx, {
+      SpreadsheetApp: { getUi: () => ui, getActiveSheet: () => sheet },
+    });
+    return { ...base, ui };
+  }
+  const run = (ctx: unknown) =>
+    (ctx as { eliminarArchivosPedido: () => void }).eliminarArchivosPedido();
+  const purged = {
+    results: [
+      { orderId: "ML-0007", status: "purged", message: "Archivos eliminados de forma definitiva." },
+    ],
+  };
+
+  it("asks for confirmation, then calls the site with the purge action", () => {
+    const { ctx, fetch, ui } = withUi("YES", { code: 200, body: purged });
+    run(ctx);
+    expect(ui.alert.mock.calls[0][1]).toContain("ML-0007");
+    expect(JSON.parse(fetch.mock.calls[0][1].payload)).toEqual({
+      action: "purge",
+      orderId: "ML-0007",
+    });
+    expect(ui.alert).toHaveBeenLastCalledWith("Archivos eliminados de forma definitiva.");
+  });
+  it("does nothing when the operator says no", () => {
+    const { ctx, fetch } = withUi("NO", { code: 200, body: purged });
+    run(ctx);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("shows the site's refusal or a connection error as is", () => {
+    const refused = {
+      results: [
+        {
+          orderId: "ML-0007",
+          status: "refused",
+          message:
+            "Los archivos solo se pueden eliminar cuando el pedido está Entregado o Cancelado.",
+        },
+      ],
+    };
+    const a = withUi("YES", { code: 200, body: refused });
+    run(a.ctx);
+    expect(a.ui.alert).toHaveBeenLastCalledWith(refused.results[0].message);
+    const b = withUi("YES", { code: 401 });
+    run(b.ctx);
+    expect(b.ui.alert).toHaveBeenLastCalledWith(expect.stringMatching(/Clave incorrecta/));
+  });
+});

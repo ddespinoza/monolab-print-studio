@@ -10,6 +10,8 @@ export interface SheetsApi {
   markNotified(rowNumber: number, estado: string, timestamp: string): Promise<void>;
   /** Customer confirmed the quote: Estado, Confirmado and the notified marks, in one request. */
   setConfirmed(rowNumber: number, timestamp: string): Promise<void>;
+  /** Replaces the Archivos (Drive) cell, e.g. with "Eliminado <fecha>" once the folder is deleted. */
+  markFilesDeleted(rowNumber: number, text: string): Promise<void>;
   /** Appends one row to the Envíos log tab (plain text, never evaluated as formulas). */
   appendLog(row: string[]): Promise<void>;
   /** Removes a whole row (used by the live test to clean up). */
@@ -70,6 +72,18 @@ export function createSheetsApi(
             range: `${tab}!S${rowNumber}:T${rowNumber}`,
             valueInputOption: "RAW",
             requestBody: { values: [[estado, timestamp]] },
+          }),
+        retry,
+      );
+    },
+    async markFilesDeleted(rowNumber, text) {
+      await withRetry(
+        () =>
+          values.update({
+            spreadsheetId,
+            range: `${tab}!J${rowNumber}`,
+            valueInputOption: "RAW",
+            requestBody: { values: [[text]] },
           }),
         retry,
       );

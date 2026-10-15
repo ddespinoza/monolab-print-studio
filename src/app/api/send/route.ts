@@ -11,6 +11,7 @@ const orderId = z.string().regex(/^ML-\d{4,}$/);
 const body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("row"), orderId, force: z.boolean().optional() }),
   z.object({ action: z.literal("test"), orderId }),
+  z.object({ action: z.literal("purge"), orderId }),
   z.object({ action: z.literal("pending") }),
 ]);
 

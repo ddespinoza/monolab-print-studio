@@ -104,6 +104,8 @@ function build(config: Config): Runtime {
       ...tickDeps(),
       operatorEmail: config.operatorEmail,
       logSend: (entry) => sheets.appendLog(entry),
+      removeFolder: (id) => drive.remove(id),
+      markFilesDeleted: (row, text) => sheets.markFilesDeleted(row, text),
     }),
   };
 }

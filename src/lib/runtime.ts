@@ -11,6 +11,7 @@ import { createLimiter, type Limiter } from "@/lib/rate-limit";
 import { cachedLoader, parseConfig, type SheetConfig } from "@/lib/sheet-config";
 import { parsePlantillas } from "@/lib/sheet-templates";
 import type { SheetsApi } from "@/lib/sheets";
+import type { ManualSendDeps } from "@/lib/manual-send";
 import type { TickDeps } from "@/lib/status-notifier";
 import type { EmailTemplate } from "@/lib/templates";
 import { createTmpStore, type TmpStore } from "@/lib/tmp-store";
@@ -30,6 +31,7 @@ export interface Runtime {
   ordersDeps: () => OrdersDeps;
   confirmDeps: () => ConfirmDeps;
   tickDeps: () => TickDeps;
+  sendDeps: () => ManualSendDeps;
 }
 
 function build(config: Config): Runtime {
@@ -50,6 +52,20 @@ function build(config: Config): Runtime {
       ? `https://docs.google.com/spreadsheets/d/${real.sheetId}/edit#gid=0&range=A${row}:T${row}`
       : `mock://sheet/row-${row}`;
   const send = (mail: Parameters<Mailer["send"]>[0]): Promise<void> => mailer.send(mail);
+  const tickDeps = (): TickDeps => ({
+    readOrders: () => sheets.readOrders(),
+    readTemplates: templates,
+    readConfig: sheetConfig,
+    send,
+    markNotified: (row, estado, ts) => sheets.markNotified(row, estado, ts),
+    sweep: () => tmp.sweep(DAY_MS),
+    confirmLink: (o) =>
+      `${config.siteUrl}/confirmar/${signConfirmToken(o.id, o.cotizacion, config.confirmSecret)}`,
+    siteUrl: config.siteUrl,
+    whatsappNumber: config.whatsappNumber,
+    now: () => new Date(),
+  });
+
   return {
     config,
     sheets,
@@ -83,18 +99,11 @@ function build(config: Config): Runtime {
       sheetLink,
       now: () => new Date(),
     }),
-    tickDeps: () => ({
-      readOrders: () => sheets.readOrders(),
-      readTemplates: templates,
-      readConfig: sheetConfig,
-      send,
-      markNotified: (row, estado, ts) => sheets.markNotified(row, estado, ts),
-      sweep: () => tmp.sweep(DAY_MS),
-      confirmLink: (o) =>
-        `${config.siteUrl}/confirmar/${signConfirmToken(o.id, o.cotizacion, config.confirmSecret)}`,
-      siteUrl: config.siteUrl,
-      whatsappNumber: config.whatsappNumber,
-      now: () => new Date(),
+    tickDeps,
+    sendDeps: () => ({
+      ...tickDeps(),
+      operatorEmail: config.operatorEmail,
+      logSend: (entry) => sheets.appendLog(entry),
     }),
   };
 }

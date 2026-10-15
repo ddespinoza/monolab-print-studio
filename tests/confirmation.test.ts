@@ -36,7 +36,11 @@ function deps(rows: OrderRow[] = [order]): ConfirmDeps {
     setConfirmed: vi.fn().mockResolvedValue(undefined),
     send: vi.fn().mockResolvedValue(undefined),
     readTemplates: vi.fn().mockResolvedValue(new Map()),
-    readConfig: vi.fn().mockResolvedValue({ RETIRO_DIRECCION: "Calle 1", RETIRO_HORARIO: "L-V" }),
+    readConfig: vi.fn().mockResolvedValue({
+      RETIRO_DIRECCION: "Calle 1",
+      RETIRO_HORARIO: "L-V",
+      ENVIO_AUTOMATICO: "NO",
+    }),
     siteUrl: "https://monolabprintstudio.cl",
     whatsappNumber: "56948623705",
     operatorEmail: "ops@example.com",

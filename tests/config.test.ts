@@ -18,6 +18,12 @@ const real = {
 };
 
 describe("parseEnv", () => {
+  it("treats SHEET_SECRET as optional (empty means disabled) but requires 16+ characters", () => {
+    expect(parseEnv(real).sheetSecret).toBeUndefined();
+    expect(parseEnv({ ...real, SHEET_SECRET: "" }).sheetSecret).toBeUndefined();
+    expect(parseEnv({ ...real, SHEET_SECRET: "s".repeat(16) }).sheetSecret).toBe("s".repeat(16));
+    expect(() => parseEnv({ ...real, SHEET_SECRET: "short" })).toThrow(/SHEET_SECRET/);
+  });
   it("applies defaults and unescapes the private key", () => {
     const c = parseEnv(real);
     expect(c.sheetTab).toBe("Pedidos");

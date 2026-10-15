@@ -70,6 +70,18 @@ describe("createSheetsApi", () => {
       }),
     );
   });
+  it("appends a send-log row to the Envíos tab as plain text", async () => {
+    const { client, values } = fake();
+    const api = createSheetsApi(client as never, cfg, { sleep: vi.fn() });
+    await api.appendLog(["2025-06-12 14:03", "ML-0001", "Listo"]);
+    expect(values.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        range: "Envíos!A:F",
+        valueInputOption: "RAW",
+        requestBody: { values: [["2025-06-12 14:03", "ML-0001", "Listo"]] },
+      }),
+    );
+  });
   it("confirms an order: Estado, Confirmado, notified marks, in one batch", async () => {
     const batchUpdate = vi.fn().mockResolvedValue({ data: {} });
     const { client } = fake();

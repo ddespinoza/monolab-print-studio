@@ -3,12 +3,19 @@ import { logger } from "@/lib/logger";
 export interface SheetConfig {
   RETIRO_DIRECCION: string;
   RETIRO_HORARIO: string;
+  /** "SI": the 5-minute job sends status emails by itself. "NO" (default): only the sheet buttons send. */
+  ENVIO_AUTOMATICO: "SI" | "NO";
 }
 
 export const CONFIG_DEFAULTS: SheetConfig = {
   RETIRO_DIRECCION: "Dirección por confirmar. Escríbanos por WhatsApp.",
   RETIRO_HORARIO: "Horario por confirmar. Escríbanos por WhatsApp.",
+  ENVIO_AUTOMATICO: "NO",
 };
+
+export function isAutomatic(config: Pick<SheetConfig, "ENVIO_AUTOMATICO">): boolean {
+  return config.ENVIO_AUTOMATICO === "SI";
+}
 
 /** Rows of the Config tab (key | value). Blank or missing values fall back to defaults. */
 export function parseConfig(rows: readonly (readonly string[])[]): SheetConfig {
@@ -16,6 +23,13 @@ export function parseConfig(rows: readonly (readonly string[])[]): SheetConfig {
   for (const [key, value] of rows) {
     const v = (value ?? "").trim();
     if ((key === "RETIRO_DIRECCION" || key === "RETIRO_HORARIO") && v) config[key] = v;
+    if (key === "ENVIO_AUTOMATICO") {
+      const plain = v
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase();
+      config.ENVIO_AUTOMATICO = plain === "SI" ? "SI" : "NO";
+    }
   }
   return config;
 }

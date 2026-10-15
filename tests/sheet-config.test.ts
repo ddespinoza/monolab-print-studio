@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { cachedLoader, parseConfig } from "@/lib/sheet-config";
+import { cachedLoader, isAutomatic, parseConfig } from "@/lib/sheet-config";
 
 describe("parseConfig", () => {
   it("reads key/value rows", () => {
@@ -12,7 +12,15 @@ describe("parseConfig", () => {
     ).toEqual({
       RETIRO_DIRECCION: "Calle 1",
       RETIRO_HORARIO: "Lun-Vie",
+      ENVIO_AUTOMATICO: "NO",
     });
+  });
+  it("sends manually unless ENVIO_AUTOMATICO says SI (any case, with or without accent)", () => {
+    expect(parseConfig([]).ENVIO_AUTOMATICO).toBe("NO");
+    for (const v of ["SI", "si", " Sí ", "SÍ"])
+      expect(isAutomatic(parseConfig([["ENVIO_AUTOMATICO", v]]))).toBe(true);
+    for (const v of ["NO", "", "quizás", "true"])
+      expect(isAutomatic(parseConfig([["ENVIO_AUTOMATICO", v]]))).toBe(false);
   });
   it("uses defaults for missing or blank values", () => {
     const c = parseConfig([["RETIRO_DIRECCION", "  "]]);

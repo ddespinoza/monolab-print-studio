@@ -152,3 +152,12 @@ Done through the Cloudflare API with a scoped, expiring token (DNS, Zone Setting
 - The order form asks for **Teléfono** instead of WhatsApp. The field is `telefono` in code, templates (`{{telefono}}`) and the sheet header (column F). Validation accepts Chilean numbers only: optional +56/56, then 9 digits starting 2-9. WhatsApp links (floating button, contact, emails) stay for now.
 - The "Quiénes somos" section shows the representative's N° de Registro (727145) and RUN, supplied by the owner. The RUN is public on the site; remove it from `ABOUT.representative` in `src/lib/content.ts` if that changes.
 - Existing live sheets keep the old "WhatsApp" header in F1 until renamed by hand (setup only writes headers into empty sheets); data is read by column position, so nothing breaks meanwhile.
+
+## Phase 4a: send endpoint and manual/automatic switch (2026-10-15)
+
+- **Switch**: Config key `ENVIO_AUTOMATICO` (SI/NO, default NO, accent and case insensitive). With NO the 5-minute tick sends nothing (it still sweeps tmp files and reports `automatic: false`). Deploying this code therefore turns off automatic status emails on the live site until the owner sets SI or uses the buttons.
+- **Endpoint**: `POST /api/send`, bearer `SHEET_SECRET` (optional env, 16+ characters; unset or empty answers 503, so deploying without it is safe). Actions: `row` (orderId, optional `force`), `test` (preview to OPERATOR_EMAIL, subject prefixed `[PRUEBA]`, never marks the row) and `pending` (up to 50, one failure does not stop the rest). The orderId is the key, not the row number, because sorting the sheet moves rows.
+- **Guards**: no template for Nuevo, no customer email, Cotizado without a Cotización text; an Estado already notified returns `already_sent` until `force` is sent. A failed sheet write-back after a successful send still reports `sent` with a warning, so the operator does not resend.
+- **Log**: every attempt appends to the `Envíos` tab (date, order, Estado, recipient, Enviado/Falló, Botón/Prueba). A failed log write never fails the send.
+- **One send job at a time**: the tick and the buttons share a lock; a second call answers 409 `busy`.
+- **Sheet setup (run on the live sheet 2026-10-15)**: F1 renamed "WhatsApp" to "Teléfono", `Envíos` tab created, `ENVIO_AUTOMATICO=NO` added to Config. Not yet done: the Apps Script menu, `SHEET_SECRET` in Coolify and in Script Properties, deploy.

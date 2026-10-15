@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
 import type { OrderRow } from "@/lib/order-row";
-import type { SheetConfig } from "@/lib/sheet-config";
+import { isAutomatic, type SheetConfig } from "@/lib/sheet-config";
 import { resolveTemplate } from "@/lib/sheet-templates";
 import {
   buildEmail,
@@ -48,11 +48,26 @@ export interface TickResult {
   skipped: number;
   swept: number;
   fallbacks: number;
+  /** False when Config ENVIO_AUTOMATICO is not SI: the tick sent nothing. */
+  automatic: boolean;
 }
 
 let running = false;
 
-function varsFor(order: OrderRow, deps: TickDeps, retiro: string): Record<string, string> {
+/** One send job at a time (cron tick or sheet button), so two mails never race on the same row. */
+export async function exclusive<T>(task: () => Promise<T>): Promise<T> {
+  if (running) throw new Error("A tick is already running");
+  running = true;
+  try {
+    return await task();
+  } finally {
+    running = false;
+  }
+}
+
+type MailDeps = Pick<TickDeps, "confirmLink" | "siteUrl" | "whatsappNumber">;
+
+export function varsFor(order: OrderRow, deps: MailDeps, retiro: string): Record<string, string> {
   const fileLines = order.detalle.split("\n").filter((l) => l.trim() !== "");
   return {
     nombre: order.nombre,
@@ -66,29 +81,46 @@ function varsFor(order: OrderRow, deps: TickDeps, retiro: string): Record<string
   };
 }
 
+/** Renders the email for an order's Estado from the sheet template, or the built-in default. */
+export function prepareEmail(
+  order: OrderRow,
+  estado: TemplateKey,
+  deps: MailDeps,
+  templates: ReadonlyMap<string, EmailTemplate>,
+  config: SheetConfig,
+): { mail: ReturnType<typeof buildEmail>; fallback: boolean } {
+  const { template, fallback } = resolveTemplate(estado, templates);
+  return { mail: buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION)), fallback };
+}
+
 /**
  * One cron tick. At-least-once: the status mail is sent first and "Estado notificado" is written after,
  * so a failed write can repeat one email on the next tick. Overlapping ticks are refused.
  */
-export async function runTick(deps: TickDeps): Promise<TickResult> {
-  if (running) throw new Error("A tick is already running");
-  running = true;
-  try {
+export function runTick(deps: TickDeps): Promise<TickResult> {
+  return exclusive(async () => {
     const [orders, templates, config] = await Promise.all([
       deps.readOrders(),
       deps.readTemplates(),
       deps.readConfig(),
     ]);
-    const result: TickResult = { processed: 0, failed: 0, skipped: 0, swept: 0, fallbacks: 0 };
-    for (const { order, estado } of findPending(orders)) {
+    const automatic = isAutomatic(config);
+    const result: TickResult = {
+      processed: 0,
+      failed: 0,
+      skipped: 0,
+      swept: 0,
+      fallbacks: 0,
+      automatic,
+    };
+    for (const { order, estado } of automatic ? findPending(orders) : []) {
       if (estado === "Cotizado" && order.cotizacion.trim() === "") {
         result.skipped++;
         logger.warn("quote not sent: Cotización is empty", { orderId: order.id });
         continue;
       }
       try {
-        const { template, fallback } = resolveTemplate(estado, templates);
-        const mail = buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION));
+        const { mail, fallback } = prepareEmail(order, estado, deps, templates, config);
         await deps.send({ to: order.email.trim(), ...mail });
         await deps.markNotified(order.rowNumber, estado, formatTimestamp(deps.now()));
         result.processed++;
@@ -108,7 +140,5 @@ export async function runTick(deps: TickDeps): Promise<TickResult> {
       logger.error("tmp sweep failed", { error: String(error) });
     }
     return result;
-  } finally {
-    running = false;
-  }
+  });
 }

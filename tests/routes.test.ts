@@ -12,6 +12,7 @@ const env = (d: string): Record<string, string> => ({
   WHATSAPP_NUMBER: "56948623705",
   CRON_SECRET: "c".repeat(24),
   CONFIRM_SECRET: "k".repeat(40),
+  SHEET_SECRET: "s".repeat(24),
   MAX_UPLOAD_MB: "1",
 });
 
@@ -23,6 +24,7 @@ async function load() {
     uploads: await import("@/app/api/uploads/route"),
     orders: await import("@/app/api/orders/route"),
     tick: await import("@/app/api/cron/tick/route"),
+    send: await import("@/app/api/send/route"),
     confirmar: await import("@/app/api/confirmar/route"),
     config: await import("@/lib/config"),
   };
@@ -149,6 +151,7 @@ describe("quote confirmation and cron", () => {
     rows[0][2] = "Cotizado";
     rows[0][16] = "$45.000 CLP";
     await writeFile(file, JSON.stringify(rows));
+    await writeFile(join(dir, "mock", "Config.json"), JSON.stringify([["ENVIO_AUTOMATICO", "SI"]]));
 
     expect(await (await api.tick.GET(authed())).json()).toMatchObject({
       processed: 1,
@@ -187,5 +190,76 @@ describe("quote confirmation and cron", () => {
       await readFile(join(dir, "mock", "pedidos.json"), "utf8"),
     ) as string[][];
     expect(rows[0][2]).toBe("Nuevo");
+  });
+});
+
+describe("POST /api/send", () => {
+  const authed = () =>
+    new Request("http://x/api/cron/tick", {
+      headers: { authorization: `Bearer ${"c".repeat(24)}` },
+    });
+  const send = (body: unknown, secret: string | null = "s".repeat(24)) =>
+    new Request("http://x/api/send", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "content-type": "application/json",
+        ...(secret ? { authorization: `Bearer ${secret}` } : {}),
+      },
+    });
+  async function quoted() {
+    const api = await load();
+    const t = (await (await api.uploads.PUT(put("caja.stl", "solid a"))).json()).token;
+    await api.orders.POST(post(orderBody(t)));
+    const file = join(dir, "mock", "pedidos.json");
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    rows[0][2] = "Cotizado";
+    rows[0][16] = "$45.000 CLP";
+    await writeFile(file, JSON.stringify(rows));
+    return { api, file };
+  }
+
+  it("rejects missing or wrong secrets and never caches", async () => {
+    const { send: route } = await load();
+    expect((await route.POST(send({ action: "pending" }, null))).status).toBe(401);
+    const bad = await route.POST(send({ action: "pending" }, "x".repeat(24)));
+    expect(bad.status).toBe(401);
+    expect(bad.headers.get("cache-control")).toBe("no-store");
+  });
+  it("is disabled (503) when SHEET_SECRET is not configured", async () => {
+    vi.stubEnv("SHEET_SECRET", "");
+    const { send: route } = await load();
+    expect((await route.POST(send({ action: "pending" }))).status).toBe(503);
+  });
+  it("validates the body", async () => {
+    const { send: route } = await load();
+    expect((await route.POST(send({ action: "burn" }))).status).toBe(400);
+    expect((await route.POST(send({ action: "row" }))).status).toBe(400);
+  });
+  it("sends the quote for one order on demand, even in manual mode, and refuses a repeat", async () => {
+    const { api, file } = await quoted();
+    const emailsBefore = (await readdir(join(dir, "mock", "emails"))).length;
+    const ok = await api.send.POST(send({ action: "row", orderId: "ML-0001" }));
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).results[0]).toMatchObject({ orderId: "ML-0001", status: "sent" });
+    expect((await readdir(join(dir, "mock", "emails"))).length).toBe(emailsBefore + 1);
+    const rows = JSON.parse(await readFile(file, "utf8")) as string[][];
+    expect(rows[0][18]).toBe("Cotizado");
+    const again = await (await api.send.POST(send({ action: "row", orderId: "ML-0001" }))).json();
+    expect(again.results[0].status).toBe("already_sent");
+    const forced = await (
+      await api.send.POST(send({ action: "row", orderId: "ML-0001", force: true }))
+    ).json();
+    expect(forced.results[0].status).toBe("sent");
+    const log = JSON.parse(await readFile(join(dir, "mock", "Envíos.json"), "utf8")) as string[][];
+    expect(log).toHaveLength(2);
+    expect(log[0].slice(1, 5)).toEqual(["ML-0001", "Cotizado", "doc@example.com", "Enviado"]);
+  });
+  it("the cron does not send in manual mode", async () => {
+    const { api } = await quoted();
+    expect(await (await api.tick.GET(authed())).json()).toMatchObject({
+      processed: 0,
+      automatic: false,
+    });
   });
 });

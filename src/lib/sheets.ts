@@ -10,9 +10,13 @@ export interface SheetsApi {
   markNotified(rowNumber: number, estado: string, timestamp: string): Promise<void>;
   /** Customer confirmed the quote: Estado, Confirmado and the notified marks, in one request. */
   setConfirmed(rowNumber: number, timestamp: string): Promise<void>;
+  /** Appends one row to the Envíos log tab (plain text, never evaluated as formulas). */
+  appendLog(row: string[]): Promise<void>;
   /** Removes a whole row (used by the live test to clean up). */
   deleteRow(rowNumber: number): Promise<void>;
 }
+
+export const LOG_TAB = "Envíos";
 
 export function rowFromRange(range: string): number {
   const match = /!\$?[A-Z]+(\d+)/.exec(range);
@@ -66,6 +70,19 @@ export function createSheetsApi(
             range: `${tab}!S${rowNumber}:T${rowNumber}`,
             valueInputOption: "RAW",
             requestBody: { values: [[estado, timestamp]] },
+          }),
+        retry,
+      );
+    },
+    async appendLog(row) {
+      await withRetry(
+        () =>
+          values.append({
+            spreadsheetId,
+            range: `${LOG_TAB}!A:F`,
+            valueInputOption: "RAW",
+            insertDataOption: "INSERT_ROWS",
+            requestBody: { values: [row] },
           }),
         retry,
       );

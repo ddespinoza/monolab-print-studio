@@ -49,6 +49,15 @@ describe("mock sheets", () => {
     expect(await s.readIds()).toEqual([]);
     expect(await s.readTab("Plantillas")).toEqual([]);
   });
+  it("appends log rows to the Envíos tab file", async () => {
+    const s = createMockSheets(dir);
+    await s.appendLog(["t", "ML-0001"]);
+    await s.appendLog(["t", "ML-0002"]);
+    expect(await s.readTab("Envíos")).toEqual([
+      ["t", "ML-0001"],
+      ["t", "ML-0002"],
+    ]);
+  });
   it("serialises concurrent appends", async () => {
     const s = createMockSheets(dir);
     await Promise.all([

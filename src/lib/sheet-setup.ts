@@ -5,6 +5,16 @@ import { CONFIG_DEFAULTS } from "@/lib/sheet-config";
 import { DEFAULT_TEMPLATES, type TemplateKey } from "@/lib/templates";
 import { ESTADOS } from "@/lib/validation";
 
+/** Envíos tab: one row per email the buttons send or try to send. */
+export const ENVIOS_HEADERS = [
+  "Fecha",
+  "ID Pedido",
+  "Estado",
+  "Destinatario",
+  "Resultado",
+  "Origen",
+] as const;
+
 const NOTIFIABLE = ESTADOS.filter((e) => e !== "Nuevo");
 
 /** Plantillas tab content: Estado | Asunto | Mensaje. The footer is appended at send time, so it is not seeded. */
@@ -55,7 +65,7 @@ export async function setupSheet(
     if (s.properties?.title && typeof s.properties.sheetId === "number")
       ids.set(s.properties.title, s.properties.sheetId);
   }
-  for (const title of [pedidos, "Plantillas", "Config"]) {
+  for (const title of [pedidos, "Plantillas", "Config", "Envíos"]) {
     if (ids.has(title)) continue;
     const res = await withRetry(
       () =>
@@ -85,13 +95,21 @@ export async function setupSheet(
       retry,
     );
 
-  if ((await read(`${pedidos}!A1:A1`)).length === 0) {
+  const header = await read(`${pedidos}!A1:T1`);
+  if (header.length === 0) {
     await write(`${pedidos}!A1`, [[...HEADERS]]);
     report.seeded.push(pedidos);
+  } else if (header[0]?.[5] === "WhatsApp") {
+    await write(`${pedidos}!F1`, [["Teléfono"]]);
+    report.seeded.push(`${pedidos} F1`);
   }
   if ((await read("Plantillas!A1:C")).length === 0) {
     await write("Plantillas!A1", buildPlantillasRows());
     report.seeded.push("Plantillas");
+  }
+  if ((await read("Envíos!A1:F1")).length === 0) {
+    await write("Envíos!A1", [[...ENVIOS_HEADERS]]);
+    report.seeded.push("Envíos");
   }
   const config = await read("Config!A1:B");
   const merged = mergeConfigRows(config);

@@ -28,6 +28,11 @@ const envSchema = z.object({
   SITE_URL: z.string().url(),
   CRON_SECRET: z.string().min(16, "must be at least 16 characters"),
   CONFIRM_SECRET: z.string().min(32, "must be at least 32 characters"),
+  /** Lets the sheet's buttons call POST /api/send. Empty or unset disables that endpoint. */
+  SHEET_SECRET: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().min(16, "must be at least 16 characters").optional(),
+  ),
   MAX_UPLOAD_MB: z.coerce
     .number()
     .positive()
@@ -49,6 +54,8 @@ export interface Config {
   cronSecret: string;
   /** Signs the quote-confirmation links. */
   confirmSecret: string;
+  /** Authorises the sheet's send buttons; undefined disables POST /api/send. */
+  sheetSecret?: string;
   maxUploadMb: number;
   smtp: { host: string; port: number; user: string; pass: string };
   /** Present unless MOCK_APIS=true. */
@@ -98,6 +105,7 @@ export function parseEnv(env: Record<string, string | undefined>): Config {
     siteUrl: e.SITE_URL.replace(/\/+$/, ""),
     cronSecret: e.CRON_SECRET,
     confirmSecret: e.CONFIRM_SECRET,
+    sheetSecret: e.SHEET_SECRET,
     maxUploadMb: e.MAX_UPLOAD_MB,
   };
   if (e.MOCK_APIS) {

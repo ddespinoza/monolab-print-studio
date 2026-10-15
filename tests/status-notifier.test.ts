@@ -50,7 +50,11 @@ function deps(orders: OrderRow[], over: Partial<TickDeps> = {}): TickDeps {
   return {
     readOrders: vi.fn().mockResolvedValue(orders),
     readTemplates: vi.fn().mockResolvedValue(new Map()),
-    readConfig: vi.fn().mockResolvedValue({ RETIRO_DIRECCION: "Calle 1", RETIRO_HORARIO: "L-V" }),
+    readConfig: vi.fn().mockResolvedValue({
+      RETIRO_DIRECCION: "Calle 1",
+      RETIRO_HORARIO: "L-V",
+      ENVIO_AUTOMATICO: "SI",
+    }),
     send: vi.fn().mockResolvedValue(undefined),
     markNotified: vi.fn().mockResolvedValue(undefined),
     sweep: vi.fn().mockResolvedValue(3),
@@ -66,7 +70,14 @@ describe("runTick", () => {
   it("sends one email per pending row, marks it, and reports counts", async () => {
     const d = deps([row({}), row({ rowNumber: 3, id: "ML-0002", estado: "Listo" })]);
     const r = await runTick(d);
-    expect(r).toEqual({ processed: 2, failed: 0, skipped: 0, swept: 3, fallbacks: 2 });
+    expect(r).toEqual({
+      processed: 2,
+      failed: 0,
+      skipped: 0,
+      swept: 3,
+      fallbacks: 2,
+      automatic: true,
+    });
     expect(d.send).toHaveBeenCalledTimes(2);
     expect(d.markNotified).toHaveBeenCalledWith(3, "Listo", "2025-06-12 14:03");
     const mail = vi.mocked(d.send).mock.calls[1][0];
@@ -104,6 +115,7 @@ describe("runTick", () => {
       skipped: 0,
       swept: 3,
       fallbacks: 0,
+      automatic: true,
     });
     expect(d.send).not.toHaveBeenCalled();
   });
@@ -132,6 +144,25 @@ describe("runTick", () => {
     expect(text).toContain("• a.stl — 1.0 cm³ (1×1×1)");
     expect(text).toContain("• Paciente: A. P.");
     expect(text).toContain("• Entrega: Flash (2 días)");
+  });
+  it("sends nothing in manual mode but still sweeps tmp files", async () => {
+    const d = deps([row({})], {
+      readConfig: vi.fn().mockResolvedValue({
+        RETIRO_DIRECCION: "Calle 1",
+        RETIRO_HORARIO: "L-V",
+        ENVIO_AUTOMATICO: "NO",
+      }),
+    });
+    expect(await runTick(d)).toEqual({
+      processed: 0,
+      failed: 0,
+      skipped: 0,
+      swept: 3,
+      fallbacks: 0,
+      automatic: false,
+    });
+    expect(d.send).not.toHaveBeenCalled();
+    expect(d.markNotified).not.toHaveBeenCalled();
   });
   it("rejects overlapping ticks", async () => {
     let release: () => void = () => {};

@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { HEADERS } from "@/lib/order-row";
 import { parsePlantillas } from "@/lib/sheet-templates";
-import { buildPlantillasRows, mergeConfigRows, setupSheet } from "@/lib/sheet-setup";
+import {
+  ENVIOS_HEADERS,
+  buildPlantillasRows,
+  mergeConfigRows,
+  setupSheet,
+} from "@/lib/sheet-setup";
 import { DEFAULT_TEMPLATES } from "@/lib/templates";
 import { ESTADOS } from "@/lib/validation";
 
@@ -86,12 +91,39 @@ describe("setupSheet", () => {
         ["Clave", "Valor"],
         ["RETIRO_DIRECCION", "Calle 1"],
         ["RETIRO_HORARIO", "L-V"],
+        ["ENVIO_AUTOMATICO", "SI"],
       ],
+      Envíos: [["Fecha"]],
     });
     await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
     const ranges = f.update.mock.calls.map((c) => c[0].range);
     expect(ranges).not.toContain("Pedidos!A1");
     expect(ranges).not.toContain("Plantillas!A1");
     expect(ranges).not.toContain("Config!A1");
+    expect(ranges).not.toContain("Envíos!A1");
+  });
+  it("renames the old WhatsApp header in F1 to Teléfono and leaves other headers alone", async () => {
+    const f = fakeClient({
+      Pedidos: [[...HEADERS].map((h) => (h === "Teléfono" ? "WhatsApp" : h))],
+    });
+    await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    const w = f.update.mock.calls.map((c) => c[0]).find((c) => c.range === "Pedidos!F1");
+    expect(w?.requestBody.values).toEqual([["Teléfono"]]);
+    const g = fakeClient({ Pedidos: [[...HEADERS]] });
+    await setupSheet(g.client as never, cfg, { sleep: vi.fn() });
+    expect(g.update.mock.calls.map((c) => c[0].range)).not.toContain("Pedidos!F1");
+  });
+  it("creates the Envíos log tab with headers and defaults ENVIO_AUTOMATICO to NO", async () => {
+    const f = fakeClient({ Pedidos: [] });
+    const report = await setupSheet(f.client as never, cfg, { sleep: vi.fn() });
+    const writes = f.update.mock.calls.map((c) => c[0]);
+    expect(writes.find((w) => w.range === "Envíos!A1")?.requestBody.values[0]).toEqual([
+      ...ENVIOS_HEADERS,
+    ]);
+    expect(report.created).toContain("Envíos");
+    expect(writes.find((w) => w.range === "Config!A1")?.requestBody.values).toContainEqual([
+      "ENVIO_AUTOMATICO",
+      "NO",
+    ]);
   });
 });

@@ -59,7 +59,7 @@ export function About() {
   const rep = ABOUT.representative;
   return (
     <section id="nosotros" className="bg-canvas py-16">
-      <div className={`${wrap} grid gap-8 md:grid-cols-2`}>
+      <div className={wrap}>
         <div>
           <h2 className="mb-4 text-2xl font-bold text-main">{ABOUT.title}</h2>
           {ABOUT.paragraphs.map((p) => (
@@ -67,26 +67,25 @@ export function About() {
               {p}
             </p>
           ))}
-          <p className="mt-4 border-l-4 border-orange pl-4">
-            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-muted">
-              {rep.label}
-            </span>
-            <strong className="text-main">{rep.name}</strong>, {rep.role}
-            <span className="block text-sm text-muted">
-              N° de Registro {rep.registro} · RUN {rep.run}
-            </span>
-          </p>
+          <div className="mt-6 flex items-center gap-4">
+            <Image
+              src={rep.photo}
+              alt={`${rep.name}, ${rep.role}`}
+              width={96}
+              height={96}
+              className="h-24 w-24 shrink-0 rounded-full border-[3px] border-orange object-cover"
+            />
+            <p className="m-0">
+              <span className="block text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                {rep.label}
+              </span>
+              <strong className="text-main">{rep.name}</strong>, {rep.role}
+              <span className="block text-sm text-muted">
+                N° de Registro {rep.registro} · RUN {rep.run}
+              </span>
+            </p>
+          </div>
         </div>
-        <ul className="grid content-start gap-3">
-          {ABOUT.points.map((pt) => (
-            <li
-              key={pt}
-              className="rounded-xl border border-border-light bg-surface p-4 font-semibold text-main shadow-sm"
-            >
-              {pt}
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );

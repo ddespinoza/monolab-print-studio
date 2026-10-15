@@ -22,12 +22,8 @@ export const ABOUT = {
     label: "Representante",
     registro: "727145",
     run: "19.069.824-6",
+    photo: "/brand/antonio-alvear.jpg",
   },
-  points: [
-    "Pensado para odontólogos y clínicas",
-    "Iniciales del paciente, nunca el nombre completo",
-    "Cotización clara y confirmación con un clic",
-  ],
 };
 
 export const NAV = [

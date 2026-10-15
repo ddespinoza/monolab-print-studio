@@ -45,3 +45,21 @@ body {
     animation-duration: 2.4s;
   }
 }
+
+.spinner-lg {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-width: 4px;
+}
+/* Appears only if reading takes longer than a blink, so small files never flash a loading screen. */
+.loading-screen {
+  animation: fade-in 0.2s ease 0.15s both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

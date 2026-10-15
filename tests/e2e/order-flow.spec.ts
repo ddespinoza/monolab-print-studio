@@ -49,6 +49,31 @@ test("auto-fits an oversize model in simple mode and blocks it in advanced mode"
   await expect(page.getByRole("button", { name: "Solicitar cotización" }).last()).toBeDisabled();
 });
 
+test("shows a loading screen in the viewer while a large model is being read", async ({ page }) => {
+  await page.goto("/");
+  // ~25 MB binary STL (500k triangles) so reading takes long enough to observe.
+  const triangles = 500_000;
+  const buffer = Buffer.alloc(84 + triangles * 50);
+  buffer.writeUInt32LE(triangles, 80);
+  for (let i = 0; i < triangles; i++) {
+    const o = 84 + i * 50;
+    const x = (i % 700) * 0.1;
+    const y = Math.floor(i / 700) * 0.1;
+    [x, y, 0, x + 0.1, y, 0, x, y + 0.1, 1].forEach((v, k) =>
+      buffer.writeFloatLE(v, o + 12 + k * 4),
+    );
+  }
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "grande.stl",
+    mimeType: "model/stl",
+    buffer,
+  });
+  const loading = page.getByRole("status").filter({ hasText: "Leyendo grande.stl" });
+  await expect(loading).toBeVisible({ timeout: 10_000 });
+  await expect(loading).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByRole("img", { name: /Vista previa 3D/ })).toBeVisible();
+});
+
 test.describe("phone layout", () => {
   test.use({ viewport: { width: 390, height: 844 } });
   test("has no horizontal scroll and stacks the viewer above the form", async ({ page }, info) => {

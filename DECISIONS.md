@@ -188,3 +188,9 @@ Audit at 360 and 390 px (screenshots plus a tap-target measurement). Findings an
 - WhatsApp float: smaller, hidden while the order section is on screen (IntersectionObserver), and the footer has bottom padding so it never covers text.
 - Regression test in tests/e2e: every visible button in the order section is at least 40 px tall in advanced mode, and the float hides over the form.
 - Not changed: radio inputs are 20 px but their whole card is the label; the zoom slider is 32 px.
+
+## Viewer loading screen, About cleanup and representative photo (2026-10-15)
+
+- **Loading screen**: while any file has `parse === "reading"` the viewer shows a centred spinner with "Leyendo <archivo>…" (`loadingLabel`, tested). It fades in after 150 ms so small files never flash it; it covers the canvas only, the toolbar and form stay usable. Upload progress stays in the file list. E2E test uses a ~25 MB synthetic STL.
+- **About**: the three bullet points (dental focus, initials only, one-click confirm) were removed from "Quiénes somos" at the owner's request ("unnecessary on the welcome screen"); the section is now one column.
+- **Photo**: a 96 px circle with an orange ring next to the representative's name, from `public/brand/antonio-alvear.jpg` (256 px, re-encoded without metadata). Source: the profile photo the owner pointed to on the polyclinic's website, copied locally rather than hotlinked so the page does not depend on that site.

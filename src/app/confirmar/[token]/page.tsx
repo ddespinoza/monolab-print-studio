@@ -10,7 +10,7 @@ import { whatsappLink } from "@/lib/templates";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Confirmar cotización | Monolab Print Studio",
+  title: "Confirmar cotización",
   robots: { index: false },
 };
 

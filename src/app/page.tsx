@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { OrderSection } from "@/components/OrderSection";
 import {
   About,
@@ -11,8 +12,10 @@ import {
 } from "@/components/sections";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { getRuntime } from "@/lib/runtime";
+import { buildStructuredData, serializeJsonLd } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const rt = getRuntime();
@@ -20,6 +23,12 @@ export default async function Home() {
   const whatsappHref = `https://wa.me/${rt.config.whatsappNumber}`;
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(buildStructuredData(rt.config.siteUrl)),
+        }}
+      />
       <Header />
       <main>
         <Hero />

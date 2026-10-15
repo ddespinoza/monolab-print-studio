@@ -1,7 +1,7 @@
 import { autoFitPercent, exceedsBuild, scaledMetrics } from "@/lib/fit";
 import { rotate90, type Axis } from "@/lib/orient";
 import { computeMetrics, totalVolumeCm3, type StlMetrics } from "@/lib/stl-metrics";
-import { MAX_FILES } from "@/lib/validation";
+import { MAX_FILES } from "@/lib/order-options";
 
 export type Mode = "simple" | "advanced";
 

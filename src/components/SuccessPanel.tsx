@@ -1,4 +1,4 @@
-import { whatsappLink } from "@/lib/templates";
+import { whatsappLink } from "@/lib/whatsapp";
 
 export interface Summary {
   orderId: string;

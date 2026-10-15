@@ -7,17 +7,36 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const description =
   "Impresión 3D en resina para odontología, en Santiago, Chile. Suba sus archivos 3D y reciba su cotización por correo.";
 
+const siteName = "Monolab Print Studio";
+const defaultTitle = `${siteName} | Impresión 3D en resina para odontología`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://127.0.0.1:3100"),
-  title: "Monolab Print Studio",
+  title: { default: defaultTitle, template: `%s | ${siteName}` },
   description,
+  applicationName: siteName,
   icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
   openGraph: {
-    title: "Monolab Print Studio",
+    title: defaultTitle,
     description,
-    images: ["/og-image.png"],
+    siteName,
+    url: "/",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Monolab Print Studio: impresión 3D en resina para odontología",
+      },
+    ],
     locale: "es_CL",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description,
+    images: ["/og-image.png"],
   },
 };
 

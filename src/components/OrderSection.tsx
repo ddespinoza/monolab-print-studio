@@ -19,9 +19,9 @@ import {
   type Mode,
 } from "@/lib/order-state";
 import { computeMetrics } from "@/lib/stl-metrics";
-import { whatsappLink } from "@/lib/templates";
+import { whatsappLink } from "@/lib/whatsapp";
 import { postOrder, uploadFile } from "@/lib/upload-client";
-import { MAX_FILES, orderSchema } from "@/lib/validation";
+import { MAX_FILES } from "@/lib/order-options";
 
 interface Props {
   whatsappNumber: string;
@@ -111,6 +111,8 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
           ]
         : [];
     });
+    // The validation library (zod) loads on demand so it is not part of the first page load.
+    const { orderSchema } = await import("@/lib/validation");
     const parsed = orderSchema.safeParse({ ...form, cantidad: Number(form.cantidad), files });
     if (!parsed.success) {
       const next: Errors = {};

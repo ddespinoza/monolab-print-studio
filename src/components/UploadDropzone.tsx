@@ -19,7 +19,7 @@ export function UploadDropzone({ onFiles, compact, maxMb }: Props) {
     <div
       role="button"
       tabIndex={0}
-      aria-label="Subir archivos 3D"
+
       onClick={() => input.current?.click()}
       onKeyDown={(e) =>
         (e.key === "Enter" || e.key === " ") && (e.preventDefault(), input.current?.click())

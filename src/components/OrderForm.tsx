@@ -1,7 +1,7 @@
 "use client";
 
 import { ENTREGA_LABELS, MACHINE, RESIN_OPTIONS } from "@/lib/content";
-import { ENTREGAS } from "@/lib/validation";
+import { ENTREGAS } from "@/lib/order-options";
 
 export interface FormValues {
   nombre: string;

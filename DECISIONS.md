@@ -209,3 +209,12 @@ Audit at 360 and 390 px (screenshots plus a tap-target measurement). Findings an
 - **It is a manual step** by the operator (added to the daily routine in OPERADOR-es.md). An automatic deletion N days after delivery is possible later; not done.
 - **Wording change**: the Entregado template no longer says "Guardamos sus archivos"; it says files are deleted once the order is finished and must be sent again to repeat an order. The live Plantillas row (C7) was updated the same way.
 - Only the Drive folder is deleted: the order row (initials, quote, dates) stays in the sheet, and the temporary upload copies on the server are swept after 24 h.
+
+## Phase 5: SEO and performance (2026-10-15)
+
+Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibility 97, Best practices 82, SEO 100. The same build served locally, without Cloudflare: 91 / 97 / 100 / 100. After this phase, local production: **98 / 100 / 100 / 100** (largest paint 2.9 s to 1.9 s, blocking time 240 to 150 ms).
+
+- **SEO**: title "Monolab Print Studio | Impresión 3D en resina para odontología" (confirmar page: "Confirmar cotización | Monolab Print Studio", noindex); canonical on the home page only; Open Graph (with image size and alt) and Twitter card; `robots.txt` (allows the site, blocks /api/ and /confirmar/) and `sitemap.xml` (home page), both dynamic so they use the runtime SITE_URL; JSON-LD (`structured-data.ts`: LocalBusiness, WebSite, FAQPage from the page's own FAQ). Not published in it: phone number and street address (undecided), the representative's RUN and registry number.
+- **Performance**: the validation library (zod, about 46 KB compressed) now loads on demand at submit instead of with the first page (constants moved to `order-options.ts`, `whatsappLink` to `whatsapp.ts` so the browser no longer imports the email renderer). three.js was already loaded only when a model is opened.
+- **Accessibility**: muted text colour darkened to `#5b6b82` (contrast 4.8 on the grey background, was 4.2); the upload box no longer has an `aria-label` that contradicted its visible text.
+- **Not ours**: on the live site Cloudflare injects its JS Detections script (about 430 ms of main-thread time, deprecation warnings) and Web Analytics beacon; turning those off in Cloudflare would raise the live scores, at the cost of that bot protection and those analytics.

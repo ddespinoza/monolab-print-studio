@@ -1,6 +1,7 @@
 import { renderEmailHtml } from "@/lib/email-html";
 import { stripLineBreaks } from "@/lib/sanitize";
-import { ENTREGAS, type Estado } from "@/lib/validation";
+import { ENTREGAS, type Estado } from "@/lib/order-options";
+export { whatsappLink } from "@/lib/whatsapp";
 
 export interface EmailTemplate {
   subject: string;
@@ -122,10 +123,6 @@ export type TemplateVars = Record<string, string>;
 /** {{name}} substitution; unknown variables stay literal so a typo in the sheet never breaks mail. */
 export function renderTemplate(template: string, vars: TemplateVars): string {
   return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, name: string) => vars[name] ?? match);
-}
-
-export function whatsappLink(number: string, orderId: string): string {
-  return `https://wa.me/${number}?text=${encodeURIComponent(`Hola, consulto por mi pedido ${orderId}`)}`;
 }
 
 export interface ResumenInput {

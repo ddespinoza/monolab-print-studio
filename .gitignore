@@ -44,3 +44,6 @@ next-env.d.ts
 /data/
 !.env.example
 .deploy/
+tests/fixtures/
+/test-results/
+/playwright-report/

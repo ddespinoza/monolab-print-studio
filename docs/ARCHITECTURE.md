@@ -36,3 +36,12 @@ All wrappers take an injected client, so tests mock at the module boundary and `
 - `src/styles/tokens.css` is the single palette file, imported by `globals.css` (Tailwind `@theme`) and linked by every mockup. Light theme only.
 - `docs/mockups/` is the visual contract: `index.html` (all sections), `mobile.html`, `flow-1-empty`, `flow-2-files`, `flow-3-success`, `confirmar.html` (public quote-confirmation page), `palette.html`.
 - `npm run check:rules` greps for the Gmail address in customer-facing paths and for hex literals outside tokens.css and the email hex map.
+
+## Order flow and UI (Phases 5-8)
+
+- **Browser**: `OrderSection` keeps all order state in `lib/order-state.ts` (pure reducer, tested). Each dropped file is parsed client-side (`model-loader.ts`: STL, OBJ, PLY via three.js addons), measured (`stl-metrics.ts`), then uploaded in the background with progress (`upload-client.ts`, raw `PUT /api/uploads`). three.js is loaded with a dynamic import inside `StlViewer`; `lib/viewer.ts` draws a Z-up scene with the build plate and reads its colours from the CSS tokens.
+- **Server**: `lib/runtime.ts` builds the Sheets, Drive and mail adapters (real, or file-backed mocks in `lib/mock.ts` when MOCK_APIS=true) and the rate limiters. Routes are thin: `/api/uploads` (stream to `data/tmp`), `/api/orders` (zod, honeypot, `lib/orders.ts`), `/api/cron/tick` (`lib/status-notifier.ts`), `/api/confirmar` (POST from the confirmation page) and the page `/confirmar/[token]`.
+- **Order creation** (`lib/orders.ts`): serialised in-process; reads ids, creates `ML-NNNN - initials` in Drive, uploads the files, appends the row, re-reads ids to detect a duplicate, then sends the two emails. The row is the commit point.
+- **Quote confirmation**: tick sends the Cotizado email with a signed link; the page shows a button; its POST runs `confirmOrder` (sheet first, then emails).
+- **Cron tick** also sweeps `data/tmp` files older than 24 h.
+- Mock data lives in `data/mock/` (`pedidos.json`, `drive/`, `emails/`); to simulate the operator, edit `pedidos.json` (set Estado `Cotizado` and fill Cotización) and call the tick.

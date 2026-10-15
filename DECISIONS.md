@@ -92,3 +92,17 @@ Consequences: validation accepts only that pattern (tests first); the sheet colu
 - **New copy to approve at checkpoint 3**: the Cotizado and Confirmado email texts (not in the original appendix) were drafted in the same formal tone.
 - **Coordinate convention** (viewer and build volume): STL axes as exported, Z up. Build volume 153.4 (X) x 77.0 (Y) x 165.0 (Z) mm; the prototype compared the Y extent against 165 (a Y-up assumption). Rotation buttons let the customer fix files exported in another orientation.
 - WhatsApp number: +56 9 4862 3705 (`WHATSAPP_NUMBER=56948623705`).
+
+## Next.js rendering mode (2026-10-15)
+
+Context: create-next-app (Next 16.4.1) enabled `cacheComponents` and `partialPrefetching`, which forbid `export const dynamic`. Docs: node_modules/next/dist/docs/01-app/03-api-reference/04-functions/connection.md and 01-app/01-getting-started/08-caching.md.
+Decision: both flags removed. The home page, `/confirmar/[token]` and the API routes are `force-dynamic`, and the sheet Config values are cached 5 minutes in the runtime instead.
+Consequence: no partial prerendering; first paint waits for the (cached) Config read. Security headers added in next.config.ts (nosniff, frame deny, referrer policy, permissions policy, HSTS).
+
+## Phase 5-8 implementation notes (2026-10-15)
+
+- **Orders return 201 even if an email fails after the row is saved** (spec said 503 on any Google/SMTP failure). A 503 after the row exists would make the customer resubmit and create a duplicate. The failure is logged. Drive or Sheets failures before the row still return 503.
+- **Blocking rules**: the submit button stays disabled while any file is reading or uploading, after a failed upload (retry or remove it), or when a model still exceeds the build volume at its scale. Files that failed to parse are ignored.
+- **Honeypot** returns `201 {id: "ML-0000"}` and writes nothing.
+- **tmp files** are stored as `data/tmp/<32-hex>.bin` (format-agnostic) and swept after 24 h by the tick.
+- **Not yet done**: Plantillas/Config/Pedidos tab seeding script, `setup:sheet`, `setup:oauth`, `setup:check`, and the operator docs (Phase 7 tail and Phase 9).

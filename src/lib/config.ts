@@ -8,6 +8,7 @@ const flag = z
 const envSchema = z.object({
   NODE_ENV: z.string().default("development"),
   MOCK_APIS: flag,
+  DATA_DIR: z.string().min(1).default("./data"),
   PORT: z.coerce.number().int().default(3100),
   GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().email().optional(),
   GOOGLE_PRIVATE_KEY: z.string().min(1).optional(),
@@ -36,6 +37,8 @@ const envSchema = z.object({
 
 export interface Config {
   mock: boolean;
+  /** Holds tmp uploads and, in mock mode, the fake sheet, Drive and outbox. */
+  dataDir: string;
   nodeEnv: string;
   port: number;
   sheetTab: string;
@@ -85,6 +88,7 @@ export function parseEnv(env: Record<string, string | undefined>): Config {
   }
   const base = {
     mock: e.MOCK_APIS,
+    dataDir: e.DATA_DIR,
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
     sheetTab: e.SHEET_TAB,

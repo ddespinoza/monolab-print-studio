@@ -1,24 +1,112 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guía de estilo — paleta</title>
-<link rel="stylesheet" href="../../src/styles/tokens.css"><link rel="stylesheet" href="mockups.css"></head><body>
-<section class="wrap"><h1>Guía de estilo</h1><h2>Paleta</h2><div class="swatches">
-<div class="swatch"><i style="background:var(--prussian-blue)"></i><div><code>--prussian-blue</code></div></div>
-<div class="swatch"><i style="background:var(--orange)"></i><div><code>--orange</code></div></div>
-<div class="swatch"><i style="background:var(--orange-dark)"></i><div><code>--orange-dark</code></div></div>
-<div class="swatch"><i style="background:var(--bg-app)"></i><div><code>--bg-app</code></div></div>
-<div class="swatch"><i style="background:var(--bg-surface)"></i><div><code>--bg-surface</code></div></div>
-<div class="swatch"><i style="background:var(--bg-canvas)"></i><div><code>--bg-canvas</code></div></div>
-<div class="swatch"><i style="background:var(--border-light)"></i><div><code>--border-light</code></div></div>
-<div class="swatch"><i style="background:var(--border-medium)"></i><div><code>--border-medium</code></div></div>
-<div class="swatch"><i style="background:var(--text-main)"></i><div><code>--text-main</code></div></div>
-<div class="swatch"><i style="background:var(--text-secondary)"></i><div><code>--text-secondary</code></div></div>
-<div class="swatch"><i style="background:var(--text-muted)"></i><div><code>--text-muted</code></div></div>
-<div class="swatch"><i style="background:var(--bg-deep)"></i><div><code>--bg-deep</code></div></div>
-<div class="swatch"><i style="background:var(--bg-deepest)"></i><div><code>--bg-deepest</code></div></div>
-<div class="swatch"><i style="background:var(--gold-light)"></i><div><code>--gold-light</code></div></div>
-<div class="swatch"><i style="background:var(--gold-dark)"></i><div><code>--gold-dark</code></div></div>
-<div class="swatch"><i style="background:var(--border-brand)"></i><div><code>--border-brand</code></div></div>
-</div><h2 style="margin-top:2rem">Botones</h2><p><a class="btn btn-primary" href="#">Primario</a> <a class="btn btn-secondary" href="#">Secundario</a> <button class="btn btn-primary" disabled>Deshabilitado</button></p>
-<h2>Campos</h2><div class="row" style="max-width:30rem"><div><label for="a">Etiqueta</label><input id="a" placeholder="Placeholder"></div><div><label for="b">Con error</label><input id="b" value="x"><div class="field-error">Ingrese un valor válido.</div></div></div>
-<h2>Chips y progreso</h2><p><span class="chip">PLA</span> <span class="chip">Retiro</span></p><div class="progress" style="max-width:20rem"><span style="width:60%"></span></div>
-<h2>Reglas</h2><ul><li>El naranja nunca es texto sobre fondo claro: solo relleno de botón (texto azul), foco y acentos sobre azul.</li><li>Nunca texto blanco sobre naranja.</li><li>El degradado dorado es solo para el logo y detalles del hero.</li></ul>
-<div class="band-dark" style="padding:1.5rem;border-radius:.5rem"><h3>Sobre fondo azul</h3><a class="btn btn-primary" href="#">CTA sobre azul</a></div></section></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Guía de estilo — paleta</title>
+    <link rel="stylesheet" href="../../src/styles/tokens.css" />
+    <link rel="stylesheet" href="mockups.css" />
+  </head>
+  <body>
+    <section class="wrap">
+      <h1>Guía de estilo</h1>
+      <h2>Paleta</h2>
+      <div class="swatches">
+        <div class="swatch">
+          <i style="background: var(--prussian-blue)"></i>
+          <div><code>--prussian-blue</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--orange)"></i>
+          <div><code>--orange</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--orange-dark)"></i>
+          <div><code>--orange-dark</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--bg-app)"></i>
+          <div><code>--bg-app</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--bg-surface)"></i>
+          <div><code>--bg-surface</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--bg-canvas)"></i>
+          <div><code>--bg-canvas</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--border-light)"></i>
+          <div><code>--border-light</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--border-medium)"></i>
+          <div><code>--border-medium</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--text-main)"></i>
+          <div><code>--text-main</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--text-secondary)"></i>
+          <div><code>--text-secondary</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--text-muted)"></i>
+          <div><code>--text-muted</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--bg-deep)"></i>
+          <div><code>--bg-deep</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--bg-deepest)"></i>
+          <div><code>--bg-deepest</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--gold-light)"></i>
+          <div><code>--gold-light</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--gold-dark)"></i>
+          <div><code>--gold-dark</code></div>
+        </div>
+        <div class="swatch">
+          <i style="background: var(--border-brand)"></i>
+          <div><code>--border-brand</code></div>
+        </div>
+      </div>
+      <h2 style="margin-top: 2rem">Botones</h2>
+      <p>
+        <a class="btn btn-primary" href="#">Primario</a>
+        <a class="btn btn-secondary" href="#">Secundario</a>
+        <button class="btn btn-primary" disabled>Deshabilitado</button>
+      </p>
+      <h2>Campos</h2>
+      <div class="row" style="max-width: 30rem">
+        <div><label for="a">Etiqueta</label><input id="a" placeholder="Placeholder" /></div>
+        <div>
+          <label for="b">Con error</label><input id="b" value="x" />
+          <div class="field-error">Ingrese un valor válido.</div>
+        </div>
+      </div>
+      <h2>Chips y progreso</h2>
+      <p><span class="chip">PLA</span> <span class="chip">Retiro</span></p>
+      <div class="progress" style="max-width: 20rem"><span style="width: 60%"></span></div>
+      <h2>Reglas</h2>
+      <ul>
+        <li>
+          El naranja nunca es texto sobre fondo claro: solo relleno de botón (texto azul), foco y
+          acentos sobre azul.
+        </li>
+        <li>Nunca texto blanco sobre naranja.</li>
+        <li>El degradado dorado es solo para el logo y detalles del hero.</li>
+      </ul>
+      <div class="band-dark" style="padding: 1.5rem; border-radius: 0.5rem">
+        <h3>Sobre fondo azul</h3>
+        <a class="btn btn-primary" href="#">CTA sobre azul</a>
+      </div>
+    </section>
+  </body>
+</html>

@@ -40,6 +40,10 @@ describe("parseEnv", () => {
     expect(c.mock).toBe(true);
     expect(c.google).toBeUndefined();
   });
+  it("defaults DATA_DIR to ./data", () => {
+    expect(parseEnv(real).dataDir).toBe("./data");
+    expect(parseEnv({ ...real, DATA_DIR: "/srv/monolab" }).dataDir).toBe("/srv/monolab");
+  });
   it("requires a long CONFIRM_SECRET even in mock mode", () => {
     expect(() => parseEnv({ ...real, CONFIRM_SECRET: "short" })).toThrow(/CONFIRM_SECRET/);
     expect(parseEnv(real).confirmSecret).toBe("y".repeat(32));

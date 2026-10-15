@@ -19,7 +19,9 @@ Copy `.env.example` to `.env` and fill it using docs/GOOGLE-SETUP.md. Production
 | `GOOGLE_*`, `DRIVE_FOLDER_ID`, `SHEET_TAB` | Sheets service account, Drive OAuth, ids                                           |
 | `SMTP_*`, `FROM_EMAIL`, `OPERATOR_EMAIL`   | Gmail SMTP and addresses                                                           |
 
-## Option A: Coolify (chosen by the owner)
+## Option A: Coolify (chosen by the owner, deployed)
+
+The app is already created in Coolify (see DECISIONS.md, "Coolify deployment"). The steps below describe how it was configured. To change the domain later: Coolify > the app > Domains, or `PATCH /api/v1/applications/<uuid>` with `domains`; then redeploy. Environment changes need a redeploy. The scheduled task needs no `curl`: it uses Node's `fetch`.
 
 The VPS already runs Coolify with a Traefik proxy on ports 80/443. Deploying through Coolify touches nothing outside its own app entry.
 

@@ -124,3 +124,13 @@ If the owner declines the LGPL exception: set `images.unoptimized: true` and rem
 
 - **License exceptions approved**: `@img/sharp-libvips-linux-x64` (LGPL-3.0-or-later, optional dependency of `next`) and `caniuse-lite` (CC-BY-4.0, build-time data).
 - **Deployment: Coolify** (Nixpacks, existing Traefik proxy). `nixpacks.toml` pins Node 24. Required in Coolify: `PORT=3000`, `HOST=0.0.0.0`, `NODE_ENV=production`, `MOCK_APIS=false` plus the secrets, a persistent volume at `/app/data`, a 5-minute scheduled task for the tick, and the domains. Production refuses to start without real credentials, so deployment waits for checkpoint 4.
+
+## Coolify deployment (2026-10-15)
+
+Created through the Coolify v4.4.6 REST API (no Coolify MCP was connected): project **Monolab Print Studio** (`temz6balhkt2zffr5ndhu6xj`), application `monolab-print-studio` (`je5meciuydwuwyxgrge4hwqb`), Nixpacks, port 3000, branch `main`, on server `localhost`. Nothing existing was modified.
+
+- **Source access**: dedicated read-only GitHub deploy key (`coolify-readonly`); separate from the write key used for pushes from this VPS.
+- **Environment**: 24 runtime variables with production-only `CRON_SECRET` and `CONFIRM_SECRET`; `NIXPACKS_NODE_VERSION=24` as a build variable (Coolify defaults it to 22).
+- **Volume** `/app/data`; **scheduled task** `status-tick` every 5 minutes runs a Node `fetch` against `127.0.0.1:3000/api/cron/tick` with `CRON_SECRET` (first run logged `tick 200`).
+- **Verified live over HTTP on the temporary sslip.io address**: home page renders with the live Config tab, tick answers 401 without the secret and `{"processed":0,...}` with it, security headers present, Node v24.10.0.
+- **Pending**: attach the real domain (needs Cloudflare/DNS), set the real `SMTP_PASS` (currently a placeholder, so no email is sent), real pickup address in the Config tab, rotate the Coolify API token and the Google service-account key that were shared in chat.

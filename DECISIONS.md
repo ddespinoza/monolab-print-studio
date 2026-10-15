@@ -161,3 +161,10 @@ Done through the Cloudflare API with a scoped, expiring token (DNS, Zone Setting
 - **Log**: every attempt appends to the `Envíos` tab (date, order, Estado, recipient, Enviado/Falló, Botón/Prueba). A failed log write never fails the send.
 - **One send job at a time**: the tick and the buttons share a lock; a second call answers 409 `busy`.
 - **Sheet setup (run on the live sheet 2026-10-15)**: F1 renamed "WhatsApp" to "Teléfono", `Envíos` tab created, `ENVIO_AUTOMATICO=NO` added to Config. Not yet done: the Apps Script menu, `SHEET_SECRET` in Coolify and in Script Properties, deploy.
+
+## Phase 4b-1 deployed and tested live (2026-10-15)
+
+- Deployed commit `12e87ab`. `SHEET_SECRET` created (kept in `.secrets/sheet-secret`, set in Coolify as a runtime variable). The live site is in manual mode: the tick answers `automatic:false`.
+- Live test with order ML-0002 (row 3, sent to OPERATOR_EMAIL, left as Cancelado): refusal of Cotizado without a quote, preview (`[PRUEBA]`), real quote send, `already_sent` on repeat, unknown order refused, `Listo` through `pending`, empty second `pending`. Row marks (S:T) and the Envíos log matched each step.
+- Not tested live: the Apps Script itself (menu, checkbox) and the customer clicking the confirm link.
+- Known issue: values starting with + = - @ are written RAW with a leading apostrophe, which Sheets shows literally (e.g. `'+56 9 ...` in Teléfono). RAW already prevents formula evaluation, so the apostrophe is unnecessary there.

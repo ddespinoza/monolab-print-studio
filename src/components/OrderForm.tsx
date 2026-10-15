@@ -32,6 +32,8 @@ interface Props {
   errors: Partial<Record<keyof FormValues | "files", string>>;
   retiro: string;
   submitting: boolean;
+  /** Files are still being read or uploaded. */
+  busy?: boolean;
   disabled: boolean;
   hint?: string;
   formError?: string;
@@ -61,6 +63,7 @@ export function OrderForm({
   errors,
   retiro,
   submitting,
+  busy = false,
   disabled,
   hint,
   formError,
@@ -230,6 +233,12 @@ export function OrderForm({
         >
           {submitting ? "Enviando…" : "Solicitar cotización"}
         </button>
+        {(submitting || busy) && (
+          <span role="status" className="flex items-center gap-2 text-sm font-semibold text-main">
+            <span className="spinner" aria-hidden="true" />
+            {submitting ? "Enviando su solicitud…" : "Procesando sus archivos…"}
+          </span>
+        )}
         {hint && <span className="text-sm text-muted">{hint}</span>}
       </div>
     </form>

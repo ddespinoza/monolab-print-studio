@@ -235,6 +235,7 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
           errors={errors}
           retiro={retiro}
           submitting={submitting}
+          busy={blockers.includes("busy")}
           disabled={!canSubmit(state)}
           hint={hint}
           formError={formError}

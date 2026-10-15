@@ -10,17 +10,18 @@ const base: OrderRow = {
   nombre: "Ana",
   email: "ana@example.com",
   whatsapp: "+56 9",
-  ciudad: "X",
-  entrega: "Retiro",
+  paciente: "A. P.",
+  entrega: "Flash",
+  tarifa: "10000",
   drive: "",
   nArchivos: "1",
   volumen: "1.0",
   detalle: "a.stl — 1.0 cm³ (1×1×1)",
-  material: "PLA",
-  color: "",
-  relleno: "20",
+  resina: "Estándar",
   cantidad: "1",
   notas: "",
+  cotizacion: "",
+  confirmado: "",
   notificado: "Nuevo",
   ultima: "",
 };
@@ -53,6 +54,7 @@ function deps(orders: OrderRow[], over: Partial<TickDeps> = {}): TickDeps {
     send: vi.fn().mockResolvedValue(undefined),
     markNotified: vi.fn().mockResolvedValue(undefined),
     sweep: vi.fn().mockResolvedValue(3),
+    confirmLink: (o: OrderRow) => `https://monolabprintstudio.cl/confirmar/${o.id}.tok`,
     siteUrl: "https://monolabprintstudio.cl",
     whatsappNumber: "56912345678",
     now: () => new Date("2025-06-12T18:03:00Z"),
@@ -64,7 +66,7 @@ describe("runTick", () => {
   it("sends one email per pending row, marks it, and reports counts", async () => {
     const d = deps([row({}), row({ rowNumber: 3, id: "ML-0002", estado: "Listo" })]);
     const r = await runTick(d);
-    expect(r).toEqual({ processed: 2, failed: 0, swept: 3, fallbacks: 2 });
+    expect(r).toEqual({ processed: 2, failed: 0, skipped: 0, swept: 3, fallbacks: 2 });
     expect(d.send).toHaveBeenCalledTimes(2);
     expect(d.markNotified).toHaveBeenCalledWith(3, "Listo", "2025-06-12 14:03");
     const mail = vi.mocked(d.send).mock.calls[1][0];
@@ -96,8 +98,40 @@ describe("runTick", () => {
   });
   it("is idempotent: nothing pending means nothing sent", async () => {
     const d = deps([row({ notificado: "En cola" })]);
-    expect(await runTick(d)).toEqual({ processed: 0, failed: 0, swept: 3, fallbacks: 0 });
+    expect(await runTick(d)).toEqual({
+      processed: 0,
+      failed: 0,
+      skipped: 0,
+      swept: 3,
+      fallbacks: 0,
+    });
     expect(d.send).not.toHaveBeenCalled();
+  });
+  it("sends the quote and the confirm link when Estado is Cotizado", async () => {
+    const d = deps([row({ estado: "Cotizado", cotizacion: "$45.000 CLP por 2 piezas" })]);
+    await runTick(d);
+    const mail = vi.mocked(d.send).mock.calls[0][0];
+    expect(mail.subject).toBe("Pedido ML-0001 — cotización");
+    expect(mail.text).toContain("$45.000 CLP por 2 piezas");
+    expect(mail.text).toContain("https://monolabprintstudio.cl/confirmar/ML-0001.tok");
+  });
+  it("skips Cotizado rows without a quote text, without marking them", async () => {
+    const d = deps([row({ estado: "Cotizado", cotizacion: "  " })]);
+    expect(await runTick(d)).toMatchObject({ processed: 0, failed: 0, skipped: 1 });
+    expect(d.send).not.toHaveBeenCalled();
+    expect(d.markNotified).not.toHaveBeenCalled();
+  });
+  it("builds the summary from the row for {{resumen}}", async () => {
+    const d = deps([row({})], {
+      readTemplates: vi
+        .fn()
+        .mockResolvedValue(new Map([["En cola", { subject: "s", body: "{{resumen}}" }]])),
+    });
+    await runTick(d);
+    const text = vi.mocked(d.send).mock.calls[0][0].text;
+    expect(text).toContain("• a.stl — 1.0 cm³ (1×1×1)");
+    expect(text).toContain("• Paciente: A. P.");
+    expect(text).toContain("• Entrega: Flash (2 días)");
   });
   it("rejects overlapping ticks", async () => {
     let release: () => void = () => {};

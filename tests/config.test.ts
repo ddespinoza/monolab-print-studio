@@ -14,6 +14,7 @@ const real = {
   WHATSAPP_NUMBER: "56912345678",
   SITE_URL: "https://monolabprintstudio.cl",
   CRON_SECRET: "x".repeat(16),
+  CONFIRM_SECRET: "y".repeat(32),
 };
 
 describe("parseEnv", () => {
@@ -34,9 +35,14 @@ describe("parseEnv", () => {
       WHATSAPP_NUMBER: "56912345678",
       SITE_URL: "http://127.0.0.1:3100",
       CRON_SECRET: "x".repeat(16),
+      CONFIRM_SECRET: "y".repeat(32),
     });
     expect(c.mock).toBe(true);
     expect(c.google).toBeUndefined();
+  });
+  it("requires a long CONFIRM_SECRET even in mock mode", () => {
+    expect(() => parseEnv({ ...real, CONFIRM_SECRET: "short" })).toThrow(/CONFIRM_SECRET/);
+    expect(parseEnv(real).confirmSecret).toBe("y".repeat(32));
   });
   it("refuses mock mode in production", () => {
     expect(() => parseEnv({ ...real, MOCK_APIS: "true", NODE_ENV: "production" })).toThrow(

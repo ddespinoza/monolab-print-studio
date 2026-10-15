@@ -34,6 +34,8 @@ export interface TickDeps {
   markNotified: (rowNumber: number, estado: string, timestamp: string) => Promise<void>;
   /** Deletes stale tmp uploads; returns how many. */
   sweep: () => Promise<number>;
+  /** Absolute confirm link for an order's current quote. */
+  confirmLink: (order: OrderRow) => string;
   siteUrl: string;
   whatsappNumber: string;
   now: () => Date;
@@ -42,6 +44,8 @@ export interface TickDeps {
 export interface TickResult {
   processed: number;
   failed: number;
+  /** Cotizado rows with no quote text yet: left pending until the operator fills it in. */
+  skipped: number;
   swept: number;
   fallbacks: number;
 }
@@ -54,6 +58,8 @@ function varsFor(order: OrderRow, deps: TickDeps, retiro: string): Record<string
     nombre: order.nombre,
     orderId: order.id,
     resumen: joinResumen(fileLines, order),
+    cotizacion: order.cotizacion.trim(),
+    confirmLink: deps.confirmLink(order),
     whatsappLink: whatsappLink(deps.whatsappNumber, order.id),
     sitio: deps.siteUrl,
     retiro,
@@ -73,8 +79,13 @@ export async function runTick(deps: TickDeps): Promise<TickResult> {
       deps.readTemplates(),
       deps.readConfig(),
     ]);
-    const result: TickResult = { processed: 0, failed: 0, swept: 0, fallbacks: 0 };
+    const result: TickResult = { processed: 0, failed: 0, skipped: 0, swept: 0, fallbacks: 0 };
     for (const { order, estado } of findPending(orders)) {
+      if (estado === "Cotizado" && order.cotizacion.trim() === "") {
+        result.skipped++;
+        logger.warn("quote not sent: Cotización is empty", { orderId: order.id });
+        continue;
+      }
       try {
         const { template, fallback } = resolveTemplate(estado, templates);
         const mail = buildEmail(template, varsFor(order, deps, config.RETIRO_DIRECCION));

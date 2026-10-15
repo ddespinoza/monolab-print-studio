@@ -83,3 +83,12 @@ Consequences:
 
 Decision: the form asks for the patient's **initials** (2 to 8 characters: letters, dots and spaces), never the full name, to protect sensitive personal data. Supersedes the "patient name" wording in checkpoint 2b and settles most of its privacy flag.
 Consequences: validation accepts only that pattern (tests first); the sheet column is "Iniciales paciente"; the Drive folder is `ML-0001 - A.P.`; emails and notifications may show the initials. The dentist's full name is still collected, because emails address them by name; revisit if the owner wants that reduced too.
+
+## Data model after checkpoints 2 and 2b (implemented, tests first)
+
+- **Pedidos columns A-T** (20): ID Pedido, Fecha, Estado, Odontólogo, Email, WhatsApp, Iniciales paciente, Entrega (Flash/Normal), Tarifa entrega (CLP), Archivos (Drive), Nº archivos, Volumen total, Detalle archivos (with `· escala N %` when not 100), Resina, Copias, Notas, **Cotización**, **Confirmado**, Estado notificado, Última notificación. To be confirmed by the owner at checkpoint 3.
+- **8 states**: Nuevo, Cotizado, Confirmado, En cola, Imprimiendo, Listo, Entregado, Cancelado. Cron skips a Cotizado row whose Cotización cell is empty (counted as `skipped`) so a quote is never sent without a price.
+- **Quote link**: `signConfirmToken` = HMAC-SHA256 of order id + quote text with `CONFIRM_SECRET` (>= 32 chars). `/confirmar/[token]` shows a button (POST confirms). `confirmOrder` writes Estado/Confirmado/notified marks in one `values.batchUpdate`, then emails the customer and the operator; a failed email never undoes the confirmation. Double clicks are guarded in-process.
+- **New copy to approve at checkpoint 3**: the Cotizado and Confirmado email texts (not in the original appendix) were drafted in the same formal tone.
+- **Coordinate convention** (viewer and build volume): STL axes as exported, Z up. Build volume 153.4 (X) x 77.0 (Y) x 165.0 (Z) mm; the prototype compared the Y extent against 165 (a Y-up assumption). Rotation buttons let the customer fix files exported in another orientation.
+- WhatsApp number: +56 9 4862 3705 (`WHATSAPP_NUMBER=56948623705`).

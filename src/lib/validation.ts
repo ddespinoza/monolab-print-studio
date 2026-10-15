@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const ESTADOS = [
   "Nuevo",
+  "Cotizado",
+  "Confirmado",
   "En cola",
   "Imprimiendo",
   "Listo",
@@ -11,7 +13,13 @@ export const ESTADOS = [
 export type Estado = (typeof ESTADOS)[number];
 
 export const MAX_FILES = 10;
-export const RELLENOS = [10, 20, 50, 100] as const;
+export const RESINAS = ["Estándar", "Resina Tough"] as const;
+/** Flat delivery fee per order, in CLP. Informational: the quote itself is typed in the sheet. */
+export const ENTREGAS = [
+  { id: "Flash", dias: 2, tarifa: 10000 },
+  { id: "Normal", dias: 7, tarifa: 7500 },
+] as const;
+const LETTER = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ";
 export const TOKEN_PATTERN = /^[a-f0-9]{32}$/;
 
 const text = (label: string, min: number, max: number) =>
@@ -25,6 +33,8 @@ const fileSchema = z.object({
   token: z.string().regex(TOKEN_PATTERN, "Archivo no válido. Vuelva a subirlo."),
   name: z.string().min(1).max(120),
   volumeCm3: z.number().min(0).max(1_000_000),
+  /** Scale the customer applied in the viewer; volume and size already include it. */
+  scalePercent: z.number().int().min(5).max(250),
   size: z.object({
     x: z.number().min(0).max(100_000),
     y: z.number().min(0).max(100_000),
@@ -44,16 +54,22 @@ export const orderSchema = z.object({
     .string({ error: "El WhatsApp es obligatorio." })
     .trim()
     .regex(/^\+?[0-9][0-9 ()-]{6,18}$/, "Ingrese un número de WhatsApp válido."),
-  ciudad: text("La ciudad", 2, 60),
-  material: text("El material", 1, 40),
-  color: z.string().trim().max(40, "El color no puede superar los 40 caracteres.").default(""),
-  relleno: z
-    .number()
-    .refine(
-      (n): n is (typeof RELLENOS)[number] => (RELLENOS as readonly number[]).includes(n),
-      "Elija un relleno válido.",
+  /** Initials only: the patient's full name is never collected. */
+  paciente: z
+    .string({ error: "Las iniciales del paciente son obligatorias." })
+    .trim()
+    .regex(
+      new RegExp(`^[${LETTER}][${LETTER}. ]{1,7}$`),
+      "Ingrese solo las iniciales del paciente, por ejemplo A. P.",
     )
-    .default(20),
+    .refine(
+      (v) => v.replace(new RegExp(`[^${LETTER}]`, "g"), "").length <= 4,
+      "Ingrese solo las iniciales del paciente, por ejemplo A. P.",
+    ),
+  resina: z.enum(RESINAS, { error: "Elija un tipo de resina." }),
+  entrega: z.enum(ENTREGAS.map((e) => e.id) as [string, ...string[]], {
+    error: "Elija un tiempo de entrega.",
+  }),
   cantidad: z
     .number()
     .int("La cantidad debe ser un número entero.")
@@ -65,7 +81,7 @@ export const orderSchema = z.object({
   empresa: z.string().default(""),
   files: z
     .array(fileSchema)
-    .min(1, "Suba al menos un archivo STL.")
+    .min(1, "Suba al menos un archivo 3D.")
     .max(MAX_FILES, `Puede subir hasta ${MAX_FILES} archivos por pedido.`)
     .refine(
       (files) => new Set(files.map((f) => f.token)).size === files.length,

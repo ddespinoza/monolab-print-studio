@@ -1,26 +1,27 @@
 import { escapeSheetCell } from "@/lib/sanitize";
 import { formatFileLine } from "@/lib/templates";
 import { totalVolumeCm3 } from "@/lib/stl-metrics";
-import type { OrderInput } from "@/lib/validation";
+import { ENTREGAS, type OrderInput } from "@/lib/validation";
 
 export const HEADERS = [
   "ID Pedido",
   "Fecha",
   "Estado",
-  "Nombre",
+  "Odontólogo",
   "Email",
   "WhatsApp",
-  "Ciudad",
+  "Iniciales paciente",
   "Entrega",
+  "Tarifa entrega (CLP)",
   "Archivos (Drive)",
   "Nº archivos",
   "Volumen total (cm³)",
   "Detalle archivos",
-  "Material",
-  "Color",
-  "Relleno (%)",
-  "Cantidad",
+  "Resina",
+  "Copias",
   "Notas",
+  "Cotización",
+  "Confirmado",
   "Estado notificado",
   "Última notificación",
 ] as const;
@@ -33,17 +34,18 @@ export interface OrderRow {
   nombre: string;
   email: string;
   whatsapp: string;
-  ciudad: string;
+  paciente: string;
   entrega: string;
+  tarifa: string;
   drive: string;
   nArchivos: string;
   volumen: string;
   detalle: string;
-  material: string;
-  color: string;
-  relleno: string;
+  resina: string;
   cantidad: string;
   notas: string;
+  cotizacion: string;
+  confirmado: string;
   notificado: string;
   ultima: string;
 }
@@ -55,9 +57,10 @@ export interface NewOrder {
   driveLink: string;
 }
 
-/** Row for the Pedidos tab (columns A-S). Customer text is escaped against spreadsheet formulas. */
+/** Row for the Pedidos tab (columns A-T). Customer text is escaped against spreadsheet formulas. */
 export function buildOrderRow({ id, fecha, order, driveLink }: NewOrder): string[] {
   const e = escapeSheetCell;
+  const tarifa = ENTREGAS.find((o) => o.id === order.entrega)?.tarifa ?? 0;
   return [
     id,
     fecha,
@@ -65,17 +68,18 @@ export function buildOrderRow({ id, fecha, order, driveLink }: NewOrder): string
     e(order.nombre),
     e(order.email),
     e(order.whatsapp),
-    e(order.ciudad),
-    "Retiro",
+    e(order.paciente),
+    order.entrega,
+    String(tarifa),
     driveLink,
     String(order.files.length),
     totalVolumeCm3(order.files.map((f) => f.volumeCm3)).toFixed(1),
     e(order.files.map(formatFileLine).join("\n")),
-    e(order.material),
-    e(order.color),
-    String(order.relleno),
+    e(order.resina),
     String(order.cantidad),
     e(order.notas),
+    "",
+    "",
     "Nuevo",
     fecha,
   ];
@@ -91,18 +95,19 @@ export function parseOrderRow(row: readonly string[], rowNumber: number): OrderR
     nombre: c(3),
     email: c(4),
     whatsapp: c(5),
-    ciudad: c(6),
+    paciente: c(6),
     entrega: c(7),
-    drive: c(8),
-    nArchivos: c(9),
-    volumen: c(10),
-    detalle: c(11),
-    material: c(12),
-    color: c(13),
-    relleno: c(14),
-    cantidad: c(15),
-    notas: c(16),
-    notificado: c(17).trim(),
-    ultima: c(18),
+    tarifa: c(8),
+    drive: c(9),
+    nArchivos: c(10),
+    volumen: c(11),
+    detalle: c(12),
+    resina: c(13),
+    cantidad: c(14),
+    notas: c(15),
+    cotizacion: c(16),
+    confirmado: c(17),
+    notificado: c(18).trim(),
+    ultima: c(19),
   };
 }

@@ -1,5 +1,5 @@
 import { escapeHtml, stripLineBreaks } from "@/lib/sanitize";
-import type { Estado } from "@/lib/validation";
+import { ENTREGAS, type Estado } from "@/lib/validation";
 
 export interface EmailTemplate {
   subject: string;
@@ -38,6 +38,29 @@ Revisaremos su solicitud y le enviaremos la confirmación en breve.
 
 Resumen del pedido:
 {{resumen}}
+
+${CONSULTAS}`,
+  },
+  Cotizado: {
+    subject: "Pedido {{orderId}} — cotización",
+    body: `Estimado/a {{nombre}}:
+
+Revisamos su pedido {{orderId}}. Esta es su cotización:
+
+{{cotizacion}}
+
+Para confirmarla, ingrese al siguiente enlace y presione «Confirmar cotización»:
+{{confirmLink}}
+
+Si desea cambiar algo, escríbanos por WhatsApp: {{whatsappLink}}`,
+  },
+  Confirmado: {
+    subject: "Pedido {{orderId}} — cotización confirmada",
+    body: `Estimado/a {{nombre}}:
+
+Recibimos su confirmación del pedido {{orderId}}.
+
+Lo pasaremos a la cola de impresión y le avisaremos cuando comience la producción.
 
 ${CONSULTAS}`,
   },
@@ -95,7 +118,8 @@ Lamentamos cualquier inconveniente. Si desea retomarlo o tiene consultas, estamo
 export const OPERATOR_TEMPLATE: EmailTemplate = {
   subject: "[Monolab] Nuevo pedido {{orderId}} — {{nombre}}",
   body: `Nuevo pedido {{orderId}}
-Cliente: {{nombre}} — {{ciudad}} — {{whatsapp}}
+Cliente: {{nombre}} — {{whatsapp}}
+Paciente: {{paciente}}
 Archivos: {{nArchivos}} ({{volumenTotal}} cm³) — {{driveLink}}
 Fila en planilla: {{filaLink}}
 Estado inicial: Nuevo.
@@ -115,25 +139,37 @@ export function whatsappLink(number: string, orderId: string): string {
 }
 
 export interface ResumenInput {
-  files: { name: string; volumeCm3: number; size: { x: number; y: number; z: number } }[];
-  material: string;
-  color: string;
-  relleno: number | string;
+  files: {
+    name: string;
+    volumeCm3: number;
+    size: { x: number; y: number; z: number };
+    scalePercent?: number;
+  }[];
+  paciente: string;
+  resina: string;
   cantidad: number | string;
+  /** Delivery option id (Flash, Normal). */
+  entrega: string;
 }
 
 /** One line per file; shared by the sheet's "Detalle archivos" cell and the email summary. */
 export function formatFileLine(f: ResumenInput["files"][number]): string {
-  return `${f.name} — ${f.volumeCm3.toFixed(1)} cm³ (${f.size.x}×${f.size.y}×${f.size.z})`;
+  const scale =
+    f.scalePercent !== undefined && f.scalePercent !== 100 ? ` · escala ${f.scalePercent} %` : "";
+  return `${f.name} — ${f.volumeCm3.toFixed(1)} cm³ (${f.size.x}×${f.size.y}×${f.size.z})${scale}`;
 }
 
 /** Bulleted summary from already-formatted file lines (the sheet stores them as text). */
 export function joinResumen(fileLines: readonly string[], o: Omit<ResumenInput, "files">): string {
-  const lines = fileLines.map((l) => `• ${l}`);
-  lines.push(`• Material: ${o.material}`);
-  if (o.color) lines.push(`• Color: ${o.color}`);
-  lines.push(`• Relleno: ${o.relleno} %`, `• Cantidad: ${o.cantidad}`);
-  return lines.join("\n");
+  const option = ENTREGAS.find((e) => e.id === o.entrega);
+  const entrega = option ? `${option.id} (${option.dias} días)` : o.entrega;
+  return [
+    ...fileLines.map((l) => `• ${l}`),
+    `• Paciente: ${o.paciente}`,
+    `• Resina: ${o.resina}`,
+    `• Copias: ${o.cantidad}`,
+    `• Entrega: ${entrega}`,
+  ].join("\n");
 }
 
 export function buildResumen(o: ResumenInput): string {

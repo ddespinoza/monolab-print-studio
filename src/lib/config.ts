@@ -26,6 +26,7 @@ const envSchema = z.object({
   WHATSAPP_NUMBER: z.string().regex(/^\d{8,15}$/, "must be digits only, with country code"),
   SITE_URL: z.string().url(),
   CRON_SECRET: z.string().min(16, "must be at least 16 characters"),
+  CONFIRM_SECRET: z.string().min(32, "must be at least 32 characters"),
   MAX_UPLOAD_MB: z.coerce
     .number()
     .positive()
@@ -43,6 +44,8 @@ export interface Config {
   whatsappNumber: string;
   siteUrl: string;
   cronSecret: string;
+  /** Signs the quote-confirmation links. */
+  confirmSecret: string;
   maxUploadMb: number;
   smtp: { host: string; port: number; user: string; pass: string };
   /** Present unless MOCK_APIS=true. */
@@ -90,6 +93,7 @@ export function parseEnv(env: Record<string, string | undefined>): Config {
     whatsappNumber: e.WHATSAPP_NUMBER,
     siteUrl: e.SITE_URL.replace(/\/+$/, ""),
     cronSecret: e.CRON_SECRET,
+    confirmSecret: e.CONFIRM_SECRET,
     maxUploadMb: e.MAX_UPLOAD_MB,
   };
   if (e.MOCK_APIS) {

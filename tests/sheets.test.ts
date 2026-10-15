@@ -4,7 +4,7 @@ import { createSheetsApi, rowFromRange } from "@/lib/sheets";
 function fake(over: Record<string, unknown> = {}) {
   const values = {
     get: vi.fn().mockResolvedValue({ data: { values: [["ML-0001"], ["ML-0002"]] } }),
-    append: vi.fn().mockResolvedValue({ data: { updates: { updatedRange: "Pedidos!A5:S5" } } }),
+    append: vi.fn().mockResolvedValue({ data: { updates: { updatedRange: "Pedidos!A5:T5" } } }),
     update: vi.fn().mockResolvedValue({ data: {} }),
     ...over,
   };
@@ -17,7 +17,7 @@ function fake(over: Record<string, unknown> = {}) {
 
 describe("rowFromRange", () => {
   it("extracts the first row number", () => {
-    expect(rowFromRange("Pedidos!A5:S5")).toBe(5);
+    expect(rowFromRange("Pedidos!A5:T5")).toBe(5);
     expect(rowFromRange("'Mi Tab'!A12:S12")).toBe(12);
     expect(() => rowFromRange("garbage")).toThrow();
   });
@@ -39,13 +39,13 @@ describe("createSheetsApi", () => {
     const r = await api.appendOrder(["ML-0003"]);
     expect(r).toEqual({
       rowNumber: 5,
-      link: "https://docs.google.com/spreadsheets/d/SID/edit#gid=0&range=A5:S5",
+      link: "https://docs.google.com/spreadsheets/d/SID/edit#gid=0&range=A5:T5",
     });
     expect(values.append).toHaveBeenCalledWith(
       expect.objectContaining({
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
-        range: "Pedidos!A:S",
+        range: "Pedidos!A:T",
         requestBody: { values: [["ML-0003"]] },
       }),
     );
@@ -64,11 +64,31 @@ describe("createSheetsApi", () => {
     await api.markNotified(7, "Listo", "2025-06-12 14:03");
     expect(values.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        range: "Pedidos!R7:S7",
+        range: "Pedidos!S7:T7",
         valueInputOption: "RAW",
         requestBody: { values: [["Listo", "2025-06-12 14:03"]] },
       }),
     );
+  });
+  it("confirms an order: Estado, Confirmado, notified marks, in one batch", async () => {
+    const batchUpdate = vi.fn().mockResolvedValue({ data: {} });
+    const { client } = fake();
+    (client.spreadsheets.values as unknown as Record<string, unknown>).batchUpdate = batchUpdate;
+    await createSheetsApi(client as never, cfg, { sleep: vi.fn() }).setConfirmed(
+      9,
+      "2025-06-12 14:03",
+    );
+    expect(batchUpdate).toHaveBeenCalledWith({
+      spreadsheetId: "SID",
+      requestBody: {
+        valueInputOption: "RAW",
+        data: [
+          { range: "Pedidos!C9", values: [["Confirmado"]] },
+          { range: "Pedidos!R9", values: [["2025-06-12 14:03"]] },
+          { range: "Pedidos!S9:T9", values: [["Confirmado", "2025-06-12 14:03"]] },
+        ],
+      },
+    });
   });
   it("reads other tabs, skipping the header", async () => {
     const { client, values } = fake({

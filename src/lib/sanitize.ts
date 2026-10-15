@@ -1,15 +1,23 @@
 const MAX_FILENAME = 80;
+const MODEL_EXT = /\.(stl|obj|ply)$/i;
 
-/** Safe filename: `[^A-Za-z0-9._-]` becomes `_`, repeats collapse, <= 80 chars, keeps the .stl extension. */
-export function sanitizeFilename(name: string): string {
-  const base = name.trim().replace(/\.stl$/i, "");
-  const stem = base
+/** Safe filename: `[^A-Za-z0-9._-]` becomes `_`, repeats collapse, <= 80 chars, keeps a .stl/.obj/.ply extension. */
+export function sanitizeFilename(name: string, fallbackExt = ".stl"): string {
+  const trimmed = name.trim();
+  const ext = (MODEL_EXT.exec(trimmed)?.[0] ?? fallbackExt).toLowerCase();
+  const stem = trimmed
+    .replace(MODEL_EXT, "")
     .replace(/[^A-Za-z0-9._-]/g, "_")
     .replace(/\.{2,}/g, "_")
     .replace(/_+/g, "_")
     .replace(/^[_.]+|[_.]+$/g, "")
-    .slice(0, MAX_FILENAME - ".stl".length);
-  return stem === "" ? "archivo.stl" : `${stem}.stl`;
+    .slice(0, MAX_FILENAME - ext.length);
+  return stem === "" ? `archivo${ext}` : `${stem}${ext}`;
+}
+
+/** Drive folder for an order: id plus the patient's initials (letters and dots only). */
+export function folderName(orderId: string, initials: string): string {
+  return `${orderId} - ${initials.replace(/[^\p{L}.]/gu, "")}`;
 }
 
 /** Neutralise spreadsheet formulas: a leading = + - @ tab or CR gets a literal apostrophe prefix. */

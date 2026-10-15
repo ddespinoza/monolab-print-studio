@@ -29,17 +29,22 @@ async function main(): Promise<void> {
     );
     const order = {
       nombre: "TEST",
+      paciente: "T. T.",
       email: cfg.operatorEmail,
       whatsapp: "+56 9 0000 0000",
-      ciudad: "TEST",
-      material: "PLA",
-      color: "",
-      relleno: 20 as const,
+      resina: "Estándar" as const,
+      entrega: "Normal",
       cantidad: 1,
       notas: "live test",
       empresa: "",
       files: [
-        { token: "0".repeat(32), name: "test.stl", volumeCm3: 1, size: { x: 1, y: 1, z: 1 } },
+        {
+          token: "0".repeat(32),
+          name: "test.stl",
+          volumeCm3: 1,
+          size: { x: 1, y: 1, z: 1 },
+          scalePercent: 100,
+        },
       ],
     };
     const appended = await sheets.appendOrder(

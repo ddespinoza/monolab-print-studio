@@ -8,6 +8,8 @@ export interface SheetsApi {
   readTab(tab: string): Promise<string[][]>;
   appendOrder(row: string[]): Promise<{ rowNumber: number; link: string }>;
   markNotified(rowNumber: number, estado: string, timestamp: string): Promise<void>;
+  /** Customer confirmed the quote: Estado, Confirmado and the notified marks, in one request. */
+  setConfirmed(rowNumber: number, timestamp: string): Promise<void>;
   /** Removes a whole row (used by the live test to clean up). */
   deleteRow(rowNumber: number): Promise<void>;
 }
@@ -35,7 +37,7 @@ export function createSheetsApi(
       return (await read(`${tab}!A2:A`)).map((r) => r[0] ?? "");
     },
     async readOrders() {
-      return (await read(`${tab}!A2:S`)).map((r, i) => parseOrderRow(r, i + 2));
+      return (await read(`${tab}!A2:T`)).map((r, i) => parseOrderRow(r, i + 2));
     },
     readTab: (name) => read(`${name}!A2:Z`),
     async appendOrder(row) {
@@ -43,7 +45,7 @@ export function createSheetsApi(
         () =>
           values.append({
             spreadsheetId,
-            range: `${tab}!A:S`,
+            range: `${tab}!A:T`,
             valueInputOption: "RAW",
             insertDataOption: "INSERT_ROWS",
             requestBody: { values: [row] },
@@ -53,7 +55,7 @@ export function createSheetsApi(
       const rowNumber = rowFromRange(res.data.updates?.updatedRange ?? "");
       return {
         rowNumber,
-        link: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=0&range=A${rowNumber}:S${rowNumber}`,
+        link: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=0&range=A${rowNumber}:T${rowNumber}`,
       };
     },
     async markNotified(rowNumber, estado, timestamp) {
@@ -61,9 +63,27 @@ export function createSheetsApi(
         () =>
           values.update({
             spreadsheetId,
-            range: `${tab}!R${rowNumber}:S${rowNumber}`,
+            range: `${tab}!S${rowNumber}:T${rowNumber}`,
             valueInputOption: "RAW",
             requestBody: { values: [[estado, timestamp]] },
+          }),
+        retry,
+      );
+    },
+    async setConfirmed(rowNumber, timestamp) {
+      const at = (range: string) => `${tab}!${range}`;
+      await withRetry(
+        () =>
+          values.batchUpdate({
+            spreadsheetId,
+            requestBody: {
+              valueInputOption: "RAW",
+              data: [
+                { range: at(`C${rowNumber}`), values: [["Confirmado"]] },
+                { range: at(`R${rowNumber}`), values: [[timestamp]] },
+                { range: at(`S${rowNumber}:T${rowNumber}`), values: [["Confirmado", timestamp]] },
+              ],
+            },
           }),
         retry,
       );

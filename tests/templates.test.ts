@@ -3,6 +3,7 @@ import {
   DEFAULT_TEMPLATES,
   buildEmail,
   buildResumen,
+  joinResumen,
   renderTemplate,
   whatsappLink,
 } from "@/lib/templates";
@@ -19,14 +20,27 @@ describe("renderTemplate", () => {
 });
 
 describe("DEFAULT_TEMPLATES", () => {
-  it("has receipt plus the 5 notifiable states, no Enviado", () => {
+  it("has receipt plus the 7 notifiable states, no Enviado", () => {
     expect(Object.keys(DEFAULT_TEMPLATES).sort()).toEqual(
-      ["Cancelado", "En cola", "Entregado", "Imprimiendo", "Listo", "Recibido"].sort(),
+      [
+        "Cancelado",
+        "Confirmado",
+        "Cotizado",
+        "En cola",
+        "Entregado",
+        "Imprimiendo",
+        "Listo",
+        "Recibido",
+      ].sort(),
     );
   });
   it("subjects start with the order number", () => {
     for (const t of Object.values(DEFAULT_TEMPLATES))
       expect(t.subject.startsWith("Pedido {{orderId}}")).toBe(true);
+  });
+  it("Cotizado carries the quote text and the confirm link", () => {
+    expect(DEFAULT_TEMPLATES.Cotizado.body).toContain("{{cotizacion}}");
+    expect(DEFAULT_TEMPLATES.Cotizado.body).toContain("{{confirmLink}}");
   });
   it("Listo mentions the retiro address variable", () => {
     expect(DEFAULT_TEMPLATES.Listo.body).toContain("{{retiro}}");
@@ -42,21 +56,26 @@ describe("whatsappLink", () => {
 });
 
 describe("buildResumen", () => {
-  it("renders bullets", () => {
+  it("renders bullets with patient, resin, copies and delivery", () => {
     const r = buildResumen({
-      files: [{ name: "caja.stl", volumeCm3: 96.3, size: { x: 120, y: 80, z: 40 } }],
-      material: "PETG",
-      color: "Negro",
-      relleno: 20,
+      files: [
+        { name: "caja.stl", volumeCm3: 96.3, size: { x: 120, y: 80, z: 40 }, scalePercent: 100 },
+      ],
+      paciente: "A. P.",
+      resina: "Estándar",
       cantidad: 2,
+      entrega: "Flash",
     });
     expect(r).toContain("• caja.stl — 96.3 cm³ (120×80×40)");
-    expect(r).toContain("• Material: PETG");
-    expect(r).toContain("• Cantidad: 2");
+    expect(r).toContain("• Paciente: A. P.");
+    expect(r).toContain("• Resina: Estándar");
+    expect(r).toContain("• Copias: 2");
+    expect(r).toContain("• Entrega: Flash (2 días)");
   });
-  it("omits an empty color", () => {
-    const r = buildResumen({ files: [], material: "PLA", color: "", relleno: 20, cantidad: 1 });
-    expect(r).not.toContain("Color");
+  it("falls back to the raw delivery id when unknown", () => {
+    expect(joinResumen([], { paciente: "A", resina: "x", cantidad: 1, entrega: "Otro" })).toContain(
+      "• Entrega: Otro",
+    );
   });
 });
 

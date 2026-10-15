@@ -47,3 +47,4 @@ next-env.d.ts
 tests/fixtures/
 /test-results/
 /playwright-report/
+.secrets/

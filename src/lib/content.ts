@@ -100,6 +100,10 @@ export const FAQ = [
     a: "Solo las iniciales, para proteger sus datos. No solicitamos el nombre completo del paciente.",
   },
   {
+    q: "¿Dónde y por cuánto tiempo se almacenan mis modelos?",
+    a: "Sus modelos se almacenan de forma segura en una carpeta privada de Google Drive de Monolab Print Studio, con acceso restringido a nuestro equipo. Se conservan únicamente durante el tiempo necesario para realizar la impresión. Una vez finalizado el pedido, los archivos se destruyen y eliminan de forma definitiva por razones de seguridad.",
+  },
+  {
     q: "¿Cuánto demora?",
     a: "Usted elige: Flash en 2 días (10.000 CLP por pedido) o Normal en 7 días (7.500 CLP por pedido). Avisamos cada etapa por correo.",
   },

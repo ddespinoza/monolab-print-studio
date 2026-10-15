@@ -35,7 +35,7 @@ export function FileList({ files, activeId, mode, onSelect, onRemove, onToggle, 
               type="button"
               onClick={() => onSelect(f.id)}
               disabled={f.parse !== "ready"}
-              className="min-w-0 truncate text-left font-semibold text-main"
+              className="min-h-10 min-w-0 truncate text-left font-semibold text-main"
             >
               {f.name}
               {f.scalePercent !== 100 && (
@@ -56,7 +56,7 @@ export function FileList({ files, activeId, mode, onSelect, onRemove, onToggle, 
                   onClick={() => onToggle(f.id)}
                   aria-pressed={f.visible}
                   aria-label={`${f.visible ? "Ocultar" : "Mostrar"} ${f.name}`}
-                  className="rounded border border-border-medium px-1.5 text-xs text-secondary"
+                  className="min-h-10 rounded border border-border-medium px-3 text-xs text-secondary"
                 >
                   {f.visible ? "Ocultar" : "Mostrar"}
                 </button>
@@ -65,7 +65,7 @@ export function FileList({ files, activeId, mode, onSelect, onRemove, onToggle, 
                 type="button"
                 onClick={() => onRemove(f.id)}
                 aria-label={`Quitar ${f.name}`}
-                className="px-1 text-xl leading-none text-muted"
+                className="min-h-10 min-w-10 text-2xl leading-none text-muted"
               >
                 ×
               </button>
@@ -106,7 +106,7 @@ export function FileList({ files, activeId, mode, onSelect, onRemove, onToggle, 
                     <button
                       type="button"
                       onClick={() => onRetry(f.id)}
-                      className="rounded bg-prussian-blue px-2 py-1 text-xs font-bold text-app"
+                      className="min-h-10 rounded bg-prussian-blue px-3 text-xs font-bold text-app"
                     >
                       Reintentar
                     </button>

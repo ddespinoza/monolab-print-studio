@@ -22,7 +22,7 @@ const VIEWS: { preset: ViewPreset; label: string }[] = [
 ];
 
 const toolBtn =
-  "rounded-md border border-border-light bg-app px-2.5 py-1 text-xs font-semibold text-secondary hover:border-prussian-blue";
+  "min-h-10 flex-1 rounded-md border border-border-light bg-app px-3 text-xs font-semibold text-secondary hover:border-prussian-blue lg:min-h-0 lg:flex-none lg:px-2.5 lg:py-1";
 const fmt = (n: number): string => n.toFixed(1).replace(".", ",");
 
 export function ViewerPanel({ files, active, mode, onRotate }: Props) {
@@ -44,16 +44,10 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
   const tooBig = metrics ? exceedsBuild(metrics.size) : false;
 
   return (
-    <div className="relative min-h-[28rem] overflow-hidden rounded-xl border border-border-medium bg-canvas lg:sticky lg:top-20 lg:min-h-[34rem]">
-      {ready.length > 0 ? (
-        <StlViewer models={models} activeId={active?.id} view={view} wireframe={wireframe} />
-      ) : (
-        <p className="absolute inset-0 grid place-items-center text-sm text-muted">
-          Aquí verá su modelo en 3D
-        </p>
-      )}
-      <div className="absolute left-3 right-3 top-3 flex flex-wrap gap-1.5">
-        <div className="flex gap-1 rounded-lg border border-border-medium bg-app p-1">
+    <div className="relative flex flex-col overflow-hidden rounded-xl border border-border-medium bg-canvas lg:sticky lg:top-20 lg:block lg:min-h-[34rem]">
+      {/* Phones: toolbar, canvas and metrics stack so nothing covers the model. Desktop: overlays on the canvas. */}
+      <div className="order-1 flex flex-wrap gap-1.5 p-2 lg:absolute lg:left-3 lg:right-3 lg:top-3 lg:z-10 lg:p-0">
+        <div className="flex w-full gap-1 rounded-lg border border-border-medium bg-app p-1 lg:w-auto">
           {VIEWS.map((v) => (
             <button
               key={v.preset}
@@ -67,7 +61,7 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
           ))}
         </div>
         {mode === "advanced" && (
-          <div className="flex gap-1 rounded-lg border border-border-medium bg-app p-1">
+          <div className="flex w-full gap-1 rounded-lg border border-border-medium bg-app p-1 lg:w-auto">
             {(["x", "y", "z"] as const).map((a) => (
               <button
                 key={a}
@@ -81,7 +75,7 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
             ))}
           </div>
         )}
-        <div className="flex gap-1 rounded-lg border border-border-medium bg-app p-1">
+        <div className="flex w-full gap-1 rounded-lg border border-border-medium bg-app p-1 lg:w-auto">
           <button
             type="button"
             aria-pressed={wireframe}
@@ -99,18 +93,27 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
           </button>
         </div>
       </div>
+      <div className="relative order-2 h-72 sm:h-96 lg:absolute lg:inset-0 lg:h-auto">
+        {ready.length > 0 ? (
+          <StlViewer models={models} activeId={active?.id} view={view} wireframe={wireframe} />
+        ) : (
+          <p className="absolute inset-0 grid place-items-center text-sm text-muted">
+            Aquí verá su modelo en 3D
+          </p>
+        )}
+      </div>
       {tooBig && (
         <p
           role="alert"
-          className="absolute bottom-20 left-3 right-28 m-0 rounded border-l-4 border-orange bg-app px-3 py-2 text-sm text-main"
+          className="order-3 m-2 rounded border-l-4 border-orange bg-app px-3 py-2 text-sm text-main lg:absolute lg:bottom-20 lg:left-3 lg:right-28 lg:m-0"
         >
           Este modelo excede el volumen de impresión. Reduzca la escala o gírelo.
         </p>
       )}
-      <span className="absolute bottom-20 right-3 rounded-full border border-border-light bg-app px-3 py-0.5 text-xs">
+      <span className="order-3 mx-2 mt-2 self-end rounded-full border border-border-light bg-app px-3 py-0.5 text-xs lg:absolute lg:bottom-20 lg:right-3 lg:m-0">
         Unidades: mm
       </span>
-      <dl className="absolute bottom-3 left-3 right-3 m-0 grid grid-cols-2 gap-3 rounded-lg border border-border-medium bg-app px-4 py-2.5 sm:grid-cols-4">
+      <dl className="order-4 m-2 grid grid-cols-2 gap-3 rounded-lg border border-border-medium bg-app px-4 py-2.5 sm:grid-cols-4 lg:absolute lg:bottom-3 lg:left-3 lg:right-3 lg:m-0">
         {[
           ["X", metrics ? `${fmt(metrics.size.x)} mm` : "—"],
           ["Y", metrics ? `${fmt(metrics.size.y)} mm` : "—"],

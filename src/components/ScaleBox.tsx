@@ -20,7 +20,7 @@ export function ScaleBox({ file, onScale, onAutoFit }: Props) {
         <button
           type="button"
           onClick={onAutoFit}
-          className="rounded bg-prussian-blue px-2.5 py-1 text-xs font-bold text-app hover:bg-deep"
+          className="min-h-10 rounded bg-prussian-blue px-3 text-xs font-bold text-app hover:bg-deep lg:min-h-0 lg:px-2.5 lg:py-1"
         >
           Auto-ajustar
         </button>
@@ -33,7 +33,7 @@ export function ScaleBox({ file, onScale, onAutoFit }: Props) {
           value={file.scalePercent}
           onChange={(e) => onScale(Number(e.target.value))}
           aria-label="Escala del modelo"
-          className="flex-1 accent-orange"
+          className="h-8 flex-1 accent-orange"
         />
         <span className="whitespace-nowrap rounded-full border border-border-light bg-canvas px-3 py-0.5 text-[13px]">
           {file.scalePercent} %
@@ -46,7 +46,7 @@ export function ScaleBox({ file, onScale, onAutoFit }: Props) {
             type="button"
             onClick={() => onScale(p)}
             aria-pressed={file.scalePercent === p}
-            className={`flex-1 rounded border px-1 py-1 text-xs font-semibold ${file.scalePercent === p ? "border-prussian-blue bg-prussian-blue text-app" : "border-border-light bg-app text-secondary"}`}
+            className={`min-h-10 flex-1 rounded border px-1 text-xs font-semibold lg:min-h-0 lg:py-1 ${file.scalePercent === p ? "border-prussian-blue bg-prussian-blue text-app" : "border-border-light bg-app text-secondary"}`}
           >
             {p} %
           </button>

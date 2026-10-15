@@ -173,7 +173,7 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
               type="button"
               aria-pressed={state.mode === m}
               onClick={() => setMode(m)}
-              className={`flex-1 rounded-md px-2 py-2 text-[13px] font-bold ${state.mode === m ? "bg-prussian-blue text-app" : "text-secondary"}`}
+              className={`min-h-11 flex-1 rounded-md px-2 text-[13px] font-bold ${state.mode === m ? "bg-prussian-blue text-app" : "text-secondary"}`}
             >
               {m === "simple" ? "Modo simple" : "Modo avanzado"}
             </button>

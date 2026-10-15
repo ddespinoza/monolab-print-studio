@@ -65,4 +65,24 @@ test.describe("phone layout", () => {
     await page.locator("#pedido").scrollIntoViewIfNeeded();
     await page.screenshot({ path: info.outputPath("phone-order.png") });
   });
+
+  test("has finger-sized controls and the WhatsApp button never covers the form", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/fixtures/oversize.stl");
+    await expect(page.getByText("AUTO", { exact: true })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Modo avanzado" }).click();
+    const heights = await page
+      .locator("#pedido button:visible")
+      .evaluateAll((els) =>
+        els.map((e) => [e.textContent?.trim(), e.getBoundingClientRect().height]),
+      );
+    const tooSmall = heights.filter(([, h]) => (h as number) < 40);
+    expect(tooSmall).toEqual([]);
+    await page.locator("#pedido").scrollIntoViewIfNeeded();
+    await expect(page.locator("a.fixed")).toBeHidden();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(page.locator("a.fixed")).toBeVisible();
+  });
 });

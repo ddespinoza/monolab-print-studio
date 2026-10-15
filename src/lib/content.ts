@@ -68,8 +68,16 @@ export const MATERIALS = [
 ];
 
 export const RESIN_OPTIONS = [
-  { value: "Estándar", label: "Estándar — modelos de estudio o impresiones simples" },
-  { value: "Resina Tough", label: "Tough — piezas delicadas o que requieren manipulación" },
+  {
+    value: "Estándar",
+    label: "Estándar",
+    hint: "Modelos de estudio o impresiones simples.",
+  },
+  {
+    value: "Resina Tough",
+    label: "Tough",
+    hint: "Piezas delicadas o que requieren manipulación.",
+  },
 ];
 
 export const MACHINE = { name: "Anycubic Photon Mono 4 Ultra", volume: "153,4 × 77,0 × 165,0 mm" };

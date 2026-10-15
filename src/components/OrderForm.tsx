@@ -115,6 +115,9 @@ export function OrderForm({
             </option>
           ))}
         </select>
+        <p className="m-0 mt-1 text-xs text-muted">
+          {RESIN_OPTIONS.find((o) => o.value === v.resina)?.hint}
+        </p>
         <Err id="resina-err" message={errors.resina} />
       </div>
       <div className="rounded-lg border-[1.5px] border-prussian-blue border-l-4 border-l-orange bg-surface px-3.5 py-2.5">
@@ -181,7 +184,7 @@ export function OrderForm({
                 name="entrega"
                 checked={v.entrega === e.id}
                 onChange={() => onChange({ entrega: e.id })}
-                className="mr-2"
+                className="mr-2 h-5 w-5 align-middle accent-orange"
               />
               <strong className="text-main">{ENTREGA_LABELS[e.id].title}</strong>
               <br />

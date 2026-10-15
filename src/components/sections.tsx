@@ -11,7 +11,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-10 border-b-[3px] border-orange bg-prussian-blue">
       <div className={`${wrap} flex min-h-16 items-center justify-between gap-4`}>
-        <a href="#inicio" className="flex items-center gap-3 text-app no-underline">
+        <a href="#inicio" className="flex min-h-11 items-center gap-3 text-app no-underline">
           <Image src="/brand/logo-icon.svg" alt="" width={52} height={34} priority />
           <span className="leading-tight">
             <span className="block font-black uppercase tracking-[0.15em]">Monolab</span>
@@ -156,10 +156,10 @@ export function Faq() {
           <details
             key={f.q}
             open={i === 0}
-            className="mb-2 rounded-lg border border-border-light bg-surface px-4 py-3"
+            className="mb-2 rounded-lg border border-border-light bg-surface px-4"
           >
-            <summary className="cursor-pointer font-semibold text-main">{f.q}</summary>
-            <p className="mt-2">{f.a}</p>
+            <summary className="cursor-pointer py-3 font-semibold text-main">{f.q}</summary>
+            <p className="m-0 pb-3">{f.a}</p>
           </details>
         ))}
       </div>
@@ -197,7 +197,7 @@ export function Contact({
 
 export function Footer() {
   return (
-    <footer className={`${band} py-8 text-sm text-app`}>
+    <footer className={`${band} pb-24 pt-8 text-sm text-app sm:py-8`}>
       <div className={`${wrap} flex items-center gap-3`}>
         <Image src="/brand/logo-icon.svg" alt="" width={44} height={28} />
         <span>© {SITE_NAME}</span>

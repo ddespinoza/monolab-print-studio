@@ -1,4 +1,4 @@
-import { PUBLIC_EMAIL, SITE_NAME } from "@/lib/content";
+import { PUBLIC_EMAIL, PUBLIC_PHONE, SITE_NAME } from "@/lib/content";
 import { escapeHtml } from "@/lib/sanitize";
 
 /** Email clients ignore CSS variables, so the palette is mirrored here (with templates.ts's former map, the only hex literals outside tokens.css). */
@@ -147,7 +147,7 @@ function footer(sitio: string | undefined): string {
   const site = sitio
     ? `<a href="${escapeHtml(sitio)}" style="color:${c.goldLight};text-decoration:none">${escapeHtml(sitio.replace(/^https?:\/\//, ""))}</a> · `
     : "";
-  return `<tr><td bgcolor="${c.deepBlue}" style="background:${c.deepBlue};padding:20px 28px;${FONT};font-size:12px;line-height:1.6;color:${c.borderLight}"><strong style="color:${c.white};letter-spacing:2px;text-transform:uppercase">${SITE_NAME}</strong><br>Impresión 3D en resina para odontología · Santiago, Chile<br>${site}<a href="mailto:${PUBLIC_EMAIL}" style="color:${c.goldLight};text-decoration:none">${PUBLIC_EMAIL}</a></td></tr>`;
+  return `<tr><td bgcolor="${c.deepBlue}" style="background:${c.deepBlue};padding:20px 28px;${FONT};font-size:12px;line-height:1.6;color:${c.borderLight}"><strong style="color:${c.white};letter-spacing:2px;text-transform:uppercase">${SITE_NAME}</strong><br>Impresión 3D en resina para odontología · Santiago, Chile<br>${site}<a href="mailto:${PUBLIC_EMAIL}" style="color:${c.goldLight};text-decoration:none">${PUBLIC_EMAIL}</a><br><a href="tel:${PUBLIC_PHONE.tel}" style="color:${c.goldLight};text-decoration:none">${PUBLIC_PHONE.display}</a></td></tr>`;
 }
 
 /**

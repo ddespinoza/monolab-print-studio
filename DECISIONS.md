@@ -218,3 +218,9 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 - **Performance**: the validation library (zod, about 46 KB compressed) now loads on demand at submit instead of with the first page (constants moved to `order-options.ts`, `whatsappLink` to `whatsapp.ts` so the browser no longer imports the email renderer). three.js was already loaded only when a model is opened.
 - **Accessibility**: muted text colour darkened to `#5b6b82` (contrast 4.8 on the grey background, was 4.2); the upload box no longer has an `aria-label` that contradicted its visible text.
 - **Not ours**: on the live site Cloudflare injects its JS Detections script (about 430 ms of main-thread time, deprecation warnings) and Web Analytics beacon; turning those off in Cloudflare would raise the live scores, at the cost of that bot protection and those analytics.
+
+## Public phone and pickup address (owner, 2026-10-15)
+
+- **Phone**: +56 9 4862 3705 (the same number as the site's WhatsApp, `WHATSAPP_NUMBER=56948623705`). The prototype sheet's +56 9 8765 4321 is not used. Shown in the Contact section as a `tel:` link, in the email footer, and as `telephone` in the structured data (`PUBLIC_PHONE` in content.ts).
+- **Address**: Río Guadiana 8672, Las Condes, Santiago (from the prototype sheet's Configuracion tab). The live Config row `RETIRO_DIRECCION` was set to "Río Guadiana 8672, Las Condes, Santiago", which the site's pickup line and the Listo email read (cached up to 5 minutes). The structured data carries the street and commune from `PUBLIC_ADDRESS` in content.ts, so change both places if the address ever changes.
+- Still a placeholder: `RETIRO_HORARIO`.

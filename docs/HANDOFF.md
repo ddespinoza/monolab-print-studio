@@ -39,7 +39,7 @@ Plan and status per phase: `docs/IMPROVEMENT-PLAN.md`; every decision: `DECISION
 
 ## Still open (owner decisions)
 
-- Real pickup address and schedule (Config tab RETIRO_DIRECCION / RETIRO_HORARIO) and which phone the site should show. The prototype sheet has Río Guadiana 8672, Las Condes and +56 9 8765 4321; the site's WhatsApp is 56948623705.
+- Pickup schedule (Config tab RETIRO_HORARIO) is still a placeholder. Address (Río Guadiana 8672, Las Condes) and phone (+56 9 4862 3705) are decided and live.
 - Payment step (Pagado state, transfer-details email, ledger) and resin stock tab from the prototype sheet: not decided.
 - Optional: automatic deletion of order files N days after delivery; turning off Cloudflare JS Detections / Web Analytics to improve live Lighthouse scores.
 - Not yet tested live: the Apps Script itself (menu and checkbox) and a customer clicking the real confirm link.

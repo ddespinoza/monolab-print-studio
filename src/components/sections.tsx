@@ -1,6 +1,16 @@
 import Image from "next/image";
 import { HexArt } from "@/components/HexArt";
-import { ABOUT, FAQ, HERO, MATERIALS, NAV, PUBLIC_EMAIL, SITE_NAME, STEPS } from "@/lib/content";
+import {
+  ABOUT,
+  FAQ,
+  HERO,
+  MATERIALS,
+  NAV,
+  PUBLIC_EMAIL,
+  PUBLIC_PHONE,
+  SITE_NAME,
+  STEPS,
+} from "@/lib/content";
 
 const wrap = "mx-auto w-full max-w-6xl px-4";
 const btnPrimary =
@@ -193,6 +203,15 @@ export function Contact({
               className={btnSecondary}
             >
               Escribir por correo
+            </a>
+          </li>
+          <li>
+            Teléfono:{" "}
+            <a
+              href={`tel:${PUBLIC_PHONE.tel}`}
+              className="font-semibold text-prussian-blue underline"
+            >
+              {PUBLIC_PHONE.display}
             </a>
           </li>
           <li>Correo: {PUBLIC_EMAIL}</li>

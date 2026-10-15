@@ -115,6 +115,10 @@ export const ENTREGA_LABELS: Record<string, { title: string; fee: string }> = {
 };
 
 export const PUBLIC_EMAIL = "contacto@monolabprintstudio.cl";
+/** Studio phone (also the WhatsApp number): shown to people, and in international format for links and search engines. */
+/** Workshop address for pickups (the live text shown on the site and in the Listo email comes from the sheet Config tab). */
+export const PUBLIC_ADDRESS = { street: "Río Guadiana 8672", commune: "Las Condes" };
+export const PUBLIC_PHONE = { display: "+56 9 4862 3705", tel: "+56948623705" };
 
 export const MESSAGES = {
   sendError: "No pudimos enviar su solicitud. Inténtelo nuevamente o escríbanos por WhatsApp.",

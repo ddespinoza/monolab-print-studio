@@ -1,10 +1,10 @@
-import { ABOUT, FAQ, PUBLIC_EMAIL, SITE_NAME } from "@/lib/content";
+import { ABOUT, FAQ, PUBLIC_ADDRESS, PUBLIC_EMAIL, PUBLIC_PHONE, SITE_NAME } from "@/lib/content";
 
 type Json = Record<string, unknown>;
 
 /**
  * schema.org data for search engines (LocalBusiness, WebSite, FAQPage), built from the same copy the page shows.
- * Left out on purpose: phone number and street address (undecided) and the representative's RUN / registry number.
+ * Left out on purpose: the representative's RUN / registry number.
  */
 export function buildStructuredData(siteUrl: string): { "@context": string; "@graph": Json[] } {
   const site = siteUrl.replace(/\/+$/, "");
@@ -19,11 +19,13 @@ export function buildStructuredData(siteUrl: string): { "@context": string; "@gr
         url: site,
         description: ABOUT.paragraphs[0],
         email: PUBLIC_EMAIL,
+        telephone: PUBLIC_PHONE.tel,
         logo: `${site}/icon-512.png`,
         image: `${site}/og-image.png`,
         address: {
           "@type": "PostalAddress",
-          addressLocality: "Santiago",
+          streetAddress: PUBLIC_ADDRESS.street,
+          addressLocality: PUBLIC_ADDRESS.commune,
           addressRegion: "Región Metropolitana de Santiago",
           addressCountry: "CL",
         },

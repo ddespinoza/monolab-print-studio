@@ -57,6 +57,8 @@ test("the contact section offers WhatsApp and an email button for contacto@", as
   await expect(mail).toBeVisible();
   await expect(mail).toHaveAttribute("href", /^mailto:contacto@monolabprintstudio\.cl\?subject=/);
   await expect(page.getByRole("link", { name: "Escribir por WhatsApp" }).last()).toBeVisible();
+  const phone = page.getByRole("link", { name: "+56 9 4862 3705" });
+  await expect(phone).toHaveAttribute("href", "tel:+56948623705");
 });
 
 test("shows a loading screen in the viewer while a large model is being read", async ({ page }) => {

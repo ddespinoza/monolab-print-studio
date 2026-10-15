@@ -14,7 +14,14 @@ describe("buildStructuredData", () => {
     expect(b.name).toBe("Monolab Print Studio");
     expect(b.url).toBe(site);
     expect(b.email).toBe("contacto@monolabprintstudio.cl");
-    expect(b.address).toMatchObject({ addressLocality: "Santiago", addressCountry: "CL" });
+    expect(b.address).toMatchObject({
+      "@type": "PostalAddress",
+      streetAddress: "Río Guadiana 8672",
+      addressLocality: "Las Condes",
+      addressRegion: "Región Metropolitana de Santiago",
+      addressCountry: "CL",
+    });
+    expect(b.areaServed).toMatchObject({ name: "Santiago" });
     expect(b.logo).toBe(`${site}/icon-512.png`);
     expect(b.image).toBe(`${site}/og-image.png`);
   });
@@ -30,10 +37,8 @@ describe("buildStructuredData", () => {
     expect(text).not.toContain("19.069.824");
     expect(text).not.toContain("727145");
   });
-  it("does not publish a phone number or street address (still undecided)", () => {
-    const b = byType("LocalBusiness") as Record<string, any>;
-    expect(b.telephone).toBeUndefined();
-    expect(b.address.streetAddress).toBeUndefined();
+  it("publishes the studio phone in international format", () => {
+    expect((byType("LocalBusiness") as Record<string, any>).telephone).toBe("+56948623705");
   });
   it("marks up the site and the FAQ exactly as shown on the page", () => {
     expect(byType("WebSite")).toMatchObject({ url: site, inLanguage: "es-CL" });

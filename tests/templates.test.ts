@@ -200,6 +200,8 @@ describe("buildEmail html design", () => {
     expect(h.match(/Atentamente/g)).toHaveLength(1);
     expect(h).toContain("contacto@monolabprintstudio.cl");
     expect(h).toContain("Santiago, Chile");
+    expect(h).toContain("+56 9 4862 3705");
+    expect(h).toContain('href="tel:+56948623705"');
   });
   it("includes a hidden preheader from the first paragraph", () => {
     expect(html("Listo")).toMatch(/display:none[^>]*>Su pedido ML-0001/);

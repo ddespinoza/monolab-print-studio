@@ -64,13 +64,13 @@ Consequences (to implement after mockup approval, tests first):
 
 Context: the service is resin printing for dentists (odontólogos). Owner's mockup feedback approved the "Solicitar cotización" CTA, formal usted tone and the header; it did not approve the removal of Ciudad/Color/Relleno, which was then asked explicitly.
 
-| Question               | Options offered                               | Owner's choice                                                                                                                                       |
-| ---------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Extra fields           | (free text)                                   | **Nombre del paciente** (new) next to the requester's name (the dentist), and **Tiempo de entrega**: Flash (2 días) 10.000 CLP, or 7 días 7.500 CLP. |
-| Delivery prices        | per file / per order flat / no prices on site | **Flat fee per order.** Shown as information; the site still never computes the quote. Sheet stores the chosen option and fee.                       |
-| File formats           | STL+OBJ+PLY / STL + attachments / both        | **STL, OBJ and PLY, all with 3D preview.** Supersedes spec 4 ("STL only") and the spec 15 "formats other than STL" exclusion.                        |
-| Ciudad, Color, Relleno | drop all / keep Color / keep Ciudad+Color     | **Drop all three.**                                                                                                                                  |
-| Drive layout           | (free text)                                   | One folder per order, **named with the patient name** (e.g. `ML-0001 - Nombre Paciente`), inside DRIVE_FOLDER_ID.                                    |
+| Question               | Options offered                               | Owner's choice                                                                                                                                                                  |
+| ---------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Extra fields           | (free text)                                   | **Nombre del paciente** (new, later reduced to initials) next to the requester's name (the dentist), and **Tiempo de entrega**: Flash (2 días) 10.000 CLP, or 7 días 7.500 CLP. |
+| Delivery prices        | per file / per order flat / no prices on site | **Flat fee per order.** Shown as information; the site still never computes the quote. Sheet stores the chosen option and fee.                                                  |
+| File formats           | STL+OBJ+PLY / STL + attachments / both        | **STL, OBJ and PLY, all with 3D preview.** Supersedes spec 4 ("STL only") and the spec 15 "formats other than STL" exclusion.                                                   |
+| Ciudad, Color, Relleno | drop all / keep Color / keep Ciudad+Color     | **Drop all three.**                                                                                                                                                             |
+| Drive layout           | (free text)                                   | One folder per order, **named with the patient name** (e.g. `ML-0001 - Nombre Paciente`), inside DRIVE_FOLDER_ID.                                                               |
 
 Consequences:
 
@@ -78,3 +78,8 @@ Consequences:
 - Validation: loaders and filename rules extend to .stl/.obj/.ply; metrics run on each loader's non-indexed geometry (OBJ/PLY need de-indexing before computeMetrics).
 - Drive folder name is built from the sanitised patient name (same filename sanitiser, no PII beyond what the owner asked for).
 - Privacy flag for the owner: patient names are personal (health-adjacent) data. They will live in the sheet and in Drive folder names; recommendation is to keep the patient name OUT of customer emails and the notification subject lines, and to mention data handling in the site footer. Not decided yet; raise at checkpoint 3.
+
+## Patient identity: initials only (owner, 2026-10-15)
+
+Decision: the form asks for the patient's **initials** (2 to 8 characters: letters, dots and spaces), never the full name, to protect sensitive personal data. Supersedes the "patient name" wording in checkpoint 2b and settles most of its privacy flag.
+Consequences: validation accepts only that pattern (tests first); the sheet column is "Iniciales paciente"; the Drive folder is `ML-0001 - A.P.`; emails and notifications may show the initials. The dentist's full name is still collected, because emails address them by name; revisit if the owner wants that reduced too.

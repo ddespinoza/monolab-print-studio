@@ -72,7 +72,7 @@ export function Hero() {
 export function About() {
   const rep = ABOUT.representative;
   return (
-    <section id="nosotros" className="bg-canvas py-16">
+    <section id="nosotros" className="py-16">
       <div className={wrap}>
         <div>
           <h2 className="mb-4 text-2xl font-bold text-main">{ABOUT.title}</h2>
@@ -131,7 +131,7 @@ export function HowItWorks() {
 
 export function Materials() {
   return (
-    <section id="materiales" className="py-16">
+    <section id="materiales" className="bg-canvas py-16">
       <div className={wrap}>
         <h2 className="mb-4 text-2xl font-bold text-main">Materiales</h2>
         <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(15rem,1fr))]">
@@ -162,7 +162,7 @@ export function Materials() {
 
 export function Faq() {
   return (
-    <section id="faq" className="bg-canvas py-16">
+    <section id="faq" className="py-16">
       <div className={wrap}>
         <h2 className="mb-4 text-2xl font-bold text-main">Preguntas frecuentes</h2>
         {FAQ.map((f, i) => (
@@ -190,7 +190,7 @@ export function Contact({
   horario: string;
 }) {
   return (
-    <section id="contacto" className="py-16">
+    <section id="contacto" className="bg-canvas py-16">
       <div className={wrap}>
         <h2 className="mb-4 text-2xl font-bold text-main">Contacto</h2>
         <ul className="grid gap-2">

@@ -32,8 +32,6 @@ export default async function Home() {
       <Header />
       <main>
         <Hero />
-        <About />
-        <HowItWorks />
         <section id="pedido" className="bg-canvas py-16">
           <div className="mx-auto w-full max-w-6xl px-4">
             <h2 className="mb-4 text-2xl font-bold text-main">Su solicitud</h2>
@@ -44,9 +42,11 @@ export default async function Home() {
             />
           </div>
         </section>
+        <HowItWorks />
         <Materials />
         <Faq />
         <Contact whatsappHref={whatsappHref} retiro={retiro} horario={horario} />
+        <About />
       </main>
       <Footer />
       <WhatsAppFloat href={whatsappHref} />

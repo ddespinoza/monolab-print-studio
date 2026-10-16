@@ -28,12 +28,12 @@ export const ABOUT = {
 
 export const NAV = [
   { href: "#inicio", label: "Inicio" },
-  { href: "#nosotros", label: "Nosotros" },
-  { href: "#como", label: "Cómo funciona" },
   { href: "#pedido", label: "Pedido" },
+  { href: "#como", label: "Cómo funciona" },
   { href: "#materiales", label: "Materiales" },
   { href: "#faq", label: "FAQ" },
   { href: "#contacto", label: "Contacto" },
+  { href: "#nosotros", label: "Nosotros" },
 ];
 
 export const STEPS = [

@@ -6,7 +6,7 @@ export const HERO = {
   eyebrow: "Santiago, Chile",
   title: "Impresión 3D en resina para",
   accent: "odontología",
-  text: "Modelos de estudio, guías y piezas dentales impresos con precisión. Suba sus archivos 3D, revise su modelo y reciba su cotización por correo. Retiro en nuestro estudio.",
+  text: "Sube tus archivos 3D, revisa tu modelo y recibe tu cotización por correo. Retiro en nuestro estudio.",
   cta: "Solicitar cotización",
 };
 
@@ -37,12 +37,12 @@ export const NAV = [
 ];
 
 export const STEPS = [
-  { title: "Suba y configure", text: "Cargue sus archivos 3D y elija la resina y el plazo." },
+  { title: "Sube y configura", text: "Carga tus archivos 3D y elige la resina y el plazo." },
   {
-    title: "Confirme su cotización",
-    text: "Le enviamos el valor por correo. Confírmelo con un clic.",
+    title: "Confirma tu cotización",
+    text: "Te enviamos el valor por correo. Confírmalo con un clic.",
   },
-  { title: "Lo imprimimos", text: "Le avisamos cuando esté listo para el retiro." },
+  { title: "Lo imprimimos", text: "Te avisamos cuando esté listo para el retiro." },
 ];
 
 export const MATERIALS = [
@@ -85,27 +85,27 @@ export const FAQ = [
   },
   {
     q: "¿Cómo funciona la cotización?",
-    a: "Revisamos sus archivos y le enviamos el valor por correo, con un enlace para confirmarlo.",
+    a: "Revisamos tus archivos y te enviamos el valor por correo, con un enlace para confirmarlo.",
   },
   {
     q: "¿Qué pasa si mi modelo es más grande que el volumen de impresión?",
-    a: "El visor lo ajusta automáticamente y usted puede cambiar la escala.",
+    a: "El visor lo ajusta automáticamente y tú puedes cambiar la escala.",
   },
   {
     q: "¿Cómo recibo mi pedido?",
-    a: "Retiro en nuestro estudio en Santiago. Le avisamos por correo cuando esté listo.",
+    a: "Retiro en nuestro estudio en Santiago. Te avisamos por correo cuando esté listo.",
   },
   {
     q: "¿Qué datos del paciente necesitan?",
-    a: "Solo las iniciales, para proteger sus datos. No solicitamos el nombre completo del paciente.",
+    a: "Solo las iniciales, para proteger los datos del paciente. No solicitamos el nombre completo del paciente.",
   },
   {
     q: "¿Dónde y por cuánto tiempo se almacenan mis modelos?",
-    a: "Sus modelos se almacenan de forma segura en una carpeta privada de Google Drive de Monolab Print Studio, con acceso restringido a nuestro equipo. Se conservan únicamente durante el tiempo necesario para realizar la impresión. Una vez finalizado el pedido, los archivos se destruyen y eliminan de forma definitiva por razones de seguridad.",
+    a: "Tus modelos se almacenan de forma segura en una carpeta privada de Google Drive de Monolab Print Studio, con acceso restringido a nuestro equipo. Se conservan únicamente durante el tiempo necesario para realizar la impresión. Una vez finalizado el pedido, los archivos se destruyen y eliminan de forma definitiva por razones de seguridad.",
   },
   {
     q: "¿Cuánto demora?",
-    a: "Usted elige: Flash en 2 días (10.000 CLP por pedido) o Normal en 7 días (7.500 CLP por pedido). Avisamos cada etapa por correo.",
+    a: "Tú eliges: Flash en 2 días (10.000 CLP por pedido) o Normal en 7 días (7.500 CLP por pedido). Avisamos cada etapa por correo.",
   },
 ];
 
@@ -121,10 +121,10 @@ export const PUBLIC_ADDRESS = { street: "Río Guadiana 8672", commune: "Las Cond
 export const PUBLIC_PHONE = { display: "+56 9 4862 3705", tel: "+56948623705" };
 
 export const MESSAGES = {
-  sendError: "No pudimos enviar su solicitud. Inténtelo nuevamente o escríbanos por WhatsApp.",
-  uploadError: "No pudimos subir este archivo. Inténtelo nuevamente.",
-  parseError: "No pudimos leer este archivo. Quítelo o súbalo de nuevo.",
+  sendError: "No pudimos enviar tu solicitud. Inténtalo nuevamente o escríbenos por WhatsApp.",
+  uploadError: "No pudimos subir este archivo. Inténtalo nuevamente.",
+  parseError: "No pudimos leer este archivo. Quítalo o súbelo de nuevo.",
   badType: "Solo aceptamos archivos STL, OBJ o PLY.",
   tooBig: (mb: number) => `Supera el máximo de ${mb} MB.`,
-  tooMany: "Puede subir hasta 10 archivos por solicitud.",
+  tooMany: "Puedes subir hasta 10 archivos por solicitud.",
 };

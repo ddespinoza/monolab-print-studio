@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 const description =
-  "Impresión 3D en resina para odontología, en Santiago, Chile. Suba sus archivos 3D y reciba su cotización por correo.";
+  "Impresión 3D en resina para odontología, en Santiago, Chile. Sube tus archivos 3D y recibe tu cotización por correo.";
 
 const siteName = "Monolab Print Studio";
 const defaultTitle = `${siteName} | Impresión 3D en resina para odontología`;

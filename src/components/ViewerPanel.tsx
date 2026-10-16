@@ -101,7 +101,7 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
         ) : (
           !loading && (
             <p className="absolute inset-0 grid place-items-center text-sm text-muted">
-              Aquí verá su modelo en 3D
+              Aquí verás tu modelo en 3D
             </p>
           )
         )}
@@ -123,7 +123,7 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
           role="alert"
           className="order-3 m-2 rounded border-l-4 border-orange bg-app px-3 py-2 text-sm text-main lg:absolute lg:bottom-20 lg:left-3 lg:right-28 lg:m-0"
         >
-          Este modelo excede el volumen de impresión. Reduzca la escala o gírelo.
+          Este modelo excede el volumen de impresión. Reduce la escala o gíralo.
         </p>
       )}
       <span className="order-3 mx-2 mt-2 self-end rounded-full border border-border-light bg-app px-3 py-0.5 text-xs lg:absolute lg:bottom-20 lg:right-3 lg:m-0">

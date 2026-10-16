@@ -32,8 +32,8 @@ export interface SheetConfig {
 }
 
 export const CONFIG_DEFAULTS: Omit<SheetConfig, "BANCO"> = {
-  RETIRO_DIRECCION: "Dirección por confirmar. Escríbanos por WhatsApp.",
-  RETIRO_HORARIO: "Solo previa coordinación: escríbanos o llámenos al +56 9 4862 3705.",
+  RETIRO_DIRECCION: "Dirección por confirmar. Escríbenos por WhatsApp.",
+  RETIRO_HORARIO: "Solo previa coordinación: escríbenos o llámanos al +56 9 4862 3705.",
   ENVIO_AUTOMATICO: "NO",
   ELIMINAR_ARCHIVOS_DIAS: 30,
 };

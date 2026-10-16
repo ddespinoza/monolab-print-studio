@@ -30,10 +30,10 @@ interface Props {
 }
 
 const HINTS = {
-  busy: "Se habilitará cuando sus archivos terminen de subir.",
-  empty: "Suba al menos un archivo 3D.",
-  failed: "Reintente o quite los archivos con error.",
-  exceeds: "Reduzca la escala de los modelos que exceden el volumen de impresión.",
+  busy: "Se habilitará cuando tus archivos terminen de subir.",
+  empty: "Sube al menos un archivo 3D.",
+  failed: "Reintenta o quita los archivos con error.",
+  exceeds: "Reduce la escala de los modelos que exceden el volumen de impresión.",
 } as const;
 
 type Errors = Partial<Record<keyof FormValues | "files", string>>;
@@ -183,8 +183,8 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
         </div>
         <p className="m-0 text-sm text-muted">
           {state.mode === "simple"
-            ? "Suba uno o más archivos STL, OBJ o PLY. Si alguno excede el volumen de impresión, lo ajustaremos automáticamente."
-            : "Vea todos sus archivos juntos, oculte o muestre cada modelo, y ajuste su escala y rotación."}
+            ? "Sube uno o más archivos STL, OBJ o PLY. Si alguno excede el volumen de impresión, lo ajustaremos automáticamente."
+            : "Mira todos tus archivos juntos, oculta o muestra cada modelo, y ajusta su escala y rotación."}
         </p>
         <UploadDropzone onFiles={addFiles} compact={state.files.length > 0} maxMb={maxUploadMb} />
         {errors.files && (
@@ -221,7 +221,7 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
             <strong>Volumen total: {total.toFixed(1).replace(".", ",")} cm³</strong>
             <span className="text-sm text-muted">
               {" "}
-              · Medidas en mm (suponemos que su modelo está en milímetros)
+              · Medidas en mm (suponemos que tu modelo está en milímetros)
             </span>
           </p>
         )}

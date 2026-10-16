@@ -46,7 +46,7 @@ export function StlViewer({ models, activeId, view, wireframe }: Props) {
       ref={host}
       className="absolute inset-0"
       role="img"
-      aria-label="Vista previa 3D de su modelo sobre la base de impresión"
+      aria-label="Vista previa 3D de tu modelo sobre la base de impresión"
     />
   );
 }

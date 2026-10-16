@@ -13,7 +13,7 @@ async function placeOrder(page: Page, file: string): Promise<string> {
   await page.getByLabel("Correo electrónico *").fill("doc@example.com");
   await page.getByRole("button", { name: "Solicitar cotización" }).last().click();
   const panel = page.getByRole("status");
-  await expect(panel).toContainText("Recibimos su solicitud");
+  await expect(panel).toContainText("Recibimos tu solicitud");
   return (await panel.locator("p").first().textContent()) ?? "";
 }
 

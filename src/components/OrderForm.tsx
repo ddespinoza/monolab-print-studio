@@ -154,7 +154,7 @@ export function OrderForm({
             className={field}
           />
           <span id="paciente-help" className="text-xs text-muted">
-            Solo iniciales, para proteger sus datos.
+            Solo iniciales, para proteger los datos del paciente.
           </span>
           <Err id="paciente-err" message={errors.paciente} />
         </div>
@@ -239,7 +239,7 @@ export function OrderForm({
         {(submitting || busy) && (
           <span role="status" className="flex items-center gap-2 text-sm font-semibold text-main">
             <span className="spinner" aria-hidden="true" />
-            {submitting ? "Enviando su solicitud…" : "Procesando sus archivos…"}
+            {submitting ? "Enviando tu solicitud…" : "Procesando tus archivos…"}
           </span>
         )}
         {hint && <span className="text-sm text-muted">{hint}</span>}

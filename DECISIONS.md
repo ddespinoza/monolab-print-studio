@@ -263,3 +263,9 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 - The owner has **no Apps Script pasted yet**, so the folder `docs/apps-script/` is the full install package: `Monolab.gs` (all code, replaces `Código.gs`), `appsscript.json` (minimum scopes, optional) and `LEEME-es.md` (install steps, what each menu item does, the "unverified app" warning). The owner pastes it later; the 6.3 payment actions have no button until then.
 - New menu items: **Enviar datos de transferencia** (`payment`, asks first, repeatable) and **Marcar pagado** (prompts for whole pesos, accepts `45000`, `45.000` or `$45.000`, rejects decimals and text, asks to confirm, then `markpaid`), plus **Versión del script** (`VERSION_SCRIPT`, currently "2026-10-15 (pagos)") so the owner can tell which copy is installed. The script still holds no template text, bank data or secrets in cells (`SHEET_SECRET` in Script Properties).
 - Tested by running the file in a vm sandbox against fakes (`tests/apps-script.test.ts`): amount parsing, confirmations, cancel paths, menu entries and the unchanged checkbox flow. Not yet run inside a real sheet: that needs the owner's paste, authorisation and the key; verification live follows.
+
+## Website tone: "tú" and page order (owner, 2026-10-16)
+
+- The public website (copy, form messages, validation, confirm page) now uses informal "tú", replacing the formal usted of spec 3c. Emails (default templates and the live Plantillas rows) and the operator messages are **unchanged** (still usted) until the owner decides.
+- Hero text no longer says "Modelos de estudio, guías y piezas dentales impresos con precisión."
+- Page order: Hero, upload form (Pedido), Cómo funciona, Materiales, FAQ, Contacto, Quiénes somos (last, before the footer); the nav menu follows the same order.

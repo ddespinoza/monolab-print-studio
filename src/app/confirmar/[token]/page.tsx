@@ -40,7 +40,7 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
           <div className={card}>
             <span className={`${pill} bg-orange text-prussian-blue`}>Cotización lista</span>
             <h1 className="mb-0.5 mt-3.5 text-2xl font-black leading-tight text-main">
-              Confirme su cotización
+              Confirma tu cotización
             </h1>
             <p className="m-0 font-bold tracking-wide text-prussian-blue">Pedido {view.orderId}</p>
             <div className="my-5 rounded-r-lg border-l-4 border-orange bg-surface px-4 py-3.5">
@@ -62,10 +62,10 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
               </button>
             </form>
             <p className="mt-2.5 text-center text-[13px] text-muted">
-              Al confirmar, su pedido pasa a la cola de impresión.
+              Al confirmar, tu pedido pasa a la cola de impresión.
             </p>
             <div className={help}>
-              <span>¿Desea cambiar algo?</span>
+              <span>¿Quieres cambiar algo?</span>
               <a href={wa} target="_blank" rel="noopener noreferrer" className={waLink}>
                 Abrir WhatsApp
               </a>
@@ -95,7 +95,7 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
             </h1>
             <p className="m-0 font-bold tracking-wide text-prussian-blue">Pedido {view.orderId}</p>
             <p className="mb-0 mt-2">
-              Recibimos su confirmación y le avisaremos por correo cuando comience la producción.
+              Recibimos tu confirmación y te avisaremos por correo cuando comience la producción.
             </p>
             <div className="mt-5">
               <ProgressSteps active={activeStep(view.estado)} />
@@ -117,8 +117,8 @@ export default async function ConfirmPage({ params }: { params: Promise<{ token:
               Enlace no disponible
             </h1>
             <p className="mb-0 mt-2">
-              Este enlace ya no es válido o el pedido ya fue confirmado. Si necesita ayuda,
-              escríbanos y lo revisamos.
+              Este enlace ya no es válido o el pedido ya fue confirmado. Si necesitas ayuda,
+              escríbenos y lo revisamos.
             </p>
             <div className={help}>
               <a href={wa} target="_blank" rel="noopener noreferrer" className={waLink}>

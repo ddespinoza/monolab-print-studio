@@ -19,7 +19,7 @@ const text = (label: string, min: number, max: number) =>
     .max(max, `${label} no puede superar los ${max} caracteres.`);
 
 const fileSchema = z.object({
-  token: z.string().regex(TOKEN_PATTERN, "Archivo no válido. Vuelva a subirlo."),
+  token: z.string().regex(TOKEN_PATTERN, "Archivo no válido. Vuelve a subirlo."),
   name: z.string().min(1).max(120),
   volumeCm3: z.number().min(0).max(1_000_000),
   /** Scale the customer applied in the viewer; volume and size already include it. */
@@ -44,26 +44,26 @@ export const orderSchema = z.object({
     .string({ error: "El correo es obligatorio." })
     .trim()
     .max(120)
-    .email("Ingrese un correo válido."),
+    .email("Ingresa un correo válido."),
   telefono: z
     .string({ error: "El teléfono es obligatorio." })
     .trim()
-    .refine(isChileanPhone, "Ingrese un teléfono chileno válido, por ejemplo +56 9 1234 5678."),
+    .refine(isChileanPhone, "Ingresa un teléfono chileno válido, por ejemplo +56 9 1234 5678."),
   /** Initials only: the patient's full name is never collected. */
   paciente: z
     .string({ error: "Las iniciales del paciente son obligatorias." })
     .trim()
     .regex(
       new RegExp(`^[${LETTER}][${LETTER}. ]{1,7}$`),
-      "Ingrese solo las iniciales del paciente, por ejemplo A. P.",
+      "Ingresa solo las iniciales del paciente, por ejemplo A. P.",
     )
     .refine(
       (v) => v.replace(new RegExp(`[^${LETTER}]`, "g"), "").length <= 4,
-      "Ingrese solo las iniciales del paciente, por ejemplo A. P.",
+      "Ingresa solo las iniciales del paciente, por ejemplo A. P.",
     ),
-  resina: z.enum(RESINAS, { error: "Elija un tipo de resina." }),
+  resina: z.enum(RESINAS, { error: "Elige un tipo de resina." }),
   entrega: z.enum(ENTREGAS.map((e) => e.id) as [string, ...string[]], {
-    error: "Elija un tiempo de entrega.",
+    error: "Elige un tiempo de entrega.",
   }),
   cantidad: z
     .number()
@@ -76,8 +76,8 @@ export const orderSchema = z.object({
   empresa: z.string().default(""),
   files: z
     .array(fileSchema)
-    .min(1, "Suba al menos un archivo 3D.")
-    .max(MAX_FILES, `Puede subir hasta ${MAX_FILES} archivos por pedido.`)
+    .min(1, "Sube al menos un archivo 3D.")
+    .max(MAX_FILES, `Puedes subir hasta ${MAX_FILES} archivos por pedido.`)
     .refine(
       (files) => new Set(files.map((f) => f.token)).size === files.length,
       "Hay archivos repetidos.",

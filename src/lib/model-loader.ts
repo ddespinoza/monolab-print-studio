@@ -7,7 +7,7 @@ type Format = "stl" | "obj" | "ply";
 
 function formatOf(name: string): Format {
   const ext = /\.(stl|obj|ply)$/i.exec(name)?.[1]?.toLowerCase();
-  if (!ext) throw new Error("Formato no compatible. Use archivos STL, OBJ o PLY.");
+  if (!ext) throw new Error("Formato no compatible. Usa archivos STL, OBJ o PLY.");
   return ext as Format;
 }
 

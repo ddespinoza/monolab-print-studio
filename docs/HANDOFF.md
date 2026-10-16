@@ -18,7 +18,7 @@ Date: 2026-10-15. Read `DECISIONS.md` (source of truth for behaviour) and `docs/
 - Deploy: push to `main`, then Coolify `POST /api/v1/deploy` (token and ids are in `.secrets/`, gitignored). Never print secrets.
 - Push uses the deploy key in `.deploy/` (gitignored, `core.sshCommand` already set).
 - Rules that must keep passing: no Gmail address in customer-facing files, no hex colours outside `src/styles/tokens.css`
-  (`npm run check:rules`), formal "usted" Spanish, light theme only, patient initials only (never in subject lines).
+  (`npm run check:rules`), "tú" on the website (emails still usted), light theme only, patient initials only (never in subject lines).
 - **Shared VPS**: never kill processes by name/pattern (another site's container shows up in host `ps`). Only stop PIDs you started.
   Do not touch other projects or the Traefik/Coolify config.
 

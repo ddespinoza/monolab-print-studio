@@ -30,10 +30,10 @@ export function UploadDropzone({ onFiles, compact, maxMb }: Props) {
       className={`cursor-pointer rounded-xl border-2 border-dashed bg-surface text-center ${over ? "border-orange" : "border-border-medium"} ${compact ? "px-4 py-4" : "px-4 py-10"}`}
     >
       <p className="m-0 font-bold text-main">
-        {compact ? "Arrastre más archivos aquí" : "Arrastre sus archivos 3D aquí"}
+        {compact ? "Arrastra más archivos aquí" : "Arrastra tus archivos 3D aquí"}
       </p>
       <p className="m-0 text-sm text-muted">
-        STL, OBJ o PLY · o haga clic para explorar · hasta 10 archivos · {maxMb} MB cada uno
+        STL, OBJ o PLY · o haz clic para explorar · hasta 10 archivos · {maxMb} MB cada uno
       </p>
       <input
         ref={input}

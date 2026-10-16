@@ -23,12 +23,12 @@ export function SuccessPanel({
       role="status"
       className="mx-auto max-w-xl rounded-xl border-2 border-prussian-blue bg-surface p-8 text-center"
     >
-      <h2 className="mb-2 text-2xl font-bold text-main">Recibimos su solicitud</h2>
+      <h2 className="mb-2 text-2xl font-bold text-main">Recibimos tu solicitud</h2>
       <p className="mb-2 inline-block rounded-lg bg-canvas px-4 py-1 text-3xl font-black tracking-widest text-prussian-blue">
         {s.orderId}
       </p>
       <p>
-        <strong>Guarde este número.</strong> Lo necesitará para cualquier consulta.
+        <strong>Guarda este número.</strong> Lo necesitarás para cualquier consulta.
       </p>
       <ul className="mx-auto my-4 max-w-sm list-disc pl-5 text-left">
         <li>
@@ -43,7 +43,7 @@ export function SuccessPanel({
         <li>Retiro en: {s.retiro}</li>
       </ul>
       <p>
-        Le enviamos la confirmación a su correo. Revisaremos su solicitud y le enviaremos la
+        Te enviamos la confirmación a tu correo. Revisaremos tu solicitud y te enviaremos la
         cotización con un enlace para confirmarla.
       </p>
       <a

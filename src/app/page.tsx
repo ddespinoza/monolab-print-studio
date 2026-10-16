@@ -34,7 +34,7 @@ export default async function Home() {
         <Hero />
         <section id="pedido" className="bg-canvas py-16">
           <div className="mx-auto w-full max-w-6xl px-4">
-            <h2 className="mb-4 text-2xl font-bold text-main">Su solicitud</h2>
+            <h2 className="mb-4 text-2xl font-bold text-main">Tu solicitud</h2>
             <OrderSection
               whatsappNumber={rt.config.whatsappNumber}
               retiro={retiro}

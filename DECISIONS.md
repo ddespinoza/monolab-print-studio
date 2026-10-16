@@ -268,4 +268,4 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 
 - The public website (copy, form messages, validation, confirm page) now uses informal "tú", replacing the formal usted of spec 3c. Emails (default templates and the live Plantillas rows) and the operator messages are **unchanged** (still usted) until the owner decides.
 - Hero text no longer says "Modelos de estudio, guías y piezas dentales impresos con precisión."
-- Page order: Hero, upload form (Pedido), Cómo funciona, Materiales, FAQ, Contacto, Quiénes somos (last, before the footer); the nav menu follows the same order.
+- Page order: Hero, upload form (Pedido), Cómo funciona, Materiales, FAQ, Quiénes somos, Contacto (last, before the footer, which is signed «Creado por Daniel Espinoza Charrier»); the nav menu follows the same order.

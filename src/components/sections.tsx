@@ -72,7 +72,7 @@ export function Hero() {
 export function About() {
   const rep = ABOUT.representative;
   return (
-    <section id="nosotros" className="py-16">
+    <section id="nosotros" className="bg-canvas py-16">
       <div className={wrap}>
         <div>
           <h2 className="mb-4 text-2xl font-bold text-main">{ABOUT.title}</h2>
@@ -190,7 +190,7 @@ export function Contact({
   horario: string;
 }) {
   return (
-    <section id="contacto" className="bg-canvas py-16">
+    <section id="contacto" className="py-16">
       <div className={wrap}>
         <h2 className="mb-4 text-2xl font-bold text-main">Contacto</h2>
         <ul className="grid gap-2">
@@ -228,7 +228,7 @@ export function Footer() {
     <footer className={`${band} pb-24 pt-8 text-sm text-app sm:py-8`}>
       <div className={`${wrap} flex items-center gap-3`}>
         <Image src="/brand/logo-icon.svg" alt="" width={44} height={28} />
-        <span>© {SITE_NAME}</span>
+        <span>© {SITE_NAME} · Creado por Daniel Espinoza Charrier</span>
       </div>
     </footer>
   );

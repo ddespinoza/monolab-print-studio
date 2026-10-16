@@ -45,8 +45,8 @@ export default async function Home() {
         <HowItWorks />
         <Materials />
         <Faq />
-        <Contact whatsappHref={whatsappHref} retiro={retiro} horario={horario} />
         <About />
+        <Contact whatsappHref={whatsappHref} retiro={retiro} horario={horario} />
       </main>
       <Footer />
       <WhatsAppFloat href={whatsappHref} />

@@ -32,8 +32,8 @@ export const NAV = [
   { href: "#como", label: "Cómo funciona" },
   { href: "#materiales", label: "Materiales" },
   { href: "#faq", label: "FAQ" },
-  { href: "#contacto", label: "Contacto" },
   { href: "#nosotros", label: "Nosotros" },
+  { href: "#contacto", label: "Contacto" },
 ];
 
 export const STEPS = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { ENTREGA_LABELS, MACHINE, RESIN_OPTIONS } from "@/lib/content";
+import { ENTREGA_LABELS, MACHINE, PRICE_NOTE, RESIN_OPTIONS } from "@/lib/content";
 import { ENTREGAS } from "@/lib/order-options";
 
 export interface FormValues {
@@ -192,6 +192,7 @@ export function OrderForm({
             </label>
           ))}
         </div>
+        <p className="m-0 mt-2 text-sm text-muted">{PRICE_NOTE}</p>
       </fieldset>
       <div>
         <label htmlFor="notas" className={label}>

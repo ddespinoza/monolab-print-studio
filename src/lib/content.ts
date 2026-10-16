@@ -105,14 +105,18 @@ export const FAQ = [
   },
   {
     q: "¿Cuánto demora?",
-    a: "Tú eliges: Flash en 2 días (10.000 CLP por pedido) o Normal en 7 días (7.500 CLP por pedido). Avisamos cada etapa por correo.",
+    a: "Tú eliges: Flash en 2 días (10.000 CLP por paciente) o Normal en 7 días (7.500 CLP por paciente). El valor incluye arcada superior e inferior. Avisamos cada etapa por correo.",
   },
 ];
 
 export const ENTREGA_LABELS: Record<string, { title: string; fee: string }> = {
-  Flash: { title: "Flash · 2 días", fee: "10.000 CLP por pedido" },
-  Normal: { title: "Normal · 7 días", fee: "7.500 CLP por pedido" },
+  Flash: { title: "Flash · 2 días", fee: "10.000 CLP por paciente (arcada superior e inferior)" },
+  Normal: { title: "Normal · 7 días", fee: "7.500 CLP por paciente (arcada superior e inferior)" },
 };
+
+/** Shown under the delivery prices: both arches cost the same. */
+export const PRICE_NOTE =
+  "Los valores son por paciente y son los mismos para la arcada superior y la inferior: no se cobra aparte por cada arcada.";
 
 export const PUBLIC_EMAIL = "contacto@monolabprintstudio.cl";
 /** Studio phone (also the WhatsApp number): shown to people, and in international format for links and search engines. */

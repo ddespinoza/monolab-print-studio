@@ -235,7 +235,7 @@ export function OrderForm({
           disabled={disabled || submitting}
           className="rounded-lg bg-orange px-6 py-3 font-bold text-prussian-blue hover:bg-orange-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? "Enviando…" : "Solicitar cotización"}
+          {submitting ? "Enviando…" : "Enviar a imprimir"}
         </button>
         {(submitting || busy) && (
           <span role="status" className="flex items-center gap-2 text-sm font-semibold text-main">

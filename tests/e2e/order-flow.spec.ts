@@ -11,7 +11,7 @@ async function placeOrder(page: Page, file: string): Promise<string> {
   await page.getByLabel("Iniciales del paciente *").fill("A. P.");
   await page.getByLabel("Teléfono *").fill("+56 9 4862 3705");
   await page.getByLabel("Correo electrónico *").fill("doc@example.com");
-  await page.getByRole("button", { name: "Solicitar cotización" }).last().click();
+  await page.getByRole("button", { name: "Enviar a imprimir" }).last().click();
   const panel = page.getByRole("status");
   await expect(panel).toContainText("Recibimos tu solicitud");
   return (await panel.locator("p").first().textContent()) ?? "";
@@ -36,7 +36,7 @@ test("shows a Spanish error for unsupported or unreadable files and keeps the fo
   await expect(page.getByText("Solo aceptamos archivos STL, OBJ o PLY.")).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles("tests/fixtures/broken.stl");
   await expect(page.getByText("No pudimos leer este archivo.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Solicitar cotización" }).last()).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toBeDisabled();
 });
 
 test("auto-fits an oversize model in simple mode and blocks it in advanced mode", async ({
@@ -48,7 +48,7 @@ test("auto-fits an oversize model in simple mode and blocks it in advanced mode"
   await page.getByRole("button", { name: "Modo avanzado" }).click();
   await page.getByRole("button", { name: "100 %", exact: true }).click();
   await expect(page.getByText("Este modelo excede el volumen de impresión")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Solicitar cotización" }).last()).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toBeDisabled();
 });
 
 test("the contact section offers WhatsApp and an email button for contacto@", async ({ page }) => {

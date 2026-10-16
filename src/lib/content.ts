@@ -7,7 +7,7 @@ export const HERO = {
   title: "Impresión 3D en resina para",
   accent: "odontología",
   text: "Sube tus archivos 3D, revisa tu modelo y recibe tu cotización por correo. Retiro en nuestro estudio.",
-  cta: "Solicitar cotización",
+  cta: "Enviar a imprimir",
 };
 
 export const ABOUT = {

@@ -270,3 +270,4 @@ Lighthouse (mobile, v12) baseline on the live site: Performance 65, Accessibilit
 - Hero text no longer says "Modelos de estudio, guías y piezas dentales impresos con precisión."
 - Delivery prices are per patient (10.000 / 7.500 CLP), the same for upper and lower arch; a note under the prices says so (`PRICE_NOTE`).
 - Page order: Hero, upload form (Pedido), Cómo funciona, Materiales, FAQ, Quiénes somos, Contacto (last, before the footer, which is signed «Creado por Daniel Espinoza Charrier»); the nav menu follows the same order.
+- The CTA «Solicitar cotización» (hero and form button) is now «Enviar a imprimir» (owner, 2026-10-16).

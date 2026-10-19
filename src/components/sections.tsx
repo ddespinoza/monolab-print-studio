@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { HexArt } from "@/components/HexArt";
+import { MobileMenu } from "@/components/MobileMenu";
 import {
   ABOUT,
   FAQ,
@@ -33,6 +34,7 @@ export function Header() {
             </small>
           </span>
         </a>
+        <MobileMenu />
         <nav aria-label="Principal" className="hidden gap-5 text-sm md:flex">
           {NAV.map((n) => (
             <a

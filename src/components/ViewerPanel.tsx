@@ -118,6 +118,11 @@ export function ViewerPanel({ files, active, mode, onRotate }: Props) {
           </div>
         )}
       </div>
+      {ready.length > 0 && (
+        <p className="order-3 m-0 hidden px-3 pt-2 text-xs text-muted lg:!hidden [@media(pointer:coarse)]:block">
+          Usa dos dedos para girar y acercar el modelo.
+        </p>
+      )}
       {tooBig && (
         <p
           role="alert"

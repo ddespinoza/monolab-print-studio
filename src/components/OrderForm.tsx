@@ -1,6 +1,6 @@
 "use client";
 
-import { ENTREGA_LABELS, MACHINE, PRICE_NOTE, RESIN_OPTIONS } from "@/lib/content";
+import { ENTREGA_LABELS, MACHINE, MESSAGES, PRICE_NOTE, RESIN_OPTIONS } from "@/lib/content";
 import { ENTREGAS } from "@/lib/order-options";
 
 export interface FormValues {
@@ -225,7 +225,7 @@ export function OrderForm({
           className="m-0 rounded border-l-4 border-prussian-blue bg-canvas px-3 py-2 text-sm text-main"
         >
           {formError}
-          {!formError.startsWith("Revisa") && (
+          {formError === MESSAGES.sendError && (
             <>
               {" "}
               <a
@@ -243,8 +243,10 @@ export function OrderForm({
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
-          disabled={disabled || submitting}
-          className="rounded-lg bg-orange px-6 py-3 font-bold text-prussian-blue hover:bg-orange-dark disabled:cursor-not-allowed disabled:opacity-50"
+          // aria-disabled keeps the button tappable so a press can explain what is missing.
+          aria-disabled={disabled || submitting}
+          onClick={(e) => submitting && e.preventDefault()}
+          className="rounded-lg bg-orange px-6 py-3 font-bold text-prussian-blue hover:bg-orange-dark aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
           {submitting ? "Enviando…" : "Enviar a imprimir"}
         </button>

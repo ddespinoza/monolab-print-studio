@@ -13,6 +13,7 @@ import {
   MeshStandardMaterial,
   PerspectiveCamera,
   Scene,
+  TOUCH,
   Vector3,
   WebGLRenderer,
   WireframeGeometry,
@@ -66,6 +67,9 @@ export class ViewerController {
     container.appendChild(this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+    // On phones one finger must keep scrolling the page (the viewer sits above the form); two fingers orbit and zoom.
+    this.controls.touches = { ONE: null, TWO: TOUCH.DOLLY_ROTATE };
+    this.renderer.domElement.style.touchAction = "pan-y";
     this.controls.minDistance = 10;
     this.controls.maxDistance = 1500;
     this.addLights();

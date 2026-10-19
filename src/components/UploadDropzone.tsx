@@ -19,7 +19,6 @@ export function UploadDropzone({ onFiles, compact, maxMb }: Props) {
     <div
       role="button"
       tabIndex={0}
-
       onClick={() => input.current?.click()}
       onKeyDown={(e) =>
         (e.key === "Enter" || e.key === " ") && (e.preventDefault(), input.current?.click())
@@ -30,16 +29,22 @@ export function UploadDropzone({ onFiles, compact, maxMb }: Props) {
       className={`cursor-pointer rounded-xl border-2 border-dashed bg-surface text-center ${over ? "border-orange" : "border-border-medium"} ${compact ? "px-4 py-4" : "px-4 py-10"}`}
     >
       <p className="m-0 font-bold text-main">
-        {compact ? "Arrastra más archivos aquí" : "Arrastra tus archivos 3D aquí"}
+        <span className="[@media(pointer:coarse)]:hidden">
+          {compact ? "Arrastra más archivos aquí" : "Arrastra tus archivos 3D aquí"}
+        </span>
+        <span className="hidden [@media(pointer:coarse)]:inline">
+          {compact ? "Toca para añadir más archivos" : "Toca para elegir tus archivos 3D"}
+        </span>
       </p>
       <p className="m-0 text-sm text-muted">
-        STL, OBJ o PLY · o haz clic para explorar · hasta 10 archivos · {maxMb} MB cada uno
+        STL, OBJ o PLY ·{" "}
+        <span className="[@media(pointer:coarse)]:hidden">o haz clic para explorar · </span>
+        hasta 10 archivos · {maxMb} MB cada uno
       </p>
       <input
         ref={input}
         type="file"
         multiple
-        accept=".stl,.obj,.ply"
         className="hidden"
         onChange={(e) => pick(e.target.files)}
       />

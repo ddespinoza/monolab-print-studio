@@ -48,6 +48,10 @@ const FIELD_ORDER = [
   "notas",
 ] as const;
 
+const HINT_TEXTS: Record<string, true> = Object.fromEntries(
+  Object.values(HINTS).map((t) => [t, true]),
+);
+
 type Errors = Partial<Record<keyof FormValues | "files", string>>;
 
 export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
@@ -109,6 +113,13 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
 
   const submit = async (): Promise<void> => {
     setFormError(undefined);
+    const blockers = submitBlockers(state);
+    if (blockers.length) {
+      setFormError(HINTS[blockers[0]]);
+      if (blockers[0] === "empty")
+        document.getElementById("pedido-archivos")?.scrollIntoView({ block: "center" });
+      return;
+    }
     const files = state.files.flatMap((f) => {
       const m = entryMetrics(f);
       return f.parse === "ready" && f.upload.token && m
@@ -262,7 +273,9 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
           busy={blockers.includes("busy")}
           disabled={!canSubmit(state)}
           hint={hint}
-          formError={formError}
+          formError={
+            formError && blockers.length === 0 && formError in HINT_TEXTS ? undefined : formError
+          }
           whatsappHref={whatsappLink(whatsappNumber, "")}
           onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
           onSubmit={() => void submit()}

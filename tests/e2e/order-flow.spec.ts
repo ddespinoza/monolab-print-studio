@@ -36,7 +36,10 @@ test("shows a Spanish error for unsupported or unreadable files and keeps the fo
   await expect(page.getByText("Solo aceptamos archivos STL, OBJ o PLY.")).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles("tests/fixtures/broken.stl");
   await expect(page.getByText("No pudimos leer este archivo.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toHaveAttribute(
+    "aria-disabled",
+    "true",
+  );
 });
 
 test("auto-fits an oversize model in simple mode and blocks it in advanced mode", async ({
@@ -48,7 +51,10 @@ test("auto-fits an oversize model in simple mode and blocks it in advanced mode"
   await page.getByRole("button", { name: "Modo avanzado" }).click();
   await page.getByRole("button", { name: "100 %", exact: true }).click();
   await expect(page.getByText("Este modelo excede el volumen de impresión")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Enviar a imprimir" }).last()).toHaveAttribute(
+    "aria-disabled",
+    "true",
+  );
 });
 
 test("the contact section offers WhatsApp and an email button for contacto@", async ({ page }) => {
@@ -135,4 +141,29 @@ test("a failed submit scrolls to and focuses the first invalid field", async ({ 
   await expect(page.getByLabel("Nombre del odontólogo/a *")).toBeFocused();
   await expect(page.getByLabel("Nombre del odontólogo/a *")).toBeInViewport();
   await expect(page.getByText("Revisa los campos marcados")).toBeVisible();
+});
+
+test.describe("phone touch", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("the file picker has no extension filter and the menu opens", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator('input[type="file"]')).not.toHaveAttribute("accept", /.+/);
+    await page.getByRole("button", { name: "Menú" }).click();
+    await page.getByRole("link", { name: "Contacto" }).first().click();
+    await expect(page.getByRole("button", { name: "Menú" })).toBeVisible();
+  });
+
+  test("one finger scrolls the page over the 3D viewer", async ({ page }) => {
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/fixtures/cube-10.stl");
+    await expect(page.locator("canvas")).toHaveCSS("touch-action", "pan-y", { timeout: 20_000 });
+  });
+
+  test("tapping the blocked button explains what is missing", async ({ page }) => {
+    await page.goto("/");
+    // Playwright treats aria-disabled as unclickable, so force the tap a customer would make.
+    await page.getByRole("button", { name: "Enviar a imprimir" }).last().tap({ force: true });
+    await expect(page.locator("form [role=alert]")).toContainText("Sube al menos un archivo 3D.");
+  });
 });

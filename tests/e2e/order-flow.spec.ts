@@ -119,7 +119,20 @@ test.describe("phone layout", () => {
     expect(tooSmall).toEqual([]);
     await page.locator("#pedido").scrollIntoViewIfNeeded();
     await expect(page.locator("a.fixed")).toBeHidden();
-    await page.evaluate(() => window.scrollTo(0, 0));
+    // The order form now sits right below the hero, so check the button away from it, at the page bottom.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(page.locator("a.fixed")).toBeVisible();
   });
+});
+
+test("a failed submit scrolls to and focuses the first invalid field", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles("tests/fixtures/cube-10.stl");
+  await expect(page.getByRole("progressbar").first()).toHaveAttribute("aria-valuenow", "100", {
+    timeout: 20_000,
+  });
+  await page.getByRole("button", { name: "Enviar a imprimir" }).last().click();
+  await expect(page.getByLabel("Nombre del odontólogo/a *")).toBeFocused();
+  await expect(page.getByLabel("Nombre del odontólogo/a *")).toBeInViewport();
+  await expect(page.getByText("Revisa los campos marcados")).toBeVisible();
 });

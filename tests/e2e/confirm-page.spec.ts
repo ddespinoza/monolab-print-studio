@@ -54,7 +54,7 @@ test("a customer opens the quote link, confirms, and sees how far the order is",
 
   const token = signConfirmToken(id, quote, process.env.CONFIRM_SECRET as string);
   await page.goto(`/confirmar/${token}`);
-  await expect(page.getByRole("heading", { name: "Confirme su cotización" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Confirma tu cotización" })).toBeVisible();
   await expect(page.getByText(`Pedido ${id}`)).toBeVisible();
   await expect(page.getByText(quote)).toBeVisible();
   await expect(page.getByText("Cotización lista")).toBeVisible();

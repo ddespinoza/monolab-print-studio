@@ -36,6 +36,18 @@ const HINTS = {
   exceeds: "Reduce la escala de los modelos que exceden el volumen de impresión.",
 } as const;
 
+const FIELD_ORDER = [
+  "files",
+  "resina",
+  "cantidad",
+  "nombre",
+  "paciente",
+  "telefono",
+  "email",
+  "entrega",
+  "notas",
+] as const;
+
 type Errors = Partial<Record<keyof FormValues | "files", string>>;
 
 export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
@@ -121,6 +133,15 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
         next[key] ??= issue.message;
       }
       setErrors(next);
+      setFormError(MESSAGES.reviewFields);
+      // The button sits below the fields, so errors render off screen: bring the first one into view.
+      const first = FIELD_ORDER.find((k) => next[k]);
+      const target =
+        first === "files"
+          ? document.getElementById("pedido-archivos")
+          : first && document.getElementById(first);
+      target?.scrollIntoView({ block: "center" });
+      if (target instanceof HTMLElement && first !== "files") target.focus({ preventScroll: true });
       return;
     }
     setErrors({});
@@ -186,6 +207,7 @@ export function OrderSection({ whatsappNumber, retiro, maxUploadMb }: Props) {
             ? "Sube uno o más archivos STL, OBJ o PLY. Si alguno excede el volumen de impresión, lo ajustaremos automáticamente."
             : "Mira todos tus archivos juntos, oculta o muestra cada modelo, y ajusta su escala y rotación."}
         </p>
+        <div id="pedido-archivos" className="scroll-mt-24" />
         <UploadDropzone onFiles={addFiles} compact={state.files.length > 0} maxMb={maxUploadMb} />
         {errors.files && (
           <p

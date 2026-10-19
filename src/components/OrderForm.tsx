@@ -223,10 +223,20 @@ export function OrderForm({
           role="alert"
           className="m-0 rounded border-l-4 border-prussian-blue bg-canvas px-3 py-2 text-sm text-main"
         >
-          {formError}{" "}
-          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="underline">
-            Escribir por WhatsApp
-          </a>
+          {formError}
+          {!formError.startsWith("Revisa") && (
+            <>
+              {" "}
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                Escribir por WhatsApp
+              </a>
+            </>
+          )}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
@@ -243,7 +253,7 @@ export function OrderForm({
             {submitting ? "Enviando tu solicitud…" : "Procesando tus archivos…"}
           </span>
         )}
-        {hint && <span className="text-sm text-muted">{hint}</span>}
+        {hint && <span className="text-sm font-semibold text-main">{hint}</span>}
       </div>
     </form>
   );

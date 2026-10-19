@@ -125,6 +125,7 @@ export const PUBLIC_ADDRESS = { street: "Río Guadiana 8672", commune: "Las Cond
 export const PUBLIC_PHONE = { display: "+56 9 4862 3705", tel: "+56948623705" };
 
 export const MESSAGES = {
+  reviewFields: "Revisa los campos marcados: faltan datos o hay un error.",
   sendError: "No pudimos enviar tu solicitud. Inténtalo nuevamente o escríbenos por WhatsApp.",
   uploadError: "No pudimos subir este archivo. Inténtalo nuevamente.",
   parseError: "No pudimos leer este archivo. Quítalo o súbelo de nuevo.",

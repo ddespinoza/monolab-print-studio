@@ -11,6 +11,8 @@ export {
 import { ENTREGAS, MAX_FILES, RESINAS, TOKEN_PATTERN } from "@/lib/order-options";
 const LETTER = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ";
 
+const INITIALS_MSG = "Escribe solo las iniciales (1 a 4 letras), por ejemplo A. P., AP o A.P.M.";
+
 const text = (label: string, min: number, max: number) =>
   z
     .string({ error: `${label} es obligatorio.` })
@@ -53,14 +55,12 @@ export const orderSchema = z.object({
   paciente: z
     .string({ error: "Las iniciales del paciente son obligatorias." })
     .trim()
-    .regex(
-      new RegExp(`^[${LETTER}][${LETTER}. ]{1,7}$`),
-      "Ingresa solo las iniciales del paciente, por ejemplo A. P.",
-    )
-    .refine(
-      (v) => v.replace(new RegExp(`[^${LETTER}]`, "g"), "").length <= 4,
-      "Ingresa solo las iniciales del paciente, por ejemplo A. P.",
-    ),
+    .max(12, INITIALS_MSG)
+    .regex(new RegExp(`^[${LETTER}][${LETTER}.\\- ]*$`), INITIALS_MSG)
+    .refine((v) => {
+      const letters = v.replace(new RegExp(`[^${LETTER}]`, "g"), "").length;
+      return letters >= 1 && letters <= 4;
+    }, INITIALS_MSG),
   resina: z.enum(RESINAS, { error: "Elige un tipo de resina." }),
   entrega: z.enum(ENTREGAS.map((e) => e.id) as [string, ...string[]], {
     error: "Elige un tiempo de entrega.",

@@ -42,7 +42,6 @@ describe("orderSchema", () => {
     ["long name", { nombre: "A".repeat(81) }],
     ["full patient name", { paciente: "Ana Pérez González" }],
     ["patient with digits", { paciente: "A1" }],
-    ["one-letter patient", { paciente: "A" }],
     ["five initials", { paciente: "A.B.C.D.E." }],
     ["bad email", { email: "nope" }],
     ["bad phone", { telefono: "abc" }],
@@ -64,9 +63,12 @@ describe("orderSchema", () => {
   ])("rejects %s", (_n, patch) => {
     expect(fail(patch)).toBe(true);
   });
-  it.each(["A. P.", "AP", "A.P.M.", "Á.Ñ."])("accepts initials %s", (paciente) => {
-    expect(fail({ paciente })).toBe(false);
-  });
+  it.each(["A", "A. P.", "AP", "A.P.M.", "A-P", "A P M S", "Á.Ñ."])(
+    "accepts initials %s",
+    (paciente) => {
+      expect(fail({ paciente })).toBe(false);
+    },
+  );
   it("accepts 1 and 10 files", () => {
     expect(fail({ files: manyFiles(MAX_FILES) })).toBe(false);
   });

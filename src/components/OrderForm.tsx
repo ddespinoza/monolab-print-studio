@@ -44,6 +44,7 @@ interface Props {
 
 const field =
   "w-full rounded-lg border border-border-medium bg-surface px-3 py-2.5 text-main placeholder:text-muted";
+const fieldBad = "border-2! border-orange-dark! bg-canvas";
 const label = "mb-1 block text-sm font-semibold text-main";
 
 function Err({ id, message }: { id: string; message?: string }) {
@@ -86,7 +87,7 @@ export function OrderForm({
         onChange={(e) => onChange({ [id]: e.target.value })}
         aria-invalid={Boolean(errors[id])}
         aria-describedby={errors[id] ? `${id}-err` : undefined}
-        className={field}
+        className={`${field} ${errors[id] ? fieldBad : ""}`}
         {...props}
       />
       <Err id={`${id}-err`} message={errors[id]} />
@@ -107,7 +108,7 @@ export function OrderForm({
           id="resina"
           value={v.resina}
           onChange={(e) => onChange({ resina: e.target.value })}
-          className={field}
+          className={`${field} ${errors["resina"] ? fieldBad : ""}`}
         >
           {RESIN_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -146,12 +147,12 @@ export function OrderForm({
           <input
             id="paciente"
             value={v.paciente}
-            maxLength={8}
+            maxLength={12}
             placeholder="Ej.: A. P."
             onChange={(e) => onChange({ paciente: e.target.value })}
             aria-describedby="paciente-help paciente-err"
             aria-invalid={Boolean(errors.paciente)}
-            className={field}
+            className={`${field} ${errors["paciente"] ? fieldBad : ""}`}
           />
           <span id="paciente-help" className="text-xs text-muted">
             Solo iniciales, para proteger los datos del paciente.
@@ -204,7 +205,7 @@ export function OrderForm({
           value={v.notas}
           onChange={(e) => onChange({ notas: e.target.value })}
           placeholder="Orientación, cara crítica, tolerancia, tono de la resina u otras indicaciones"
-          className={field}
+          className={`${field} ${errors["notas"] ? fieldBad : ""}`}
         />
         <Err id="notas-err" message={errors.notas} />
       </div>
